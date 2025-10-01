@@ -1,63 +1,7 @@
-import { Application, Assets, Sprite, Texture } from "pixi.js";
-
-type Block = {
-  sprite: Sprite;
-  velocity: number;
-  file: number;
-  fileOrder: number;
-};
-
-type Coord = {
-  x: number;
-  y: number;
-};
-
-const gravity = 980; // gravity is planet-wide (or level-wide) constant
-
-const redTexture: Texture = await Assets.load("/assets/tile_red.svg");
-const blueTexture: Texture = await Assets.load("/assets/tile_blue.svg");
-const greenTexture: Texture = await Assets.load("/assets/tile_green.svg");
-const yellowTexture: Texture = await Assets.load("/assets/tile_yellow.svg");
-
-const getRandomIntUpTo = (upToNumber: number) =>
-  Math.floor(Math.random() * upToNumber);
-
-const getRandomBlockTexture = () => {
-  const textureOptions: Texture[] = [
-    redTexture,
-    blueTexture,
-    greenTexture,
-    yellowTexture,
-  ];
-
-  return textureOptions[getRandomIntUpTo(textureOptions.length)];
-};
-
-const createBlock = ({
-  initialPosition,
-  texture,
-  size,
-  file,
-  fileOrder,
-}: {
-  initialPosition: Coord;
-  texture: Texture;
-  size: number;
-  file: number;
-  fileOrder: number;
-}): Block => {
-  const sprite = new Sprite(texture);
-  sprite.anchor.set(0);
-  sprite.setSize(size);
-  sprite.position.set(initialPosition.x, initialPosition.y);
-
-  return {
-    sprite,
-    velocity: 0,
-    file,
-    fileOrder,
-  };
-};
+import { Application } from "pixi.js";
+import { FILE_COUNT, GRAVITY_FACTOR } from "./constants";
+import { getRandomBlockTexture, getRandomIntUpTo } from "./util";
+import { Block, createBlock, createVerticalTestGroup } from "./creators";
 
 (async () => {
   const app = new Application();
@@ -70,27 +14,37 @@ const createBlock = ({
 
   document.getElementById("pixi-container")!.appendChild(app.canvas);
 
-  const blockLength = app.screen.width / 9;
+  const blockLength = app.screen.width / FILE_COUNT;
+  const files: Record<number, Block[]> = {};
 
   // or, in the future, just "entities" because block groups could be included
   // entities can be created, merged/composed, and decomposed
-  const blocks: Block[] = [];
-
-  const files: Record<number, Block[]> = {};
+  const blocks: Block[] = [
+    ...createVerticalTestGroup(2, blockLength),
+    ...createVerticalTestGroup(4, blockLength),
+    ...createVerticalTestGroup(6, blockLength),
+  ];
 
   // eventually it will be entities, not blocks, to do top-level iterating on
   // because stacks of blocks will be processed altogether
+
+  // track initial blocks in stage and files
   blocks.forEach((block) => {
     app.stage.addChild(block.sprite);
+    if (!files[block.file]) {
+      files[block.file] = [];
+    } else {
+      files[block.file].push(block);
+    }
   });
 
   setInterval(() => {
-    const file = blockLength * getRandomIntUpTo(9);
+    const file = getRandomIntUpTo(FILE_COUNT);
 
     const newBlock = createBlock({
       texture: getRandomBlockTexture(),
       initialPosition: {
-        x: file,
+        x: file * blockLength,
         y: -blockLength,
       },
       size: blockLength,
@@ -104,13 +58,17 @@ const createBlock = ({
     } else {
       files[newBlock.file].push(newBlock);
     }
+
+    console.log(files);
   }, 500);
 
   app.ticker.add((time) => {
     const dt = time.deltaTime / 60;
 
     blocks.forEach((block) => {
-      block.velocity += gravity * dt;
+      // these calculations also need to be normalized for block size/dimensions, to account for differences in canvas size
+      // otherwise taller screens will take longer to drop blocks
+      block.velocity += GRAVITY_FACTOR * dt;
       block.sprite.y += block.velocity * dt;
 
       // this will get trickier because ground will sometimes be a block below
