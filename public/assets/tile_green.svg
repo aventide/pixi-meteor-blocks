@@ -18,19 +18,6 @@
   <rect x="0" y="0" width="1" height="128" fill="#165A35"/>
   <rect x="127" y="0" width="1" height="128" fill="#165A35"/>
 
-  <!-- Central geometric emblem: an ivory diamond with minimal internal cuts -->
-  <!-- Diamond (rotated square) -->
-  <polygon points="64,40 88,64 64,88 40,64" fill="#F2E9E4"/>
-
-  <!-- Internal cuts using the base green to keep palette minimal -->
-  <!-- Top cut -->
-  <polygon points="64,44 70,56 58,56" fill="#2FAF60"/>
-  <!-- Bottom cut -->
-  <polygon points="64,84 70,72 58,72" fill="#2FAF60"/>
-
-  <!-- Side notches to echo a crystalline geometry -->
-  <!-- Left notch -->
-  <polygon points="44,64 52,60 52,68" fill="#2FAF60"/>
-  <!-- Right notch -->
-  <polygon points="84,64 76,60 76,68" fill="#2FAF60"/>
+  <!-- Central emblem: solid white dot replacing previous diamond -->
+  <circle cx="64" cy="64" r="19" fill="#FFFFFF"/>
 </svg>
