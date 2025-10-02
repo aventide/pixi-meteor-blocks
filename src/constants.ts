@@ -1,4 +1,4 @@
-const FILE_COUNT = 9;
-const GRAVITY_FACTOR = 980; // gravity is planet-wide (or level-wide) constant
+const DEFAULT_FILE_COUNT = 9;
+const DEFAULT_GRAVITY = 980; // gravity is planet-wide (or level-wide) constant
 
-export { FILE_COUNT, GRAVITY_FACTOR };
+export { DEFAULT_FILE_COUNT, DEFAULT_GRAVITY };

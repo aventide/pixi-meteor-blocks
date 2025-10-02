@@ -1,7 +1,7 @@
 import { Application } from "pixi.js";
-import { FILE_COUNT, GRAVITY_FACTOR } from "./constants";
-import { getRandomBlockTexture, getRandomIntUpTo } from "./util";
-import { Block, createBlock, createVerticalTestGroup } from "./creators";
+import { Block, createRandomBlock, createVerticalTestGroup } from "./creators";
+import { gravityMutator } from "./mutators/gravityMutator";
+import { setWorldDimensions } from "./world";
 
 (async () => {
   const app = new Application();
@@ -14,15 +14,16 @@ import { Block, createBlock, createVerticalTestGroup } from "./creators";
 
   document.getElementById("pixi-container")!.appendChild(app.canvas);
 
-  const blockLength = app.screen.width / FILE_COUNT;
+  setWorldDimensions(app.screen.height, app.screen.width);
+
   const files: Record<number, Block[]> = {};
 
   // or, in the future, just "entities" because block groups could be included
   // entities can be created, merged/composed, and decomposed
   const blocks: Block[] = [
-    ...createVerticalTestGroup(2, blockLength),
-    ...createVerticalTestGroup(4, blockLength),
-    ...createVerticalTestGroup(6, blockLength),
+    ...createVerticalTestGroup(2),
+    ...createVerticalTestGroup(4),
+    ...createVerticalTestGroup(6),
   ];
 
   // eventually it will be entities, not blocks, to do top-level iterating on
@@ -39,18 +40,8 @@ import { Block, createBlock, createVerticalTestGroup } from "./creators";
   });
 
   setInterval(() => {
-    const file = getRandomIntUpTo(FILE_COUNT);
+    const newBlock = createRandomBlock(files);
 
-    const newBlock = createBlock({
-      texture: getRandomBlockTexture(),
-      initialPosition: {
-        x: file * blockLength,
-        y: -blockLength,
-      },
-      size: blockLength,
-      file: file,
-      fileOrder: files[file]?.length + 1 || 0,
-    });
     app.stage.addChild(newBlock.sprite);
     blocks.push(newBlock);
     if (!files[newBlock.file]) {
@@ -58,31 +49,14 @@ import { Block, createBlock, createVerticalTestGroup } from "./creators";
     } else {
       files[newBlock.file].push(newBlock);
     }
-
-    console.log(files);
   }, 500);
 
   app.ticker.add((time) => {
     const dt = time.deltaTime / 60;
 
+    // apply mutators to each block
     blocks.forEach((block) => {
-      // these calculations also need to be normalized for block size/dimensions, to account for differences in canvas size
-      // otherwise taller screens will take longer to drop blocks
-      block.velocity += GRAVITY_FACTOR * dt;
-      block.sprite.y += block.velocity * dt;
-
-      // this will get trickier because ground will sometimes be a block below
-      // we should store vertical "files", or basically a dictionary of blocks under a certain x coord (a column of blocks), to help with this calculation
-      // and then groundY is simply the top stalled block of the file
-      //
-      // this will not work after any blocks are culled, because the fileOrder will need to be updated on the entire file
-      const groundY =
-        app.screen.height - (block.fileOrder + 1) * block.sprite.height;
-
-      if (block.sprite.y >= groundY) {
-        block.sprite.y = groundY;
-        block.velocity = 0;
-      }
+      gravityMutator(block, dt);
     });
   });
 })();

@@ -1,10 +1,10 @@
 import { Assets, Texture } from "pixi.js";
-import { FILE_COUNT } from "./constants";
+import { DEFAULT_FILE_COUNT } from "./constants";
 
 const getRandomIntUpTo = (upToNumber: number) =>
   Math.floor(Math.random() * upToNumber);
 
-const getRandomFileNumber = () => getRandomIntUpTo(FILE_COUNT);
+const getRandomFileNumber = () => getRandomIntUpTo(DEFAULT_FILE_COUNT);
 
 const redTexture: Texture = await Assets.load("/assets/tile_red.svg");
 const blueTexture: Texture = await Assets.load("/assets/tile_blue.svg");
