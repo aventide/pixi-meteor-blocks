@@ -1,4 +1,4 @@
-import type { Block } from "../creators";
+import type { Block } from "../entities/types";
 
 import { getWorld } from "../world";
 

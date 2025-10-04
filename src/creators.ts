@@ -1,19 +1,9 @@
 import { Sprite, Texture } from "pixi.js";
-import { getRandomBlockTexture, getRandomFileNumber } from "./util";
+import { getRandomFileNumber } from "./util";
 import { getWorld } from "./world";
 import { DEFAULT_FILE_COUNT } from "./constants";
-
-export type Coord = {
-  x: number;
-  y: number;
-};
-
-export type Block = {
-  sprite: Sprite;
-  velocity: number;
-  file: number;
-  fileOrder: number;
-};
+import { Block, Coord } from "./entities/types";
+import { getRandomBlockTexture } from "./textures";
 
 const createBlock = ({
   initialPosition,
