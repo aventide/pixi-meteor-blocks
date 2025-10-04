@@ -1,5 +1,10 @@
+import type { BlockGroup } from "./entities/types";
+
 import { Application } from "pixi.js";
+
 import { setWorldDimensions } from "./world";
+import { createSingleBlock } from "./entities";
+import { gravityMutator } from "./mutators";
 
 (async () => {
   const app = new Application();
@@ -14,14 +19,22 @@ import { setWorldDimensions } from "./world";
 
   setWorldDimensions(app.screen.height, app.screen.width);
 
-  setInterval(() => {}, 500);
+  const blockGroups: BlockGroup[] = [];
 
-  // app.ticker.add((time) => {
-  // const dt = time.deltaTime / 60;
+  setInterval(() => {
+    // @todo I do not love the naming here
+    const newBlockGroup: BlockGroup = createSingleBlock();
+    blockGroups.push(newBlockGroup);
 
-  // apply mutators to each block group
-  // blocks.forEach((block) => {
-  //   gravityMutator(block, dt);
-  // });
-  // });
+    app.stage.addChild(newBlockGroup.blocks[0].sprite);
+  }, 1000);
+
+  app.ticker.add((time) => {
+    const dt = time.deltaTime / 60;
+
+    // apply mutators to each block group
+    blockGroups.forEach((blockGroup) => {
+      gravityMutator(blockGroup, dt);
+    });
+  });
 })();

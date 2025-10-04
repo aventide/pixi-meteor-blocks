@@ -9,5 +9,9 @@ export type Block = {
   sprite: Sprite;
   velocity: number;
   file: number;
-  fileOrder: number;
+};
+
+export type BlockGroup = {
+  blocks: Block[];
+  files: number[];
 };
