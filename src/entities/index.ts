@@ -1,7 +1,6 @@
 import { Sprite, Texture } from "pixi.js";
 import { getRandomFileNumber } from "../util";
-import { getWorld } from "../world";
-import { DEFAULT_FILE_COUNT } from "../constants";
+import { getBlockSize } from "../world";
 import { Block, BlockGroup, Coord } from "../entities/types";
 import { getRandomBlockTexture } from "../textures";
 
@@ -14,9 +13,7 @@ const createBlock = ({
   texture: Texture;
   file: number;
 }): Block => {
-  const { width: worldWidth } = getWorld();
-
-  const blockSize = worldWidth / DEFAULT_FILE_COUNT;
+  const blockSize = getBlockSize();
 
   const sprite = new Sprite(texture);
   sprite.anchor.set(0);
@@ -28,7 +25,6 @@ const createBlock = ({
 
   return {
     sprite,
-    velocity: 0,
     file,
   };
 };
@@ -47,13 +43,13 @@ const createSingleBlock = (): BlockGroup => {
         file,
       }),
     ],
-    files: [],
+    files: [file],
+    velocity: 0,
   };
 };
 
-// @todo the math breaks here because when two stacks are created at the same file, the file orders are not adjusted accordingly
 const createVerticalTestGroup = (blockCount: number): BlockGroup => {
-  const blockGroup: BlockGroup = { blocks: [], files: [] };
+  const blockGroup: BlockGroup = { blocks: [], files: [], velocity: 0 };
   const file = getRandomFileNumber();
 
   for (let i = 0; i < blockCount; i++) {

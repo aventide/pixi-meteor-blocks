@@ -1,4 +1,4 @@
-import { DEFAULT_GRAVITY } from "./constants";
+import { DEFAULT_FILE_COUNT, DEFAULT_GRAVITY } from "./constants";
 
 type World = {
   gravity: number;
@@ -17,6 +17,7 @@ const world: World = {
 };
 
 export const getWorld = () => world;
+export const getBlockSize = () => world.width / DEFAULT_FILE_COUNT;
 
 export const setWorldDimensions = (height: number, width: number) => {
   world.height = height;

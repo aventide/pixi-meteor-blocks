@@ -7,11 +7,11 @@ export type Coord = {
 
 export type Block = {
   sprite: Sprite;
-  velocity: number;
   file: number;
 };
 
 export type BlockGroup = {
   blocks: Block[];
   files: number[];
+  velocity: number;
 };

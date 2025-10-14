@@ -3,8 +3,8 @@ import type { BlockGroup } from "./entities/types";
 import { Application } from "pixi.js";
 
 import { setWorldDimensions } from "./world";
-import { createSingleBlock } from "./entities";
-import { gravityMutator } from "./mutators";
+import { createVerticalTestGroup } from "./entities";
+import { gravityMutator, velocityMutator } from "./mutators";
 
 (async () => {
   const app = new Application();
@@ -19,14 +19,17 @@ import { gravityMutator } from "./mutators";
 
   setWorldDimensions(app.screen.height, app.screen.width);
 
-  const blockGroups: BlockGroup[] = [];
+  const blockGroups: BlockGroup[] = [createVerticalTestGroup(4)];
+
+  blockGroups.forEach((blockGroup) =>
+    blockGroup.blocks.forEach((block) => app.stage.addChild(block.sprite)),
+  );
 
   setInterval(() => {
     // @todo I do not love the naming here
-    const newBlockGroup: BlockGroup = createSingleBlock();
-    blockGroups.push(newBlockGroup);
-
-    app.stage.addChild(newBlockGroup.blocks[0].sprite);
+    // const newBlockGroup: BlockGroup = createSingleBlock();
+    // blockGroups.push(newBlockGroup);
+    // app.stage.addChild(newBlockGroup.blocks[0].sprite);
   }, 1000);
 
   app.ticker.add((time) => {
@@ -35,6 +38,7 @@ import { gravityMutator } from "./mutators";
     // apply mutators to each block group
     blockGroups.forEach((blockGroup) => {
       gravityMutator(blockGroup, dt);
+      velocityMutator(blockGroup, dt);
     });
   });
 })();
