@@ -23,6 +23,11 @@ export const velocityMutator = (blockGroup: BlockGroup, dt: number) => {
     blockGroup.velocity = 0;
   }
 
+  // do final calculated movement on group
+  blockGroup.files.forEach((file) => {
+    file.boundary.top += adjustedDelta;
+    file.boundary.bottom += adjustedDelta;
+  });
   blockGroup.blocks.forEach((block) => {
     block.sprite.y += adjustedDelta;
   });

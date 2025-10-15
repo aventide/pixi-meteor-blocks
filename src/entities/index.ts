@@ -1,7 +1,7 @@
 import { Sprite, Texture } from "pixi.js";
 import { getRandomFileNumber } from "../util";
 import { getBlockSize, getWorld } from "../world";
-import { Block, BlockGroup, Coord } from "../entities/types";
+import { Block, BlockGroup, BlockGroupFile, Coord } from "../entities/types";
 import { getRandomBlockTexture } from "../textures";
 
 const createBlock = ({
@@ -14,7 +14,6 @@ const createBlock = ({
   file: number;
 }): Block => {
   const blockSize = getBlockSize();
-
   const sprite = new Sprite(texture);
   sprite.anchor.set(0);
   sprite.setSize(blockSize);
@@ -29,22 +28,42 @@ const createBlock = ({
   };
 };
 
+// input must be a "file" aka blocks all with the same y coord
+export const getFileBoundaries = (blocks: Block[]) => {
+  const blockSize = getBlockSize();
+
+  let top = blocks[0].sprite.y;
+  let bottom = blocks[0].sprite.y + blockSize;
+
+  blocks.forEach((block) => {
+    if (block.sprite.y < top) top = block.sprite.y;
+    if (block.sprite.y > bottom) bottom = block.sprite.y + blockSize;
+  });
+
+  return {
+    top,
+    bottom,
+  };
+};
+
 const createBlockGroup = (
   blocks: Block[],
+  groupFiles: BlockGroupFile[],
   velocity: number = 0,
 ): BlockGroup => {
   const { blockGroupIdPool, blockGroupsMap, filesMap } = getWorld();
 
   const assignedId = blockGroupIdPool.pop();
-  const fileNumbers = Array.from(new Set(blocks.map((block) => block.file)));
 
   if (assignedId) {
     const newBlockGroup: BlockGroup = {
       id: assignedId,
-      files: fileNumbers,
+      files: groupFiles,
       velocity,
       blocks,
     };
+
+    const fileNumbers = groupFiles.map((groupFile) => groupFile.number);
 
     blockGroupsMap.set(assignedId, newBlockGroup);
     fileNumbers.forEach((fileNumber) =>
@@ -68,7 +87,16 @@ const createSingleBlock = (): BlockGroup => {
     file,
   });
 
-  return createBlockGroup([initialBlock]);
+  return createBlockGroup(
+    [initialBlock],
+    [
+      {
+        blocks: [initialBlock],
+        boundary: getFileBoundaries([initialBlock]),
+        number: file,
+      },
+    ],
+  );
 };
 
 const createVerticalTestGroup = (blockCount: number): BlockGroup => {
@@ -83,7 +111,13 @@ const createVerticalTestGroup = (blockCount: number): BlockGroup => {
     initialBlocks.push(newBlock);
   }
 
-  return createBlockGroup(initialBlocks);
+  return createBlockGroup(initialBlocks, [
+    {
+      blocks: initialBlocks,
+      boundary: getFileBoundaries(initialBlocks),
+      number: file,
+    },
+  ]);
 };
 
 export { createBlock, createSingleBlock, createVerticalTestGroup };

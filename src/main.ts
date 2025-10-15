@@ -2,7 +2,7 @@ import type { BlockGroup } from "./entities/types";
 
 import { Application } from "pixi.js";
 
-import { setWorldDimensions, getWorld } from "./world";
+import { setWorldDimensions } from "./world";
 import { createSingleBlock, createVerticalTestGroup } from "./entities";
 import { gravityMutator, velocityMutator } from "./mutators";
 
@@ -19,7 +19,7 @@ import { gravityMutator, velocityMutator } from "./mutators";
 
   setWorldDimensions(app.screen.height, app.screen.width);
 
-  const blockGroups: BlockGroup[] = [createVerticalTestGroup(4)];
+  const blockGroups: BlockGroup[] = [createVerticalTestGroup(2)];
 
   blockGroups.forEach((blockGroup) =>
     blockGroup.blocks.forEach((block) => app.stage.addChild(block.sprite)),
@@ -28,11 +28,10 @@ import { gravityMutator, velocityMutator } from "./mutators";
   setInterval(() => {
     // @todo I do not love the naming here
     const newBlockGroup: BlockGroup = createSingleBlock();
+
     blockGroups.push(newBlockGroup);
     app.stage.addChild(newBlockGroup.blocks[0].sprite);
-    console.log(getWorld().filesMap);
-    console.log(getWorld().blockGroupsMap);
-  }, 1000);
+  }, 500);
 
   app.ticker.add((time) => {
     const dt = time.deltaTime / 60;
