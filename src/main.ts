@@ -2,8 +2,8 @@ import type { BlockGroup } from "./entities/types";
 
 import { Application } from "pixi.js";
 
-import { setWorldDimensions } from "./world";
-import { createVerticalTestGroup } from "./entities";
+import { setWorldDimensions, getWorld } from "./world";
+import { createSingleBlock, createVerticalTestGroup } from "./entities";
 import { gravityMutator, velocityMutator } from "./mutators";
 
 (async () => {
@@ -27,9 +27,11 @@ import { gravityMutator, velocityMutator } from "./mutators";
 
   setInterval(() => {
     // @todo I do not love the naming here
-    // const newBlockGroup: BlockGroup = createSingleBlock();
-    // blockGroups.push(newBlockGroup);
-    // app.stage.addChild(newBlockGroup.blocks[0].sprite);
+    const newBlockGroup: BlockGroup = createSingleBlock();
+    blockGroups.push(newBlockGroup);
+    app.stage.addChild(newBlockGroup.blocks[0].sprite);
+    console.log(getWorld().filesMap);
+    console.log(getWorld().blockGroupsMap);
   }, 1000);
 
   app.ticker.add((time) => {
