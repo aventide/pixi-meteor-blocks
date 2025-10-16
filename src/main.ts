@@ -31,7 +31,7 @@ import { gravityMutator, velocityMutator } from "./mutators";
 
     blockGroups.push(newBlockGroup);
     app.stage.addChild(newBlockGroup.blocks[0].sprite);
-  }, 500);
+  }, 1000);
 
   app.ticker.add((time) => {
     const dt = time.deltaTime / 60;

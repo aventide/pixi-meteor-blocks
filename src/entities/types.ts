@@ -11,12 +11,14 @@ export type Block = {
   file: number;
 };
 
+export type FileBoundary = {
+  bottom: number;
+  top: number;
+};
+
 export type BlockGroupFile = {
   blocks: Block[];
-  boundary: {
-    bottom: number;
-    top: number;
-  };
+  boundary: FileBoundary;
   number: FileNumber;
 };
 
