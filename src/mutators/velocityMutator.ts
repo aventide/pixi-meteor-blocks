@@ -10,17 +10,22 @@ export const velocityMutator = (blockGroup: BlockGroup, dt: number) => {
   const targetDelta =
     blockGroup.velocity * dt * (worldHeight / DEFAULT_REFERENCE_HEIGHT);
 
-  const collisionDelta = Math.min(
-    getNearestComparableGroup(blockGroup)[0],
-    getGroundCollisionDistance(blockGroup),
+  const [nearestGroup, nearestGroupDistance] = getNearestGroup(
+    blockGroup,
+    isBoundaryBelow,
   );
+  const groundDistance = getGroundDistance(blockGroup);
+
+  // does not take into account the velocity yet, so blocks above may interrupt things
+  const collisionDelta = Math.min(nearestGroupDistance, groundDistance);
 
   let resolvedDelta = collisionDelta;
 
+  // check if intended movement is less than possible collision distance
   if (targetDelta <= collisionDelta) {
     resolvedDelta = targetDelta;
   } else {
-    blockGroup.velocity = 0;
+    resolvedDelta = collisionDelta;
   }
 
   // do final calculated movement on group
@@ -33,9 +38,13 @@ export const velocityMutator = (blockGroup: BlockGroup, dt: number) => {
   });
 };
 
-const getNearestComparableGroup = (
+const getNearestGroup = (
   subjectGroup: BlockGroup,
-): [number, BlockGroup | null] => {
+  boundaryFilter: (
+    subjectBoundary: FileBoundary,
+    otherBoundary: FileBoundary,
+  ) => boolean = () => true,
+): [BlockGroup | null, number] => {
   const { filesMap, blockGroupsMap } = getWorld();
 
   const subjectFileNumbers = subjectGroup.files.map((file) => file.number);
@@ -56,8 +65,6 @@ const getNearestComparableGroup = (
     if (blockGroup) comparableGroups.push(blockGroup);
   });
 
-  // const collidingGroups: Set<BlockGroupId> = new Set();
-
   let minDistance = Infinity;
   let minDistanceGroup = null;
 
@@ -74,7 +81,10 @@ const getNearestComparableGroup = (
           comparableFile.boundary,
         );
 
-        if (distance < minDistance) {
+        if (
+          distance < minDistance &&
+          boundaryFilter(subjectFile.boundary, comparableFile.boundary)
+        ) {
           minDistance = distance;
           minDistanceGroup = comparableGroup;
         }
@@ -82,10 +92,19 @@ const getNearestComparableGroup = (
     });
   });
 
-  return [minDistance, minDistanceGroup];
+  return [minDistanceGroup, minDistance];
 };
 
-// I hope this is right
+const isBoundaryBelow = (
+  subjectBoundary: FileBoundary,
+  otherBoundary: FileBoundary,
+) => {
+  return (
+    subjectBoundary.top < otherBoundary.top &&
+    subjectBoundary.bottom < otherBoundary.bottom
+  );
+};
+
 const getBoundaryDistance = (
   fromBoundary: FileBoundary,
   toBoundary: FileBoundary,
@@ -96,7 +115,7 @@ const getBoundaryDistance = (
   );
 };
 
-const getGroundCollisionDistance = (blockGroup: BlockGroup): number => {
+const getGroundDistance = (blockGroup: BlockGroup): number => {
   const { height } = getWorld();
 
   // if movement is upwards, this is irrelevant
