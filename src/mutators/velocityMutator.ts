@@ -10,13 +10,9 @@ export const velocityMutator = (blockGroup: BlockGroup, dt: number) => {
   const targetDelta =
     blockGroup.velocity * dt * (worldHeight / DEFAULT_REFERENCE_HEIGHT);
 
-  const [nearestGroup, nearestGroupDistance] = getNearestGroup(
-    blockGroup,
-    isBoundaryBelow,
-  );
+  const [, nearestGroupDistance] = getNearestGroup(blockGroup, isBoundaryBelow);
   const groundDistance = getGroundDistance(blockGroup);
 
-  // does not take into account the velocity yet, so blocks above may interrupt things
   const collisionDelta = Math.min(nearestGroupDistance, groundDistance);
 
   let resolvedDelta = collisionDelta;
@@ -116,12 +112,17 @@ const getBoundaryDistance = (
 };
 
 const getGroundDistance = (blockGroup: BlockGroup): number => {
-  const { height } = getWorld();
+  const { height: worldHeight } = getWorld();
 
   // if movement is upwards, this is irrelevant
   if (blockGroup.velocity < 0) return Infinity;
 
-  // otherwise, return the distance between the bottom boundary and the ground
-  // THIS IS NOT GENERIC
-  return height - blockGroup.files[0].boundary.bottom;
+  let minDistance = Infinity;
+
+  blockGroup.files.forEach((file) => {
+    const distance = worldHeight - file.boundary.bottom;
+    if (distance < minDistance) minDistance = distance;
+  });
+
+  return minDistance;
 };

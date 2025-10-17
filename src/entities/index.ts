@@ -32,19 +32,39 @@ const createBlock = ({
 export const getFileBoundaries = (blocks: Block[]) => {
   const blockSize = getBlockSize();
 
-  let top = blocks[0].sprite.y;
-  let bottom = blocks[0].sprite.y + blockSize;
+  let highestTop = blocks[0].sprite.y;
+  let lowestBottom = blocks[0].sprite.y + blockSize;
 
   blocks.forEach((block) => {
-    if (block.sprite.y < top) top = block.sprite.y;
-    if (block.sprite.y > bottom) bottom = block.sprite.y + blockSize;
+    const topOfBlock = block.sprite.y;
+    const bottomOfBlock = block.sprite.y + blockSize;
+    if (topOfBlock < highestTop) highestTop = topOfBlock;
+    if (bottomOfBlock > lowestBottom) lowestBottom = bottomOfBlock;
   });
 
   return {
-    top,
-    bottom,
+    top: highestTop,
+    bottom: lowestBottom,
   };
 };
+
+// const removeBlockGroup = (blockGroup: BlockGroup) => {
+//   const { blockGroupIdPool, blockGroupsMap, filesMap } = getWorld();
+
+//   blockGroupsMap.delete(blockGroup.id);
+
+//   blockGroup.files.forEach((file) => {
+//     const blockGroupIdsToFilter = filesMap.get(file.number);
+//     if (blockGroupIdsToFilter) {
+//       const filteredBlockGroupIds = blockGroupIdsToFilter.filter(
+//         (id) => id !== blockGroup.id,
+//       );
+//       filesMap.set(file.number, filteredBlockGroupIds);
+//     }
+//   });
+
+//   blockGroupIdPool.push(blockGroup.id);
+// };
 
 const createBlockGroup = (
   blocks: Block[],

@@ -3,7 +3,7 @@ import type { BlockGroup } from "./entities/types";
 import { Application } from "pixi.js";
 
 import { setWorldDimensions } from "./world";
-import { createSingleBlock, createVerticalTestGroup } from "./entities";
+import { createSingleBlock } from "./entities";
 import { gravityMutator, velocityMutator } from "./mutators";
 
 (async () => {
@@ -19,7 +19,7 @@ import { gravityMutator, velocityMutator } from "./mutators";
 
   setWorldDimensions(app.screen.height, app.screen.width);
 
-  const blockGroups: BlockGroup[] = [createVerticalTestGroup(2)];
+  const blockGroups: BlockGroup[] = [];
 
   blockGroups.forEach((blockGroup) =>
     blockGroup.blocks.forEach((block) => app.stage.addChild(block.sprite)),
