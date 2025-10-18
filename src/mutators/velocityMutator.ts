@@ -41,24 +41,23 @@ const getNearestGroup = (
     otherBoundary: FileBoundary,
   ) => boolean = () => true,
 ): [BlockGroup | null, number] => {
-  const { filesMap, blockGroupsMap } = getWorld();
+  const { fileBlockGroupsMap } = getWorld();
 
   const subjectFileNumbers = subjectGroup.files.map((file) => file.number);
-
   const comparableGroupIds: Set<BlockGroupId> = new Set();
-  subjectFileNumbers.forEach((fileNumber) => {
-    const blockGroupIdsInFile: BlockGroupId[] = filesMap.get(fileNumber) || [];
-    blockGroupIdsInFile.forEach((blockGroupId) => {
-      if (blockGroupId !== subjectGroup.id) {
-        comparableGroupIds.add(blockGroupId);
+  const comparableGroups: BlockGroup[] = [];
+
+  subjectFileNumbers.forEach((subjectFileNumber) => {
+    const otherGroupsInFile: BlockGroup[] = (
+      fileBlockGroupsMap.get(subjectFileNumber) || []
+    ).filter((group) => group.id !== subjectGroup.id);
+
+    otherGroupsInFile.forEach((otherGroup) => {
+      if (!comparableGroupIds.has(otherGroup.id)) {
+        comparableGroupIds.add(otherGroup.id);
+        comparableGroups.push(otherGroup);
       }
     });
-  });
-
-  const comparableGroups: BlockGroup[] = [];
-  Array.from(comparableGroupIds).forEach((blockGroupId) => {
-    const blockGroup = blockGroupsMap.get(blockGroupId);
-    if (blockGroup) comparableGroups.push(blockGroup);
   });
 
   let minDistance = Infinity;

@@ -49,17 +49,18 @@ export const getFileBoundaries = (blocks: Block[]) => {
 };
 
 // const removeBlockGroup = (blockGroup: BlockGroup) => {
-//   const { blockGroupIdPool, blockGroupsMap, filesMap } = getWorld();
+//   const { blockGroupIdPool, blockGroupsMap, fileBlockGroupsMap } = getWorld();
 
 //   blockGroupsMap.delete(blockGroup.id);
 
 //   blockGroup.files.forEach((file) => {
-//     const blockGroupIdsToFilter = filesMap.get(file.number);
-//     if (blockGroupIdsToFilter) {
-//       const filteredBlockGroupIds = blockGroupIdsToFilter.filter(
-//         (id) => id !== blockGroup.id,
+//     const blockGroupsToFilter: BlockGroup[] =
+//       fileBlockGroupsMap.get(file.number) || [];
+//     if (blockGroupsToFilter.length > 0) {
+//       const filteredBlockGroups = blockGroupsToFilter.filter(
+//         (group) => group.id !== blockGroup.id,
 //       );
-//       filesMap.set(file.number, filteredBlockGroupIds);
+//       fileBlockGroupsMap.set(file.number, filteredBlockGroups);
 //     }
 //   });
 
@@ -71,8 +72,7 @@ const createBlockGroup = (
   groupFiles: BlockGroupFile[],
   velocity: number = 0,
 ): BlockGroup => {
-  const { blockGroupIdPool, blockGroupsMap, filesMap } = getWorld();
-
+  const { blockGroupIdPool, blockGroupsMap, fileBlockGroupsMap } = getWorld();
   const assignedId = blockGroupIdPool.pop();
 
   if (assignedId) {
@@ -87,7 +87,7 @@ const createBlockGroup = (
 
     blockGroupsMap.set(assignedId, newBlockGroup);
     fileNumbers.forEach((fileNumber) =>
-      filesMap.get(fileNumber)?.push(assignedId),
+      fileBlockGroupsMap.get(fileNumber)?.push(newBlockGroup),
     );
 
     return newBlockGroup;
