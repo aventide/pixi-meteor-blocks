@@ -5,4 +5,7 @@ const getRandomIntUpTo = (upToNumber: number) =>
 
 const getRandomFileNumber = () => 1 + getRandomIntUpTo(DEFAULT_FILE_COUNT);
 
-export { getRandomFileNumber, getRandomIntUpTo };
+const clamp = (value: number, min: number, max: number) =>
+  Math.max(min, Math.min(max, value));
+
+export { clamp, getRandomFileNumber, getRandomIntUpTo };
