@@ -16,12 +16,12 @@ export const velocityMutator = (blockGroup: BlockGroup, dt: number) => {
 
   const [, nearestGroupDistance] = getNearestGroup(blockGroup);
 
-  const positiveLimit = Math.min(
+  const downwardsLimit = Math.min(
     getGroundDistance(blockGroup),
     nearestGroupDistance,
   );
-  const negativeLimit = -nearestGroupDistance;
-  const resolvedDelta = clamp(targetDelta, negativeLimit, positiveLimit);
+  const upwardsLimit = -nearestGroupDistance;
+  const resolvedDelta = clamp(targetDelta, upwardsLimit, downwardsLimit);
 
   // do final calculated movement on group
   blockGroup.files.forEach((file) => {
