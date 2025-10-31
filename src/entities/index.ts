@@ -102,7 +102,7 @@ const createSingleBlock = (): BlockGroup => {
     texture: getRandomBlockTexture(),
     initialPosition: {
       x: file,
-      y: -1,
+      y: -3,
     },
     file,
   });

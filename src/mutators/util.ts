@@ -87,6 +87,22 @@ export const getDirectionalBoundaryDistance = (
   return distance >= 0 ? distance : Infinity;
 };
 
+export const getCeilingDistance = (blockGroup: BlockGroup): number => {
+  const ceiling = 0;
+
+  // if movement is downwards, this is irrelevant
+  if (blockGroup.velocity > 0) return Infinity;
+
+  let minDistance = Infinity;
+
+  blockGroup.files.forEach((file) => {
+    const distance = file.boundary.top - ceiling;
+    if (distance < minDistance) minDistance = distance;
+  });
+
+  return minDistance;
+};
+
 export const getGroundDistance = (blockGroup: BlockGroup): number => {
   const { height: worldHeight } = getWorld();
 
