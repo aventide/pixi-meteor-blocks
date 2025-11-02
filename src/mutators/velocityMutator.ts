@@ -2,7 +2,11 @@ import type { BlockGroup } from "../entities/types";
 
 import { getWorld } from "../world";
 import { DEFAULT_REFERENCE_HEIGHT } from "../constants";
-import { getGroundDistance, getNearestGroup } from "./util";
+import {
+  getDistanceToCeiling,
+  getDistanceToGround,
+  getNearestGroup,
+} from "../entities/util";
 import { clamp } from "../util";
 
 export const velocityMutator = (blockGroup: BlockGroup, dt: number) => {
@@ -14,14 +18,28 @@ export const velocityMutator = (blockGroup: BlockGroup, dt: number) => {
 
   if (targetDelta === 0) return;
 
-  const [, nearestGroupDistance] = getNearestGroup(blockGroup);
+  // @todo emphasize that this means "nearest in this current direction"
+  const [nearestGroup, distanceToNearestGroup] = getNearestGroup(blockGroup);
+  const distanceToGround = getDistanceToGround(blockGroup);
+  const distanceToCeiling = getDistanceToCeiling(blockGroup);
+  const downwardsLimit = Math.min(distanceToGround, distanceToNearestGroup);
+  const upwardsLimit = Math.max(-distanceToCeiling, -distanceToNearestGroup);
 
-  const downwardsLimit = Math.min(
-    getGroundDistance(blockGroup),
-    nearestGroupDistance,
-  );
-  const upwardsLimit = -nearestGroupDistance;
   const resolvedDelta = clamp(targetDelta, upwardsLimit, downwardsLimit);
+
+  const collidedWithNearestGroup =
+    nearestGroup && resolvedDelta === distanceToNearestGroup;
+  const collidedWithCeiling = resolvedDelta === distanceToCeiling;
+
+  if (collidedWithNearestGroup) {
+    const averagedVelocity = (blockGroup.velocity + nearestGroup.velocity) / 2;
+    blockGroup.velocity = averagedVelocity;
+    nearestGroup.velocity = averagedVelocity;
+  }
+
+  if (collidedWithCeiling) {
+    blockGroup.velocity = 0;
+  }
 
   // do final calculated movement on group
   blockGroup.files.forEach((file) => {

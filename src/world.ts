@@ -1,8 +1,6 @@
-import { DEFAULT_FILE_COUNT, DEFAULT_GRAVITY } from "./constants";
-import { BlockGroup } from "./entities/types";
+import type { BlockGroup, BlockGroupId, FileNumber } from "./entities/types";
 
-export type BlockGroupId = number;
-export type FileNumber = number;
+import { DEFAULT_FILE_COUNT, DEFAULT_GRAVITY } from "./constants";
 
 type World = {
   gravity: number;

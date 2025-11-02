@@ -1,5 +1,4 @@
 import { Sprite } from "pixi.js";
-import type { BlockGroupId, FileNumber } from "../world";
 
 export type Coord = {
   x: number;
@@ -28,3 +27,7 @@ export type BlockGroup = {
   files: BlockGroupFile[];
   velocity: number;
 };
+
+export type BlockGroupId = number;
+
+export type FileNumber = number;
