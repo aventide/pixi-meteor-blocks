@@ -1,8 +1,16 @@
+import type {
+  Block,
+  BlockGroup,
+  BlockGroupFile,
+  Coord,
+  FileNumber,
+} from "../entities/types";
+
 import { Sprite, Texture } from "pixi.js";
 import { getRandomFileNumber } from "../util";
 import { getBlockSize, getWorld } from "../world";
-import { Block, BlockGroup, BlockGroupFile, Coord } from "../entities/types";
 import { getRandomBlockTexture } from "../textures";
+import { DEFAULT_SPAWN_POINT, DEFAULT_POP_VELOCITY } from "../constants";
 
 const createBlock = ({
   initialPosition,
@@ -90,21 +98,29 @@ const createBlockGroup = (
       fileBlockGroupsMap.get(fileNumber)?.push(newBlockGroup),
     );
 
+    // input handlers
+    newBlockGroup.blocks.forEach(({ sprite }) => {
+      sprite.eventMode = "static";
+      sprite.cursor = "pointer";
+      sprite.on("pointertap", () => {
+        newBlockGroup.velocity = DEFAULT_POP_VELOCITY;
+      });
+    });
+
     return newBlockGroup;
   } else {
     throw new Error("No IDs available to assign to newly-requested BlockGroup");
   }
 };
 
-const createSingleBlock = (): BlockGroup => {
-  const file = getRandomFileNumber();
+const createSingleBlock = (fileNumber: FileNumber): BlockGroup => {
   const initialBlock = createBlock({
     texture: getRandomBlockTexture(),
     initialPosition: {
-      x: file,
-      y: -3,
+      x: fileNumber,
+      y: DEFAULT_SPAWN_POINT,
     },
-    file,
+    file: fileNumber,
   });
 
   return createBlockGroup(
@@ -113,7 +129,7 @@ const createSingleBlock = (): BlockGroup => {
       {
         blocks: [initialBlock],
         boundary: getFileBoundaries([initialBlock]),
-        number: file,
+        number: fileNumber,
       },
     ],
   );

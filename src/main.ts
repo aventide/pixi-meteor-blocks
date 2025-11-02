@@ -4,17 +4,8 @@ import { Application } from "pixi.js";
 
 import { setWorldDimensions } from "./world";
 import { createSingleBlock } from "./entities";
-import { gravityMutator, velocityMutator } from "./mutators";
-
-function attachClickToBoostUp(group: BlockGroup, boost = -600) {
-  group.blocks.forEach(({ sprite }) => {
-    sprite.eventMode = "static";
-    sprite.cursor = "pointer";
-    sprite.on("pointertap", () => {
-      group.velocity = boost;
-    });
-  });
-}
+import { descentMutator, velocityMutator } from "./mutators";
+import { getRandomFileNumber } from "./util";
 
 (async () => {
   const app = new Application();
@@ -26,6 +17,13 @@ function attachClickToBoostUp(group: BlockGroup, boost = -600) {
   });
 
   document.getElementById("pixi-container")!.appendChild(app.canvas);
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      app.stop();
+    } else {
+      app.start();
+    }
+  });
 
   setWorldDimensions(app.screen.height, app.screen.width);
 
@@ -35,20 +33,34 @@ function attachClickToBoostUp(group: BlockGroup, boost = -600) {
     blockGroup.blocks.forEach((block) => app.stage.addChild(block.sprite)),
   );
 
-  setInterval(() => {
-    const newBlockGroup: BlockGroup = createSingleBlock();
+  const dropInterval = 500;
+  let timeAccumulated = 0;
+  app.ticker.add((time) => {
+    timeAccumulated += time.deltaMS;
+    if (timeAccumulated >= dropInterval) {
+      const file = getRandomFileNumber();
+      const newBlockGroup: BlockGroup = createSingleBlock(file);
+      blockGroups.push(newBlockGroup);
+      app.stage.addChild(newBlockGroup.blocks[0].sprite);
 
-    blockGroups.push(newBlockGroup);
-    app.stage.addChild(newBlockGroup.blocks[0].sprite);
-    attachClickToBoostUp(newBlockGroup, -2400);
-  }, 1000);
+      // check if new block would intersect an existing container
+      // @todo alternatively, could check if number of blocks in file exceeds capacity by a certain number
+      // if (getIsGroupInIntersection(newBlockGroup)) {
+      //   alert("You have lost the game.");
+      // } else {
+      //   blockGroups.push(newBlockGroup);
+      //   app.stage.addChild(newBlockGroup.blocks[0].sprite);
+      // }
+
+      timeAccumulated -= dropInterval;
+    }
+  });
 
   app.ticker.add((time) => {
     const dt = time.deltaTime / 60;
-
     // apply mutators to each block group
     blockGroups.forEach((blockGroup) => {
-      gravityMutator(blockGroup, dt);
+      descentMutator(blockGroup, dt);
       velocityMutator(blockGroup, dt);
     });
   });
