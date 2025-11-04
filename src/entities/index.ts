@@ -56,27 +56,7 @@ export const getFileBoundaries = (blocks: Block[]) => {
   };
 };
 
-// const removeBlockGroup = (blockGroup: BlockGroup) => {
-//   const { blockGroupIdPool, blockGroupsMap, fileBlockGroupsMap } = getWorld();
-
-//   blockGroupsMap.delete(blockGroup.id);
-
-//   blockGroup.files.forEach((file) => {
-//     const blockGroupsToFilter: BlockGroup[] =
-//       fileBlockGroupsMap.get(file.number) || [];
-//     if (blockGroupsToFilter.length > 0) {
-//       const filteredBlockGroups = blockGroupsToFilter.filter(
-//         (group) => group.id !== blockGroup.id,
-//       );
-//       fileBlockGroupsMap.set(file.number, filteredBlockGroups);
-//     }
-//   });
-
-//   blockGroupIdPool.push(blockGroup.id);
-// };
-
 const createBlockGroup = (
-  blocks: Block[],
   groupFiles: BlockGroupFile[],
   velocity: number = 0,
 ): BlockGroup => {
@@ -88,7 +68,6 @@ const createBlockGroup = (
       id: assignedId,
       files: groupFiles,
       velocity,
-      blocks,
     };
 
     const fileNumbers = groupFiles.map((groupFile) => groupFile.number);
@@ -98,15 +77,16 @@ const createBlockGroup = (
       fileBlockGroupsMap.get(fileNumber)?.push(newBlockGroup),
     );
 
-    // input handlers
-    newBlockGroup.blocks.forEach(({ sprite }) => {
-      sprite.eventMode = "static";
-      sprite.cursor = "pointer";
-      sprite.on("pointertap", () => {
-        newBlockGroup.velocity = DEFAULT_POP_VELOCITY;
+    // input handler for each file
+    newBlockGroup.files.forEach((file) => {
+      file.blocks.forEach(({ sprite }) => {
+        sprite.eventMode = "static";
+        sprite.cursor = "pointer";
+        sprite.on("pointertap", () => {
+          newBlockGroup.velocity = DEFAULT_POP_VELOCITY;
+        });
       });
     });
-
     return newBlockGroup;
   } else {
     throw new Error("No IDs available to assign to newly-requested BlockGroup");
@@ -123,16 +103,13 @@ const createSingleBlock = (fileNumber: FileNumber): BlockGroup => {
     file: fileNumber,
   });
 
-  return createBlockGroup(
-    [initialBlock],
-    [
-      {
-        blocks: [initialBlock],
-        boundary: getFileBoundaries([initialBlock]),
-        number: fileNumber,
-      },
-    ],
-  );
+  return createBlockGroup([
+    {
+      blocks: [initialBlock],
+      boundary: getFileBoundaries([initialBlock]),
+      number: fileNumber,
+    },
+  ]);
 };
 
 const createVerticalTestGroup = (blockCount: number): BlockGroup => {
@@ -147,7 +124,7 @@ const createVerticalTestGroup = (blockCount: number): BlockGroup => {
     initialBlocks.push(newBlock);
   }
 
-  return createBlockGroup(initialBlocks, [
+  return createBlockGroup([
     {
       blocks: initialBlocks,
       boundary: getFileBoundaries(initialBlocks),

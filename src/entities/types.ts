@@ -22,7 +22,6 @@ export type BlockGroupFile = {
 };
 
 export type BlockGroup = {
-  blocks: Block[];
   id: BlockGroupId;
   files: BlockGroupFile[];
   velocity: number;

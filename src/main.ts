@@ -30,7 +30,9 @@ import { getRandomFileNumber } from "./util";
   const blockGroups: BlockGroup[] = [];
 
   blockGroups.forEach((blockGroup) =>
-    blockGroup.blocks.forEach((block) => app.stage.addChild(block.sprite)),
+    blockGroup.files.forEach((file) => {
+      file.blocks.forEach((block) => app.stage.addChild(block.sprite));
+    }),
   );
 
   const dropInterval = 500;
@@ -38,21 +40,23 @@ import { getRandomFileNumber } from "./util";
   app.ticker.add((time) => {
     timeAccumulated += time.deltaMS;
     if (timeAccumulated >= dropInterval) {
+      timeAccumulated -= dropInterval;
       const file = getRandomFileNumber();
       const newBlockGroup: BlockGroup = createSingleBlock(file);
       blockGroups.push(newBlockGroup);
-      app.stage.addChild(newBlockGroup.blocks[0].sprite);
-
+      newBlockGroup.files.forEach((file) => {
+        file.blocks.forEach((block) => app.stage.addChild(block.sprite));
+      });
       // check if new block would intersect an existing container
       // @todo alternatively, could check if number of blocks in file exceeds capacity by a certain number
       // if (getIsGroupInIntersection(newBlockGroup)) {
       //   alert("You have lost the game.");
       // } else {
       //   blockGroups.push(newBlockGroup);
-      //   app.stage.addChild(newBlockGroup.blocks[0].sprite);
+      // newBlockGroup.files.forEach((file) => {
+      //file.blocks.forEach((block) => app.stage.addChild(block.sprite));
+      //});
       // }
-
-      timeAccumulated -= dropInterval;
     }
   });
 
