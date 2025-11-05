@@ -1,6 +1,6 @@
 import type { BlockGroup } from "./entities/types";
 
-import { Application } from "pixi.js";
+import { Application, Container } from "pixi.js";
 
 import { setWorldDimensions } from "./world";
 import { createSingleBlock } from "./entities";
@@ -15,6 +15,11 @@ import { getRandomFileNumber } from "./util";
     resolution: Math.max(1, window.devicePixelRatio),
     resizeTo: document.getElementById("pixi-container") || window,
   });
+
+  const blocksLayer = new Container();
+  const overlayLayer = new Container();
+  app.stage.addChild(blocksLayer);
+  app.stage.addChild(overlayLayer);
 
   document.getElementById("pixi-container")!.appendChild(app.canvas);
   document.addEventListener("visibilitychange", () => {
@@ -31,7 +36,7 @@ import { getRandomFileNumber } from "./util";
 
   blockGroups.forEach((blockGroup) =>
     blockGroup.files.forEach((file) => {
-      file.blocks.forEach((block) => app.stage.addChild(block.sprite));
+      file.blocks.forEach((block) => blocksLayer.addChild(block.sprite));
     }),
   );
 
@@ -45,7 +50,8 @@ import { getRandomFileNumber } from "./util";
       const newBlockGroup: BlockGroup = createSingleBlock(file);
       blockGroups.push(newBlockGroup);
       newBlockGroup.files.forEach((file) => {
-        file.blocks.forEach((block) => app.stage.addChild(block.sprite));
+        file.blocks.forEach((block) => blocksLayer.addChild(block.sprite));
+        overlayLayer.addChild(file.overlay);
       });
       // check if new block would intersect an existing container
       // @todo alternatively, could check if number of blocks in file exceeds capacity by a certain number

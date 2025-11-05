@@ -3,10 +3,12 @@ import type {
   BlockGroup,
   BlockGroupFile,
   Coord,
+  FileBoundary,
   FileNumber,
+  FilePlacement,
 } from "../entities/types";
 
-import { Sprite, Texture } from "pixi.js";
+import { BlurFilter, Container, Graphics, Sprite, Texture } from "pixi.js";
 import { getRandomFileNumber } from "../util";
 import { getBlockSize, getWorld } from "../world";
 import { getRandomBlockTexture } from "../textures";
@@ -56,22 +58,75 @@ export const getFileBoundaries = (blocks: Block[]) => {
   };
 };
 
+const createFileOverlay = (
+  fileNumber: FileNumber,
+  boundary: FileBoundary,
+): Container => {
+  const blockSize = getBlockSize();
+
+  const x = (fileNumber - 1) * blockSize;
+  const width = blockSize;
+
+  const overlay = new Container();
+  overlay.visible = false;
+  overlay.eventMode = "none";
+
+  const glow = new Graphics();
+  const border = new Graphics();
+
+  const blur = new BlurFilter();
+  blur.strength = 2;
+
+  const y = boundary.top;
+  const height = boundary.bottom - boundary.top;
+
+  glow.clear();
+  glow
+    .rect(x, y, width, height)
+    .stroke({ width: 6, color: 0xffffff, alpha: 0.35 });
+  glow.filters = [blur];
+
+  border.clear();
+  border
+    .rect(x + 0.5, y + 0.5, width - 1, height - 1)
+    .stroke({ width: 2, color: 0xffffff, alpha: 1.0 });
+
+  overlay.addChild(glow, border);
+
+  return overlay;
+};
+
+const createBlockGroupFile = (filePlacement: FilePlacement): BlockGroupFile => {
+  const fileBoundaries = getFileBoundaries(filePlacement.blocks);
+  const fileOverlay = createFileOverlay(filePlacement.number, fileBoundaries);
+
+  return {
+    blocks: filePlacement.blocks,
+    number: filePlacement.number,
+    boundary: fileBoundaries,
+    overlay: fileOverlay,
+  };
+};
+
 const createBlockGroup = (
-  groupFiles: BlockGroupFile[],
+  filePlacements: FilePlacement[],
   velocity: number = 0,
 ): BlockGroup => {
   const { blockGroupIdPool, blockGroupsMap, fileBlockGroupsMap } = getWorld();
   const assignedId = blockGroupIdPool.pop();
 
   if (assignedId) {
+    // create files
+    const files: BlockGroupFile[] = filePlacements.map(createBlockGroupFile);
+    const fileNumbers = files.map((file) => file.number);
+
     const newBlockGroup: BlockGroup = {
       id: assignedId,
-      files: groupFiles,
+      files,
       velocity,
     };
 
-    const fileNumbers = groupFiles.map((groupFile) => groupFile.number);
-
+    // register the group and its files with the game world
     blockGroupsMap.set(assignedId, newBlockGroup);
     fileNumbers.forEach((fileNumber) =>
       fileBlockGroupsMap.get(fileNumber)?.push(newBlockGroup),
@@ -82,8 +137,16 @@ const createBlockGroup = (
       file.blocks.forEach(({ sprite }) => {
         sprite.eventMode = "static";
         sprite.cursor = "pointer";
+        sprite.on("pointerover", () => {
+          file.overlay.visible = true;
+        });
+
+        sprite.on("pointerout", () => {
+          file.overlay.visible = false;
+        });
         sprite.on("pointertap", () => {
           newBlockGroup.velocity = DEFAULT_POP_VELOCITY;
+          file.overlay.visible = false;
         });
       });
     });
@@ -106,7 +169,6 @@ const createSingleBlock = (fileNumber: FileNumber): BlockGroup => {
   return createBlockGroup([
     {
       blocks: [initialBlock],
-      boundary: getFileBoundaries([initialBlock]),
       number: fileNumber,
     },
   ]);
@@ -127,7 +189,6 @@ const createVerticalTestGroup = (blockCount: number): BlockGroup => {
   return createBlockGroup([
     {
       blocks: initialBlocks,
-      boundary: getFileBoundaries(initialBlocks),
       number: file,
     },
   ]);

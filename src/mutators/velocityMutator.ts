@@ -45,6 +45,8 @@ export const velocityMutator = (blockGroup: BlockGroup, dt: number) => {
   blockGroup.files.forEach((file) => {
     file.boundary.top += resolvedDelta;
     file.boundary.bottom += resolvedDelta;
+
+    file.overlay.y += resolvedDelta;
   });
   blockGroup.files.forEach((file) =>
     file.blocks.forEach((block) => {

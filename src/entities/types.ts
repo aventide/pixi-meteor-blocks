@@ -1,4 +1,4 @@
-import { Sprite } from "pixi.js";
+import { Container, Sprite } from "pixi.js";
 
 export type Coord = {
   x: number;
@@ -15,9 +15,15 @@ export type FileBoundary = {
   top: number;
 };
 
+export type FilePlacement = {
+  blocks: Block[];
+  number: FileNumber;
+};
+
 export type BlockGroupFile = {
   blocks: Block[];
   boundary: FileBoundary;
+  overlay: Container;
   number: FileNumber;
 };
 
