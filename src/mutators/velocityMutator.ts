@@ -8,9 +8,16 @@ import {
   getNearestGroup,
 } from "../entities/util";
 import { clamp } from "../util";
+import { combineBlockGroups } from "../entities";
 
 export const velocityMutator = (blockGroup: BlockGroup, dt: number) => {
-  const { height: worldHeight } = getWorld();
+  const { height: worldHeight, blockGroupsMap } = getWorld();
+
+  // double-check that this group still exists
+  // @todo could this be more elegantly resolved with a queue or similar?
+  // OR, mutate blockGroups on removeBlockGroup to remove, because it is creating a new
+  // copy of blockGroups but the old copy is still being iterated over
+  if (!blockGroupsMap.has(blockGroup.id)) return;
 
   // normalize delta calculation based on screen height
   const targetDelta =
@@ -27,20 +34,6 @@ export const velocityMutator = (blockGroup: BlockGroup, dt: number) => {
 
   const resolvedDelta = clamp(targetDelta, upwardsLimit, downwardsLimit);
 
-  const collidedWithNearestGroup =
-    nearestGroup && resolvedDelta === distanceToNearestGroup;
-  const collidedWithCeiling = resolvedDelta === distanceToCeiling;
-
-  if (collidedWithNearestGroup) {
-    const averagedVelocity = (blockGroup.velocity + nearestGroup.velocity) / 2;
-    blockGroup.velocity = averagedVelocity;
-    nearestGroup.velocity = averagedVelocity;
-  }
-
-  if (collidedWithCeiling) {
-    blockGroup.velocity = 0;
-  }
-
   // do final calculated movement on group
   blockGroup.files.forEach((file) => {
     file.boundary.top += resolvedDelta;
@@ -53,4 +46,16 @@ export const velocityMutator = (blockGroup: BlockGroup, dt: number) => {
       block.sprite.y += resolvedDelta;
     }),
   );
+
+  const collidedWithNearestGroup =
+    nearestGroup && resolvedDelta === distanceToNearestGroup;
+  const collidedWithCeiling = resolvedDelta === distanceToCeiling;
+
+  if (collidedWithNearestGroup) {
+    combineBlockGroups(blockGroup, nearestGroup);
+  }
+
+  if (collidedWithCeiling) {
+    blockGroup.velocity = 0;
+  }
 };

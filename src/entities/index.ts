@@ -10,7 +10,13 @@ import type {
 
 import { BlurFilter, Container, Graphics, Sprite, Texture } from "pixi.js";
 import { getRandomFileNumber } from "../util";
-import { getBlockSize, getWorld } from "../world";
+import {
+  addToBlocksLayer,
+  addToOverlayLayer,
+  getBlockSize,
+  getWorld,
+  setBlockGroups,
+} from "../world";
 import { getRandomBlockTexture } from "../textures";
 import { DEFAULT_SPAWN_POINT, DEFAULT_POP_VELOCITY } from "../constants";
 
@@ -112,7 +118,8 @@ const createBlockGroup = (
   filePlacements: FilePlacement[],
   velocity: number = 0,
 ): BlockGroup => {
-  const { blockGroupIdPool, blockGroupsMap, fileBlockGroupsMap } = getWorld();
+  const { blockGroupIdPool, blockGroupsMap, fileBlockGroupsMap, blockGroups } =
+    getWorld();
   const assignedId = blockGroupIdPool.pop();
 
   if (assignedId) {
@@ -125,6 +132,8 @@ const createBlockGroup = (
       files,
       velocity,
     };
+
+    setBlockGroups([...blockGroups, newBlockGroup]);
 
     // register the group and its files with the game world
     blockGroupsMap.set(assignedId, newBlockGroup);
@@ -150,6 +159,13 @@ const createBlockGroup = (
         });
       });
     });
+
+    // add sprites to stage
+    newBlockGroup.files.forEach((file) => {
+      file.blocks.forEach((block) => addToBlocksLayer(block.sprite));
+      addToOverlayLayer(file.overlay);
+    });
+
     return newBlockGroup;
   } else {
     throw new Error("No IDs available to assign to newly-requested BlockGroup");
@@ -192,6 +208,111 @@ const createVerticalTestGroup = (blockCount: number): BlockGroup => {
       number: file,
     },
   ]);
+};
+
+export const combineBlockGroups = (
+  subjectBlockGroup: BlockGroup,
+  otherBlockGroup: BlockGroup,
+) => {
+  const { blockGroups } = getWorld();
+
+  const getMomentum = (blockGroup: BlockGroup): number =>
+    blockGroup.velocity *
+    blockGroup.files.reduce(
+      (totalBlocks, file) => totalBlocks + file.blocks.length,
+      0,
+    );
+
+  const combinedVelocity =
+    (getMomentum(subjectBlockGroup) + getMomentum(otherBlockGroup)) /
+    [...subjectBlockGroup.files, ...otherBlockGroup.files].reduce(
+      (totalBlocks, file) => totalBlocks + file.blocks.length,
+      0,
+    );
+
+  const getFilePlacements = (blockGroup: BlockGroup): FilePlacement[] =>
+    blockGroup.files.map((file) => ({
+      blocks: file.blocks,
+      number: file.number,
+    }));
+
+  const mergeFilePlacements = (
+    subjectFilePlacements: FilePlacement[],
+    otherFilePlacements: FilePlacement[],
+  ): FilePlacement[] => {
+    const allFileNumbers: Set<FileNumber> = new Set([
+      ...subjectFilePlacements.map((fp) => fp.number),
+      ...otherFilePlacements.map((fp) => fp.number),
+    ]);
+
+    const mergedFilePlacements: FilePlacement[] = [];
+    allFileNumbers.forEach((fileNumber) => {
+      mergedFilePlacements.push({
+        number: fileNumber,
+        blocks: [
+          ...(subjectBlockGroup.files.find((file) => file.number === fileNumber)
+            ?.blocks ?? []),
+          ...(otherBlockGroup.files.find((file) => file.number === fileNumber)
+            ?.blocks ?? []),
+        ],
+      });
+    });
+
+    return mergedFilePlacements;
+  };
+
+  const subjectFilePlacements = getFilePlacements(subjectBlockGroup);
+  const otherFilePlacements = getFilePlacements(otherBlockGroup);
+  const combinedFilePlacements: FilePlacement[] = mergeFilePlacements(
+    subjectFilePlacements,
+    otherFilePlacements,
+  );
+
+  const combinedBlockGroup = createBlockGroup(
+    combinedFilePlacements,
+    combinedVelocity,
+  );
+
+  setBlockGroups([...blockGroups, combinedBlockGroup]);
+
+  removeBlockGroup(subjectBlockGroup);
+  removeBlockGroup(otherBlockGroup);
+
+  combinedBlockGroup.files.forEach((file) => {
+    file.blocks.forEach((block) => addToBlocksLayer(block.sprite));
+    addToOverlayLayer(file.overlay);
+  });
+
+  return combinedBlockGroup;
+};
+
+const removeBlockGroup = (blockGroup: BlockGroup) => {
+  const { blockGroupIdPool, blockGroupsMap, fileBlockGroupsMap, blockGroups } =
+    getWorld();
+
+  blockGroupsMap.delete(blockGroup.id);
+
+  blockGroup.files.forEach((file) => {
+    const blockGroupsToFilter: BlockGroup[] =
+      fileBlockGroupsMap.get(file.number) || [];
+    if (blockGroupsToFilter.length > 0) {
+      const filteredBlockGroups = blockGroupsToFilter.filter(
+        (group) => group.id !== blockGroup.id,
+      );
+      fileBlockGroupsMap.set(file.number, filteredBlockGroups);
+    }
+  });
+
+  setBlockGroups(blockGroups.filter((bg) => bg.id !== blockGroup.id));
+
+  // return removed BlockGroup's ID back to the ID pool
+  blockGroupIdPool.push(blockGroup.id);
+
+  // remove sprites from the stage
+  blockGroup.files.forEach((file) => {
+    file.blocks.forEach((block) => block.sprite.removeFromParent());
+    file.overlay.removeFromParent();
+  });
 };
 
 export { createBlock, createSingleBlock, createVerticalTestGroup };
