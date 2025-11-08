@@ -15,7 +15,6 @@ import {
   addToOverlayLayer,
   getBlockSize,
   getWorld,
-  setBlockGroups,
 } from "../world";
 import { getRandomBlockTexture } from "../textures";
 import { DEFAULT_SPAWN_POINT, DEFAULT_POP_VELOCITY } from "../constants";
@@ -104,8 +103,7 @@ const createBlockGroup = (
   filePlacements: FilePlacement[],
   velocity: number = 0,
 ): BlockGroup => {
-  const { blockGroupIdPool, blockGroupsMap, fileBlockGroupsMap, blockGroups } =
-    getWorld();
+  const { blockGroupIdPool, blockGroupsMap, fileBlockGroupsMap } = getWorld();
   const assignedId = blockGroupIdPool.pop();
 
   if (assignedId) {
@@ -118,8 +116,6 @@ const createBlockGroup = (
       files,
       velocity,
     };
-
-    setBlockGroups([...blockGroups, newBlockGroup]);
 
     // register the group and its files with the game world
     blockGroupsMap.set(assignedId, newBlockGroup);
@@ -200,7 +196,7 @@ export const combineBlockGroups = (
   subjectBlockGroup: BlockGroup,
   otherBlockGroup: BlockGroup,
 ) => {
-  const { blockGroups } = getWorld();
+  const { blockGroupsMap } = getWorld();
 
   const combinedVelocity =
     (getMomentum(subjectBlockGroup) + getMomentum(otherBlockGroup)) /
@@ -221,7 +217,7 @@ export const combineBlockGroups = (
     combinedVelocity,
   );
 
-  setBlockGroups([...blockGroups, combinedBlockGroup]);
+  blockGroupsMap.set(combinedBlockGroup.id, combinedBlockGroup);
 
   removeBlockGroup(subjectBlockGroup);
   removeBlockGroup(otherBlockGroup);
@@ -235,8 +231,7 @@ export const combineBlockGroups = (
 };
 
 export const removeBlockGroup = (blockGroup: BlockGroup) => {
-  const { blockGroupIdPool, blockGroupsMap, fileBlockGroupsMap, blockGroups } =
-    getWorld();
+  const { blockGroupIdPool, blockGroupsMap, fileBlockGroupsMap } = getWorld();
 
   blockGroupsMap.delete(blockGroup.id);
 
@@ -250,8 +245,6 @@ export const removeBlockGroup = (blockGroup: BlockGroup) => {
       fileBlockGroupsMap.set(file.number, filteredBlockGroups);
     }
   });
-
-  setBlockGroups(blockGroups.filter((bg) => bg.id !== blockGroup.id));
 
   // return removed BlockGroup's ID back to the ID pool
   blockGroupIdPool.push(blockGroup.id);

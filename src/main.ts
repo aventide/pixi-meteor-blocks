@@ -1,6 +1,6 @@
 import { Application, Container } from "pixi.js";
 
-import { getBlockGroups, setStage, setWorldDimensions } from "./world";
+import { getWorld, setStage, setWorldDimensions } from "./world";
 import type { WorldStage } from "./world";
 import { createSingleBlock } from "./entities";
 import { descentMutator, velocityMutator } from "./mutators";
@@ -59,10 +59,10 @@ import { getRandomFileNumber } from "./util";
   });
 
   app.ticker.add((time) => {
-    const blockGroups = getBlockGroups();
+    const { blockGroupsMap } = getWorld();
     const dt = time.deltaTime / 60;
     // apply mutators to each block group
-    blockGroups.forEach((blockGroup) => {
+    blockGroupsMap.forEach((blockGroup) => {
       descentMutator(blockGroup, dt);
       velocityMutator(blockGroup, dt);
     });

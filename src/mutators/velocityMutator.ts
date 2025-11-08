@@ -11,13 +11,7 @@ import { clamp } from "../util";
 import { combineBlockGroups } from "../entities";
 
 export const velocityMutator = (blockGroup: BlockGroup, dt: number) => {
-  const { height: worldHeight, blockGroupsMap } = getWorld();
-
-  // double-check that this group still exists
-  // @todo could this be more elegantly resolved with a queue or similar?
-  // OR, mutate blockGroups on removeBlockGroup to remove, because it is creating a new
-  // copy of blockGroups but the old copy is still being iterated over
-  if (!blockGroupsMap.has(blockGroup.id)) return;
+  const { height: worldHeight } = getWorld();
 
   // normalize delta calculation based on screen height
   const targetDelta =

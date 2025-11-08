@@ -16,7 +16,6 @@ type World = {
   fileBlockGroupsMap: Map<FileNumber, BlockGroup[]>;
   blockGroupsMap: Map<BlockGroupId, BlockGroup>;
   blockGroupIdPool: BlockGroupId[];
-  blockGroups: BlockGroup[];
 };
 
 const world: World = {
@@ -32,12 +31,10 @@ const world: World = {
     ]),
   ),
   blockGroupIdPool: Array.from({ length: 300 }, (_, i) => 300 - i),
-  blockGroups: [],
 };
 
 export const getWorld = () => world;
 export const getBlockSize = () => world.width / DEFAULT_FILE_COUNT;
-export const getBlockGroups = () => world.blockGroups;
 
 export const setWorldDimensions = (height: number, width: number) => {
   world.height = height;
@@ -74,8 +71,4 @@ export const addToOverlayLayer = (sprite: Sprite | Container) => {
   } else {
     throw "There is no blocks layer to add this sprite to";
   }
-};
-
-export const setBlockGroups = (newBlockGroups: BlockGroup[]) => {
-  world.blockGroups = newBlockGroups;
 };
