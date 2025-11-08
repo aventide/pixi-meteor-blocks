@@ -19,6 +19,12 @@ import {
 } from "../world";
 import { getRandomBlockTexture } from "../textures";
 import { DEFAULT_SPAWN_POINT, DEFAULT_POP_VELOCITY } from "../constants";
+import {
+  getCombinedFilePlacements,
+  getFileBoundaries,
+  getFilePlacements,
+  getMomentum,
+} from "./util";
 
 const createBlock = ({
   initialPosition,
@@ -41,26 +47,6 @@ const createBlock = ({
   return {
     sprite,
     file,
-  };
-};
-
-// input must be a "file" aka blocks all with the same y coord
-export const getFileBoundaries = (blocks: Block[]) => {
-  const blockSize = getBlockSize();
-
-  let highestTop = blocks[0].sprite.y;
-  let lowestBottom = blocks[0].sprite.y + blockSize;
-
-  blocks.forEach((block) => {
-    const topOfBlock = block.sprite.y;
-    const bottomOfBlock = block.sprite.y + blockSize;
-    if (topOfBlock < highestTop) highestTop = topOfBlock;
-    if (bottomOfBlock > lowestBottom) lowestBottom = bottomOfBlock;
-  });
-
-  return {
-    top: highestTop,
-    bottom: lowestBottom,
   };
 };
 
@@ -172,7 +158,7 @@ const createBlockGroup = (
   }
 };
 
-const createSingleBlock = (fileNumber: FileNumber): BlockGroup => {
+export const createSingleBlock = (fileNumber: FileNumber): BlockGroup => {
   const initialBlock = createBlock({
     texture: getRandomBlockTexture(),
     initialPosition: {
@@ -190,7 +176,7 @@ const createSingleBlock = (fileNumber: FileNumber): BlockGroup => {
   ]);
 };
 
-const createVerticalTestGroup = (blockCount: number): BlockGroup => {
+export const createVerticalTestGroup = (blockCount: number): BlockGroup => {
   const file = getRandomFileNumber();
   const initialBlocks = [];
   for (let i = 0; i < blockCount; i++) {
@@ -216,13 +202,6 @@ export const combineBlockGroups = (
 ) => {
   const { blockGroups } = getWorld();
 
-  const getMomentum = (blockGroup: BlockGroup): number =>
-    blockGroup.velocity *
-    blockGroup.files.reduce(
-      (totalBlocks, file) => totalBlocks + file.blocks.length,
-      0,
-    );
-
   const combinedVelocity =
     (getMomentum(subjectBlockGroup) + getMomentum(otherBlockGroup)) /
     [...subjectBlockGroup.files, ...otherBlockGroup.files].reduce(
@@ -230,40 +209,9 @@ export const combineBlockGroups = (
       0,
     );
 
-  const getFilePlacements = (blockGroup: BlockGroup): FilePlacement[] =>
-    blockGroup.files.map((file) => ({
-      blocks: file.blocks,
-      number: file.number,
-    }));
-
-  const mergeFilePlacements = (
-    subjectFilePlacements: FilePlacement[],
-    otherFilePlacements: FilePlacement[],
-  ): FilePlacement[] => {
-    const allFileNumbers: Set<FileNumber> = new Set([
-      ...subjectFilePlacements.map((fp) => fp.number),
-      ...otherFilePlacements.map((fp) => fp.number),
-    ]);
-
-    const mergedFilePlacements: FilePlacement[] = [];
-    allFileNumbers.forEach((fileNumber) => {
-      mergedFilePlacements.push({
-        number: fileNumber,
-        blocks: [
-          ...(subjectBlockGroup.files.find((file) => file.number === fileNumber)
-            ?.blocks ?? []),
-          ...(otherBlockGroup.files.find((file) => file.number === fileNumber)
-            ?.blocks ?? []),
-        ],
-      });
-    });
-
-    return mergedFilePlacements;
-  };
-
   const subjectFilePlacements = getFilePlacements(subjectBlockGroup);
   const otherFilePlacements = getFilePlacements(otherBlockGroup);
-  const combinedFilePlacements: FilePlacement[] = mergeFilePlacements(
+  const combinedFilePlacements: FilePlacement[] = getCombinedFilePlacements(
     subjectFilePlacements,
     otherFilePlacements,
   );
@@ -286,7 +234,7 @@ export const combineBlockGroups = (
   return combinedBlockGroup;
 };
 
-const removeBlockGroup = (blockGroup: BlockGroup) => {
+export const removeBlockGroup = (blockGroup: BlockGroup) => {
   const { blockGroupIdPool, blockGroupsMap, fileBlockGroupsMap, blockGroups } =
     getWorld();
 
@@ -314,5 +262,3 @@ const removeBlockGroup = (blockGroup: BlockGroup) => {
     file.overlay.removeFromParent();
   });
 };
-
-export { createBlock, createSingleBlock, createVerticalTestGroup };

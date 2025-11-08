@@ -1,6 +1,13 @@
-import type { BlockGroup, FileBoundary, BlockGroupId } from "./types";
+import type {
+  BlockGroup,
+  FileBoundary,
+  BlockGroupId,
+  Block,
+  FilePlacement,
+  FileNumber,
+} from "./types";
 
-import { getWorld } from "../world";
+import { getBlockSize, getWorld } from "../world";
 
 // get groups that the given group could possibly contact
 export const getContactableGroups = (subjectGroup: BlockGroup) => {
@@ -139,4 +146,67 @@ export const getAreBoundariesIntersecting = (
     Math.min(subjectBoundary.bottom, otherBoundary.bottom) >
     Math.max(subjectBoundary.top, otherBoundary.top)
   );
+};
+
+// input must be a "file" aka blocks all with the same y coord
+export const getFileBoundaries = (blocks: Block[]) => {
+  const blockSize = getBlockSize();
+
+  let highestTop = blocks[0].sprite.y;
+  let lowestBottom = blocks[0].sprite.y + blockSize;
+
+  blocks.forEach((block) => {
+    const topOfBlock = block.sprite.y;
+    const bottomOfBlock = block.sprite.y + blockSize;
+    if (topOfBlock < highestTop) highestTop = topOfBlock;
+    if (bottomOfBlock > lowestBottom) lowestBottom = bottomOfBlock;
+  });
+
+  return {
+    top: highestTop,
+    bottom: lowestBottom,
+  };
+};
+
+export const getMomentum = (blockGroup: BlockGroup): number =>
+  blockGroup.velocity *
+  blockGroup.files.reduce(
+    (totalBlocks, file) => totalBlocks + file.blocks.length,
+    0,
+  );
+
+export const getFilePlacements = (blockGroup: BlockGroup): FilePlacement[] =>
+  blockGroup.files.map((file) => ({
+    blocks: file.blocks,
+    number: file.number,
+  }));
+
+export const getCombinedFilePlacements = (
+  subjectFilePlacements: FilePlacement[],
+  otherFilePlacements: FilePlacement[],
+): FilePlacement[] => {
+  const combinedFileNumbers: Set<FileNumber> = new Set([
+    ...subjectFilePlacements.map((fp) => fp.number),
+    ...otherFilePlacements.map((fp) => fp.number),
+  ]);
+
+  const mergedFilePlacements: FilePlacement[] = [];
+  combinedFileNumbers.forEach((fileNumber) => {
+    const subjectFilePlacementBlocks =
+      subjectFilePlacements.find(
+        (filePlacement) => filePlacement.number === fileNumber,
+      )?.blocks || [];
+
+    const otherFilePlacementBlocks =
+      otherFilePlacements.find(
+        (filePlacement) => filePlacement.number === fileNumber,
+      )?.blocks || [];
+
+    mergedFilePlacements.push({
+      number: fileNumber,
+      blocks: [...subjectFilePlacementBlocks, ...otherFilePlacementBlocks],
+    });
+  });
+
+  return mergedFilePlacements;
 };
