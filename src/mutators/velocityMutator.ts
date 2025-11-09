@@ -3,9 +3,9 @@ import type { BlockGroup } from "../entities/types";
 import { getWorld } from "../world";
 import { DEFAULT_REFERENCE_HEIGHT } from "../constants";
 import {
+  getDirectionallyNearestGroup,
   getDistanceToCeiling,
   getDistanceToGround,
-  getNearestGroup,
 } from "../entities/util";
 import { clamp } from "../util";
 import { combineBlockGroups } from "../entities";
@@ -19,8 +19,8 @@ export const velocityMutator = (blockGroup: BlockGroup, dt: number) => {
 
   if (targetDelta === 0) return;
 
-  // @todo emphasize that this means "nearest in this current direction"
-  const [nearestGroup, distanceToNearestGroup] = getNearestGroup(blockGroup);
+  const [nearestGroup, distanceToNearestGroup] =
+    getDirectionallyNearestGroup(blockGroup);
   const distanceToGround = getDistanceToGround(blockGroup);
   const distanceToCeiling = getDistanceToCeiling(blockGroup);
   const downwardsLimit = Math.min(distanceToGround, distanceToNearestGroup);
@@ -42,7 +42,10 @@ export const velocityMutator = (blockGroup: BlockGroup, dt: number) => {
   );
 
   const collidedWithNearestGroup =
-    nearestGroup && resolvedDelta === distanceToNearestGroup;
+    nearestGroup &&
+    (resolvedDelta > 0
+      ? resolvedDelta === distanceToNearestGroup
+      : resolvedDelta === -distanceToNearestGroup);
   const collidedWithCeiling = resolvedDelta === distanceToCeiling;
 
   if (collidedWithNearestGroup) {

@@ -33,7 +33,7 @@ export const getContactableGroups = (subjectGroup: BlockGroup) => {
   return contactableGroups;
 };
 
-export const getNearestGroup = (
+export const getDirectionallyNearestGroup = (
   subjectGroup: BlockGroup,
 ): [BlockGroup | null, number] => {
   const contactableGroups = getContactableGroups(subjectGroup);
@@ -85,6 +85,7 @@ export const getDirectionalBoundaryDistance = (
 
 export const getDistanceToCeiling = (blockGroup: BlockGroup): number => {
   const ceiling = 0;
+  // const ceiling = worldHeight - blockSize * 12;
 
   // if movement is downwards, this is irrelevant
   if (blockGroup.velocity > 0) return Infinity;
