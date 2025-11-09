@@ -1,4 +1,9 @@
-import type { BlockGroup, BlockGroupId, FileNumber } from "./entities/types";
+import type {
+  BlockGroup,
+  BlockGroupId,
+  Coord,
+  FileNumber,
+} from "./entities/types";
 
 import { DEFAULT_FILE_COUNT, DEFAULT_GRAVITY } from "./constants";
 import { Container, Sprite } from "pixi.js";
@@ -16,6 +21,7 @@ type World = {
   fileBlockGroupsMap: Map<FileNumber, BlockGroup[]>;
   blockGroupsMap: Map<BlockGroupId, BlockGroup>;
   blockGroupIdPool: BlockGroupId[];
+  globalPointer: Coord;
 };
 
 const world: World = {
@@ -31,6 +37,7 @@ const world: World = {
     ]),
   ),
   blockGroupIdPool: Array.from({ length: 300 }, (_, i) => 300 - i),
+  globalPointer: { x: 0, y: 0 },
 };
 
 export const getWorld = () => world;
@@ -47,6 +54,10 @@ export const setWorldGravity = (gravity: number) => {
 
 export const setStage = (newStage: WorldStage) => {
   world.stage = newStage;
+};
+
+export const setGlobalPointer = (newCoord: Coord) => {
+  world.globalPointer = newCoord;
 };
 
 export const addToStage = (sprite: Sprite | Container) => {

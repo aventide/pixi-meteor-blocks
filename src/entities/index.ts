@@ -128,16 +128,8 @@ const createBlockGroup = (
       file.blocks.forEach(({ sprite }) => {
         sprite.eventMode = "static";
         sprite.cursor = "pointer";
-        sprite.on("pointerover", () => {
-          file.overlay.visible = true;
-        });
-
-        sprite.on("pointerout", () => {
-          file.overlay.visible = false;
-        });
         sprite.on("pointertap", () => {
           newBlockGroup.velocity = DEFAULT_POP_VELOCITY;
-          file.overlay.visible = false;
         });
       });
     });

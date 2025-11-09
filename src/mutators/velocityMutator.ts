@@ -1,6 +1,6 @@
 import type { BlockGroup } from "../entities/types";
 
-import { getWorld } from "../world";
+import { getBlockSize, getWorld } from "../world";
 import { DEFAULT_REFERENCE_HEIGHT } from "../constants";
 import {
   getDirectionallyNearestGroup,
@@ -11,7 +11,8 @@ import { clamp } from "../util";
 import { combineBlockGroups } from "../entities";
 
 export const velocityMutator = (blockGroup: BlockGroup, dt: number) => {
-  const { height: worldHeight } = getWorld();
+  const { height: worldHeight, globalPointer } = getWorld();
+  const blockSize = getBlockSize();
 
   // normalize delta calculation based on screen height
   const targetDelta =
@@ -34,6 +35,17 @@ export const velocityMutator = (blockGroup: BlockGroup, dt: number) => {
     file.boundary.bottom += resolvedDelta;
 
     file.overlay.y += resolvedDelta;
+
+    if (
+      globalPointer.x >= (file.number - 1) * blockSize &&
+      globalPointer.x <= (file.number - 1) * blockSize + blockSize &&
+      globalPointer.y >= file.boundary.top &&
+      globalPointer.y <= file.boundary.bottom
+    ) {
+      file.overlay.visible = true;
+    } else {
+      file.overlay.visible = false;
+    }
   });
   blockGroup.files.forEach((file) =>
     file.blocks.forEach((block) => {

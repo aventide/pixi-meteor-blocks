@@ -1,6 +1,11 @@
 import { Application, Container } from "pixi.js";
 
-import { getWorld, setStage, setWorldDimensions } from "./world";
+import {
+  getWorld,
+  setGlobalPointer,
+  setStage,
+  setWorldDimensions,
+} from "./world";
 import type { WorldStage } from "./world";
 import { createSingleBlock } from "./entities";
 import { descentMutator, velocityMutator } from "./mutators";
@@ -29,6 +34,13 @@ import { getRandomFileNumber } from "./util";
     } else {
       app.start();
     }
+  });
+
+  app.stage.eventMode = "static";
+  app.stage.hitArea = app.screen;
+  app.stage.addEventListener("pointermove", (e) => {
+    const { x, y } = e.global;
+    setGlobalPointer({ x, y });
   });
 
   setWorldDimensions(app.screen.height, app.screen.width);
