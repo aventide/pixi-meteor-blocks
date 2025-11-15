@@ -5,9 +5,13 @@ export type Coord = {
   y: number;
 };
 
+export type BlockGroupId = number;
+
+export type FileNumber = number;
+
 export type Block = {
   sprite: Sprite;
-  file: number;
+  file: FileNumber;
 };
 
 export type FileBoundary = {
@@ -37,7 +41,3 @@ export type BlockGroup = {
   files: BlockGroupFile[];
   velocity: number;
 };
-
-export type BlockGroupId = number;
-
-export type FileNumber = number;

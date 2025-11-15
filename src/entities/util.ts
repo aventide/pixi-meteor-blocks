@@ -8,6 +8,7 @@ import type {
 } from "./types";
 
 import { getBlockSize, getWorld } from "../world";
+import { DEFAULT_SPAWN_POINT } from "../constants";
 
 // get groups that the given group could possibly contact
 export const getContactableGroups = (subjectGroup: BlockGroup) => {
@@ -112,6 +113,23 @@ export const getDistanceToGround = (blockGroup: BlockGroup): number => {
   });
 
   return minDistance;
+};
+
+export const getIsSpawnPositionOpen = (file: FileNumber): boolean => {
+  const { fileBlockGroupsMap } = getWorld();
+  const blockSize = getBlockSize();
+
+  const groupsInFile = fileBlockGroupsMap.get(file) || [];
+  let isPositionOpen = true;
+
+  groupsInFile.forEach((blockGroup) =>
+    blockGroup.files.forEach((blockGroupFile) => {
+      if (blockGroupFile.boundary.top < (DEFAULT_SPAWN_POINT + 1) * blockSize)
+        isPositionOpen = false;
+    }),
+  );
+
+  return isPositionOpen;
 };
 
 export const getIsGroupInIntersection = (subjectGroup: BlockGroup): boolean => {

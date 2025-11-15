@@ -10,7 +10,7 @@ import type { WorldStage } from "./world";
 import { createSingleBlock } from "./entities";
 import { descentMutator, overlayMutator, positionMutator } from "./mutators";
 import { getRandomFileNumber } from "./util";
-import { getIsGroupInIntersection } from "./entities/util";
+import { getIsSpawnPositionOpen } from "./entities/util";
 
 (async () => {
   const app = new Application();
@@ -52,13 +52,15 @@ import { getIsGroupInIntersection } from "./entities/util";
     timeAccumulated += time.deltaMS;
     if (timeAccumulated >= dropInterval) {
       timeAccumulated -= dropInterval;
-      const file = getRandomFileNumber();
-      const newBlockGroup = createSingleBlock(file);
+      let createdBlock = null;
+      let attempts = 0;
 
-      // check whether block's creation would lead to loss of the game
-      if (getIsGroupInIntersection(newBlockGroup)) {
-        alert("You have lost the game.");
-        app.stop();
+      while (!createdBlock && attempts < 45) {
+        const file = getRandomFileNumber();
+        attempts++;
+        if (getIsSpawnPositionOpen(file)) {
+          createdBlock = createSingleBlock(file);
+        }
       }
     }
   });
