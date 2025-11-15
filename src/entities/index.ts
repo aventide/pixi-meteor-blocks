@@ -49,14 +49,43 @@ const createBlock = ({
   };
 };
 
-const createFileOverlay = (
+const createFileDangerOverlay = (
   fileNumber: FileNumber,
   boundary: FileBoundary,
 ): Container => {
   const blockSize = getBlockSize();
 
   const x = (fileNumber - 1) * blockSize;
+  const y = boundary.top;
   const width = blockSize;
+  const height = boundary.bottom - boundary.top;
+
+  const overlay = new Container();
+  overlay.visible = false;
+  overlay.eventMode = "none";
+
+  const danger = new Graphics();
+  danger.clear();
+  danger.rect(x, y, width, height).fill({
+    color: 0xffffff,
+    alpha: 0.5,
+  });
+
+  overlay.addChild(danger);
+
+  return overlay;
+};
+
+const createFileSelectionOverlay = (
+  fileNumber: FileNumber,
+  boundary: FileBoundary,
+): Container => {
+  const blockSize = getBlockSize();
+
+  const x = (fileNumber - 1) * blockSize;
+  const y = boundary.top;
+  const width = blockSize;
+  const height = boundary.bottom - boundary.top;
 
   const overlay = new Container();
   overlay.visible = false;
@@ -67,9 +96,6 @@ const createFileOverlay = (
 
   const blur = new BlurFilter();
   blur.strength = 2;
-
-  const y = boundary.top;
-  const height = boundary.bottom - boundary.top;
 
   glow.clear();
   glow
@@ -89,13 +115,25 @@ const createFileOverlay = (
 
 const createBlockGroupFile = (filePlacement: FilePlacement): BlockGroupFile => {
   const fileBoundaries = getFileBoundaries(filePlacement.blocks);
-  const fileOverlay = createFileOverlay(filePlacement.number, fileBoundaries);
+
+  const dangerOverlay = createFileDangerOverlay(
+    filePlacement.number,
+    fileBoundaries,
+  );
+
+  const selectionOverlay = createFileSelectionOverlay(
+    filePlacement.number,
+    fileBoundaries,
+  );
 
   return {
     blocks: filePlacement.blocks,
     number: filePlacement.number,
     boundary: fileBoundaries,
-    overlay: fileOverlay,
+    overlay: {
+      danger: dangerOverlay,
+      selection: selectionOverlay,
+    },
   };
 };
 
@@ -137,7 +175,8 @@ const createBlockGroup = (
     // add sprites to stage
     newBlockGroup.files.forEach((file) => {
       file.blocks.forEach((block) => addToBlocksLayer(block.sprite));
-      addToOverlayLayer(file.overlay);
+      addToOverlayLayer(file.overlay.danger);
+      addToOverlayLayer(file.overlay.selection);
     });
 
     return newBlockGroup;
@@ -216,7 +255,8 @@ export const combineBlockGroups = (
 
   combinedBlockGroup.files.forEach((file) => {
     file.blocks.forEach((block) => addToBlocksLayer(block.sprite));
-    addToOverlayLayer(file.overlay);
+    addToOverlayLayer(file.overlay.danger);
+    addToOverlayLayer(file.overlay.selection);
   });
 
   return combinedBlockGroup;
@@ -244,6 +284,7 @@ export const removeBlockGroup = (blockGroup: BlockGroup) => {
   // remove sprites from the stage
   blockGroup.files.forEach((file) => {
     file.blocks.forEach((block) => block.sprite.removeFromParent());
-    file.overlay.removeFromParent();
+    file.overlay.danger.removeFromParent();
+    file.overlay.selection.removeFromParent();
   });
 };

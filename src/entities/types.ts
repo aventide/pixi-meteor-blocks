@@ -15,6 +15,11 @@ export type FileBoundary = {
   top: number;
 };
 
+export type FileOverlay = {
+  danger: Container;
+  selection: Container;
+};
+
 export type FilePlacement = {
   blocks: Block[];
   number: FileNumber;
@@ -23,7 +28,7 @@ export type FilePlacement = {
 export type BlockGroupFile = {
   blocks: Block[];
   boundary: FileBoundary;
-  overlay: Container;
+  overlay: FileOverlay;
   number: FileNumber;
 };
 

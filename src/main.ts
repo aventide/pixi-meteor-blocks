@@ -8,8 +8,9 @@ import {
 } from "./world";
 import type { WorldStage } from "./world";
 import { createSingleBlock } from "./entities";
-import { descentMutator, velocityMutator } from "./mutators";
+import { descentMutator, overlayMutator, positionMutator } from "./mutators";
 import { getRandomFileNumber } from "./util";
+import { getIsGroupInIntersection } from "./entities/util";
 
 (async () => {
   const app = new Application();
@@ -52,21 +53,13 @@ import { getRandomFileNumber } from "./util";
     if (timeAccumulated >= dropInterval) {
       timeAccumulated -= dropInterval;
       const file = getRandomFileNumber();
-      createSingleBlock(file);
-      // newBlockGroup.files.forEach((file) => {
-      //   file.blocks.forEach((block) => blocksLayer.addChild(block.sprite));
-      //   overlayLayer.addChild(file.overlay);
-      // });
-      // check if new block would intersect an existing container
-      // @todo alternatively, could check if number of blocks in file exceeds capacity by a certain number
-      // if (getIsGroupInIntersection(newBlockGroup)) {
-      //   alert("You have lost the game.");
-      // } else {
-      //   blockGroups.push(newBlockGroup);
-      // newBlockGroup.files.forEach((file) => {
-      //file.blocks.forEach((block) => app.stage.addChild(block.sprite));
-      //});
-      // }
+      const newBlockGroup = createSingleBlock(file);
+
+      // check whether block's creation would lead to loss of the game
+      if (getIsGroupInIntersection(newBlockGroup)) {
+        alert("You have lost the game.");
+        app.stop();
+      }
     }
   });
 
@@ -76,7 +69,8 @@ import { getRandomFileNumber } from "./util";
     // apply mutators to each block group
     blockGroupsMap.forEach((blockGroup) => {
       descentMutator(blockGroup, dt);
-      velocityMutator(blockGroup, dt);
+      overlayMutator(blockGroup);
+      positionMutator(blockGroup, dt);
     });
   });
 })();

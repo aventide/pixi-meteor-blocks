@@ -1,6 +1,6 @@
 import type { BlockGroup } from "../entities/types";
 
-import { getBlockSize, getWorld } from "../world";
+import { getWorld } from "../world";
 import { DEFAULT_REFERENCE_HEIGHT } from "../constants";
 import {
   getDirectionallyNearestGroup,
@@ -10,9 +10,8 @@ import {
 import { clamp } from "../util";
 import { combineBlockGroups } from "../entities";
 
-export const velocityMutator = (blockGroup: BlockGroup, dt: number) => {
-  const { height: worldHeight, globalPointer } = getWorld();
-  const blockSize = getBlockSize();
+export const positionMutator = (blockGroup: BlockGroup, dt: number) => {
+  const { height: worldHeight } = getWorld();
 
   // normalize delta calculation based on screen height
   const targetDelta =
@@ -33,19 +32,9 @@ export const velocityMutator = (blockGroup: BlockGroup, dt: number) => {
   blockGroup.files.forEach((file) => {
     file.boundary.top += resolvedDelta;
     file.boundary.bottom += resolvedDelta;
-
-    file.overlay.y += resolvedDelta;
-
-    if (
-      globalPointer.x >= (file.number - 1) * blockSize &&
-      globalPointer.x <= (file.number - 1) * blockSize + blockSize &&
-      globalPointer.y >= file.boundary.top &&
-      globalPointer.y <= file.boundary.bottom
-    ) {
-      file.overlay.visible = true;
-    } else {
-      file.overlay.visible = false;
-    }
+    // overlays can just be position-set when made visible, technically
+    file.overlay.danger.y += resolvedDelta;
+    file.overlay.selection.y += resolvedDelta;
   });
   blockGroup.files.forEach((file) =>
     file.blocks.forEach((block) => {

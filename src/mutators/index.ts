@@ -1,2 +1,3 @@
 export { descentMutator } from "./descentMutator";
-export { velocityMutator } from "./velocityMutator";
+export { overlayMutator } from "./overlayMutator";
+export { positionMutator } from "./positionMutator";
