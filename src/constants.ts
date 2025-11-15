@@ -4,6 +4,7 @@ const DEFAULT_GRAVITY = 980; // gravity is planet-wide (or level-wide) constant
 const DEFAULT_REFERENCE_HEIGHT = 1080; // baseline screen height for normalization
 const DEFAULT_SPAWN_POINT = -2;
 const DEFAULT_POP_VELOCITY = -6000;
+const DEFAULT_POINTER_POSITION = { x: -1, y: -1 };
 
 export {
   DEFAULT_FILE_COUNT,
@@ -12,4 +13,5 @@ export {
   DEFAULT_REFERENCE_HEIGHT,
   DEFAULT_SPAWN_POINT,
   DEFAULT_POP_VELOCITY,
+  DEFAULT_POINTER_POSITION,
 };

@@ -11,6 +11,7 @@ import { createSingleBlock } from "./entities";
 import { descentMutator, overlayMutator, positionMutator } from "./mutators";
 import { getRandomFileNumber } from "./util";
 import { getIsSpawnPositionOpen } from "./entities/util";
+import { DEFAULT_POINTER_POSITION } from "./constants";
 
 (async () => {
   const app = new Application();
@@ -42,6 +43,9 @@ import { getIsSpawnPositionOpen } from "./entities/util";
   app.stage.addEventListener("pointermove", (e) => {
     const { x, y } = e.global;
     setGlobalPointer({ x, y });
+  });
+  app.stage.addEventListener("pointerleave", () => {
+    setGlobalPointer(DEFAULT_POINTER_POSITION);
   });
 
   setWorldDimensions(app.screen.height, app.screen.width);

@@ -5,7 +5,11 @@ import type {
   FileNumber,
 } from "./entities/types";
 
-import { DEFAULT_FILE_COUNT, DEFAULT_GRAVITY } from "./constants";
+import {
+  DEFAULT_FILE_COUNT,
+  DEFAULT_GRAVITY,
+  DEFAULT_POINTER_POSITION,
+} from "./constants";
 import { Container, Sprite } from "pixi.js";
 
 export type WorldStage = Container & {
@@ -37,7 +41,7 @@ const world: World = {
     ]),
   ),
   blockGroupIdPool: Array.from({ length: 300 }, (_, i) => 300 - i),
-  globalPointer: { x: 0, y: 0 },
+  globalPointer: DEFAULT_POINTER_POSITION,
 };
 
 export const getWorld = () => world;
