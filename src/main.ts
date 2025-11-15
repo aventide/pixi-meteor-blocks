@@ -11,7 +11,11 @@ import { createSingleBlock } from "./entities";
 import { descentMutator, overlayMutator, positionMutator } from "./mutators";
 import { getRandomFileNumber } from "./util";
 import { getIsSpawnPositionOpen } from "./entities/util";
-import { DEFAULT_POINTER_POSITION } from "./constants";
+import {
+  DEFAULT_FILE_COUNT,
+  DEFAULT_FILE_LIMIT,
+  DEFAULT_POINTER_POSITION,
+} from "./constants";
 
 (async () => {
   const app = new Application();
@@ -50,7 +54,7 @@ import { DEFAULT_POINTER_POSITION } from "./constants";
 
   setWorldDimensions(app.screen.height, app.screen.width);
 
-  const dropInterval = 500;
+  const dropInterval = 200;
   let timeAccumulated = 0;
   app.ticker.add((time) => {
     timeAccumulated += time.deltaMS;
@@ -59,7 +63,8 @@ import { DEFAULT_POINTER_POSITION } from "./constants";
       let createdBlock = null;
       let attempts = 0;
 
-      while (!createdBlock && attempts < 45) {
+      // @todo we should attempt every other fileNumber before bailing out
+      while (!createdBlock && attempts < DEFAULT_FILE_COUNT) {
         const file = getRandomFileNumber();
         attempts++;
         if (getIsSpawnPositionOpen(file)) {
@@ -78,5 +83,17 @@ import { DEFAULT_POINTER_POSITION } from "./constants";
       overlayMutator(blockGroup);
       positionMutator(blockGroup, dt);
     });
+
+    // check for losing state
+    // @todo consider adding a 1-2 sec "tolerance" once file limit is reached
+    // before the file is considered for placement (and game loss)
+    blockGroupsMap.forEach((blockGroup) =>
+      blockGroup.files.forEach((file) => {
+        if (file.blocks.length >= DEFAULT_FILE_LIMIT + 2) {
+          alert("You have lost the game.");
+          app.stop();
+        }
+      }),
+    );
   });
 })();
