@@ -68,7 +68,6 @@ const createFileDangerOverlay = (
   danger.clear();
   danger.rect(x, y, width, height).fill({
     color: 0xffffff,
-    alpha: 0.5,
   });
 
   overlay.addChild(danger);
