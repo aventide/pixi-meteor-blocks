@@ -1,4 +1,5 @@
 import type {
+  Block,
   BlockGroup,
   BlockGroupId,
   Coord,
@@ -26,6 +27,8 @@ type World = {
   blockGroupsMap: Map<BlockGroupId, BlockGroup>;
   blockGroupIdPool: BlockGroupId[];
   globalPointer: Coord;
+  globalPointerDown: boolean;
+  selectedBlock: { blockGroupId: BlockGroupId; block: Block } | null;
 };
 
 const world: World = {
@@ -42,6 +45,8 @@ const world: World = {
   ),
   blockGroupIdPool: Array.from({ length: 300 }, (_, i) => 300 - i),
   globalPointer: DEFAULT_POINTER_POSITION,
+  globalPointerDown: false,
+  selectedBlock: null,
 };
 
 export const getWorld = () => world;
@@ -62,6 +67,16 @@ export const setStage = (newStage: WorldStage) => {
 
 export const setGlobalPointer = (newCoord: Coord) => {
   world.globalPointer = newCoord;
+};
+
+export const setGlobalPointerDown = (isPointerDown: boolean) => {
+  world.globalPointerDown = isPointerDown;
+};
+
+export const setSelectedBlock = (
+  newSwapBlock: { blockGroupId: BlockGroupId; block: Block } | null,
+) => {
+  world.selectedBlock = newSwapBlock;
 };
 
 export const addToStage = (sprite: Sprite | Container) => {

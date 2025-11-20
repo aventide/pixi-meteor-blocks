@@ -229,3 +229,73 @@ export const getCombinedFilePlacements = (
 
   return mergedFilePlacements;
 };
+
+export const getFileBlockDirectlyAbove = (subjectBlock: {
+  blockGroupId: BlockGroupId;
+  block: Block;
+}): Block | null => {
+  // get the blockGroupFile of this block
+  const { blockGroupsMap } = getWorld();
+  const group = blockGroupsMap.get(subjectBlock.blockGroupId);
+  let blockAbove: Block | null = null;
+
+  if (group) {
+    // get file associated to block
+    const file = group.files.find(
+      (groupFile) => groupFile.number === subjectBlock.block.file,
+    );
+
+    if (file) {
+      file.blocks.forEach((fileBlock) => {
+        if (
+          Math.round(fileBlock.sprite.y + getBlockSize()) ===
+          Math.round(subjectBlock.block.sprite.y)
+        ) {
+          blockAbove = fileBlock;
+        }
+      });
+    }
+  }
+
+  return blockAbove;
+};
+
+export const getFileBlockDirectlyBelow = (subjectBlock: {
+  blockGroupId: BlockGroupId;
+  block: Block;
+}): Block | null => {
+  // get the blockGroupFile of this block
+  const { blockGroupsMap } = getWorld();
+  const group = blockGroupsMap.get(subjectBlock.blockGroupId);
+  let blockAbove: Block | null = null;
+
+  if (group) {
+    // get file associated to block
+    const file = group.files.find(
+      (groupFile) => groupFile.number === subjectBlock.block.file,
+    );
+
+    if (file) {
+      file.blocks.forEach((fileBlock) => {
+        if (
+          Math.round(fileBlock.sprite.y - getBlockSize()) ===
+          Math.round(subjectBlock.block.sprite.y)
+        ) {
+          blockAbove = fileBlock;
+        }
+      });
+    }
+  }
+
+  return blockAbove;
+};
+
+export const swapFileBlockPositions = (
+  subjectBlock: Block,
+  otherBlock: Block,
+) => {
+  // blocks are assumed to be in the same file, hence only y position swap
+  const swapYPosition = subjectBlock.sprite.y;
+  subjectBlock.sprite.y = otherBlock.sprite.y;
+  otherBlock.sprite.y = swapYPosition;
+};

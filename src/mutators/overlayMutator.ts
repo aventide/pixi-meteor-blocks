@@ -1,18 +1,18 @@
 import { DEFAULT_FILE_LIMIT } from "../constants";
-import { BlockGroup } from "../entities/types";
-import { getBlockSize, getWorld } from "../world";
+import { Block, BlockGroup } from "../entities/types";
+import { getBlockSize, getWorld, setSelectedBlock } from "../world";
 
 export const overlayMutator = (blockGroup: BlockGroup) => {
-  const { globalPointer } = getWorld();
+  const { globalPointer, globalPointerDown, selectedBlock } = getWorld();
   const blockSize = getBlockSize();
 
   blockGroup.files.forEach((file) => {
     // check for pointer hovering over a group file for selection
     if (
-      globalPointer.x >= (file.number - 1) * blockSize &&
-      globalPointer.x <= (file.number - 1) * blockSize + blockSize &&
-      globalPointer.y >= file.boundary.top &&
-      globalPointer.y <= file.boundary.bottom
+      file.blocks.some(
+        (fileBlock: Block) =>
+          fileBlock.sprite.uid === selectedBlock?.block.sprite.uid,
+      )
     ) {
       file.overlay.selection.visible = true;
     } else {
@@ -25,5 +25,21 @@ export const overlayMutator = (blockGroup: BlockGroup) => {
     } else {
       file.overlay.danger.visible = false;
     }
+
+    file.blocks.forEach((block) => {
+      if (
+        globalPointerDown &&
+        !selectedBlock &&
+        globalPointer.x >= block.sprite.x &&
+        globalPointer.x <= block.sprite.x + blockSize &&
+        globalPointer.y >= block.sprite.y &&
+        globalPointer.y <= block.sprite.y + blockSize
+      ) {
+        setSelectedBlock({
+          block,
+          blockGroupId: blockGroup.id,
+        });
+      }
+    });
   });
 };

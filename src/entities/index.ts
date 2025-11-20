@@ -15,9 +15,10 @@ import {
   addToOverlayLayer,
   getBlockSize,
   getWorld,
+  setSelectedBlock,
 } from "../world";
 import { getRandomBlockTexture } from "../textures";
-import { DEFAULT_SPAWN_POINT, DEFAULT_POP_VELOCITY } from "../constants";
+import { DEFAULT_SPAWN_POINT } from "../constants";
 import {
   getCombinedFilePlacements,
   getFileBoundaries,
@@ -42,6 +43,8 @@ const createBlock = ({
     (initialPosition.x - 1) * blockSize,
     initialPosition.y * blockSize,
   );
+  sprite.eventMode = "static";
+  sprite.cursor = "pointer";
 
   return {
     sprite,
@@ -160,17 +163,6 @@ const createBlockGroup = (
       fileBlockGroupsMap.get(fileNumber)?.push(newBlockGroup),
     );
 
-    // input handler for each file
-    newBlockGroup.files.forEach((file) => {
-      file.blocks.forEach(({ sprite }) => {
-        sprite.eventMode = "static";
-        sprite.cursor = "pointer";
-        sprite.on("pointertap", () => {
-          newBlockGroup.velocity = DEFAULT_POP_VELOCITY;
-        });
-      });
-    });
-
     // add sprites to stage
     newBlockGroup.files.forEach((file) => {
       file.blocks.forEach((block) => addToBlocksLayer(block.sprite));
@@ -226,7 +218,7 @@ export const combineBlockGroups = (
   subjectBlockGroup: BlockGroup,
   otherBlockGroup: BlockGroup,
 ) => {
-  const { blockGroupsMap } = getWorld();
+  const { blockGroupsMap, selectedBlock } = getWorld();
 
   const combinedVelocity =
     (getMomentum(subjectBlockGroup) + getMomentum(otherBlockGroup)) /
@@ -248,6 +240,16 @@ export const combineBlockGroups = (
   );
 
   blockGroupsMap.set(combinedBlockGroup.id, combinedBlockGroup);
+
+  if (
+    selectedBlock?.blockGroupId === subjectBlockGroup.id ||
+    selectedBlock?.blockGroupId === otherBlockGroup.id
+  ) {
+    setSelectedBlock({
+      ...selectedBlock,
+      blockGroupId: combinedBlockGroup.id,
+    });
+  }
 
   removeBlockGroup(subjectBlockGroup);
   removeBlockGroup(otherBlockGroup);
