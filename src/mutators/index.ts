@@ -1,3 +1,3 @@
 export { descentMutator } from "./descentMutator";
-export { overlayMutator } from "./overlayMutator";
+export { selectionMutator } from "./selectionMutator";
 export { positionMutator } from "./positionMutator";

@@ -15,7 +15,7 @@ import {
   addToOverlayLayer,
   getBlockSize,
   getWorld,
-  setSelectedBlock,
+  setSelectedBlockGroup,
 } from "../world";
 import { getRandomBlockTexture } from "../textures";
 import { DEFAULT_SPAWN_POINT } from "../constants";
@@ -218,7 +218,7 @@ export const combineBlockGroups = (
   subjectBlockGroup: BlockGroup,
   otherBlockGroup: BlockGroup,
 ) => {
-  const { blockGroupsMap, selectedBlock } = getWorld();
+  const { blockGroupsMap, selectedBlockGroup } = getWorld();
 
   const combinedVelocity =
     (getMomentum(subjectBlockGroup) + getMomentum(otherBlockGroup)) /
@@ -242,13 +242,10 @@ export const combineBlockGroups = (
   blockGroupsMap.set(combinedBlockGroup.id, combinedBlockGroup);
 
   if (
-    selectedBlock?.blockGroupId === subjectBlockGroup.id ||
-    selectedBlock?.blockGroupId === otherBlockGroup.id
+    selectedBlockGroup?.id === subjectBlockGroup.id ||
+    selectedBlockGroup?.id === otherBlockGroup.id
   ) {
-    setSelectedBlock({
-      ...selectedBlock,
-      blockGroupId: combinedBlockGroup.id,
-    });
+    setSelectedBlockGroup(combinedBlockGroup);
   }
 
   removeBlockGroup(subjectBlockGroup);
