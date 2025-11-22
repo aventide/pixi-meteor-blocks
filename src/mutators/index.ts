@@ -1,2 +1,3 @@
 export { descentMutator } from "./descentMutator";
-export { velocityMutator } from "./velocityMutator";
+export { selectionMutator } from "./selectionMutator";
+export { positionMutator } from "./positionMutator";

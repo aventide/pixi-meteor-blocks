@@ -10,9 +10,21 @@ import type {
 
 import { BlurFilter, Container, Graphics, Sprite, Texture } from "pixi.js";
 import { getRandomFileNumber } from "../util";
-import { getBlockSize, getWorld } from "../world";
+import {
+  addToBlocksLayer,
+  addToOverlayLayer,
+  getBlockSize,
+  getWorld,
+  setSelectedBlockGroup,
+} from "../world";
 import { getRandomBlockTexture } from "../textures";
-import { DEFAULT_SPAWN_POINT, DEFAULT_POP_VELOCITY } from "../constants";
+import { DEFAULT_SPAWN_POINT } from "../constants";
+import {
+  getCombinedFilePlacements,
+  getFileBoundaries,
+  getFilePlacements,
+  getMomentum,
+} from "./util";
 
 const createBlock = ({
   initialPosition,
@@ -31,6 +43,8 @@ const createBlock = ({
     (initialPosition.x - 1) * blockSize,
     initialPosition.y * blockSize,
   );
+  sprite.eventMode = "static";
+  sprite.cursor = "pointer";
 
   return {
     sprite,
@@ -38,34 +52,42 @@ const createBlock = ({
   };
 };
 
-// input must be a "file" aka blocks all with the same y coord
-export const getFileBoundaries = (blocks: Block[]) => {
-  const blockSize = getBlockSize();
-
-  let highestTop = blocks[0].sprite.y;
-  let lowestBottom = blocks[0].sprite.y + blockSize;
-
-  blocks.forEach((block) => {
-    const topOfBlock = block.sprite.y;
-    const bottomOfBlock = block.sprite.y + blockSize;
-    if (topOfBlock < highestTop) highestTop = topOfBlock;
-    if (bottomOfBlock > lowestBottom) lowestBottom = bottomOfBlock;
-  });
-
-  return {
-    top: highestTop,
-    bottom: lowestBottom,
-  };
-};
-
-const createFileOverlay = (
+const createFileDangerOverlay = (
   fileNumber: FileNumber,
   boundary: FileBoundary,
 ): Container => {
   const blockSize = getBlockSize();
 
   const x = (fileNumber - 1) * blockSize;
+  const y = boundary.top;
   const width = blockSize;
+  const height = boundary.bottom - boundary.top;
+
+  const overlay = new Container();
+  overlay.visible = false;
+  overlay.eventMode = "none";
+
+  const danger = new Graphics();
+  danger.clear();
+  danger.rect(x, y, width, height).fill({
+    color: 0xffffff,
+  });
+
+  overlay.addChild(danger);
+
+  return overlay;
+};
+
+const createFileSelectionOverlay = (
+  fileNumber: FileNumber,
+  boundary: FileBoundary,
+): Container => {
+  const blockSize = getBlockSize();
+
+  const x = (fileNumber - 1) * blockSize;
+  const y = boundary.top;
+  const width = blockSize;
+  const height = boundary.bottom - boundary.top;
 
   const overlay = new Container();
   overlay.visible = false;
@@ -76,9 +98,6 @@ const createFileOverlay = (
 
   const blur = new BlurFilter();
   blur.strength = 2;
-
-  const y = boundary.top;
-  const height = boundary.bottom - boundary.top;
 
   glow.clear();
   glow
@@ -98,13 +117,25 @@ const createFileOverlay = (
 
 const createBlockGroupFile = (filePlacement: FilePlacement): BlockGroupFile => {
   const fileBoundaries = getFileBoundaries(filePlacement.blocks);
-  const fileOverlay = createFileOverlay(filePlacement.number, fileBoundaries);
+
+  const dangerOverlay = createFileDangerOverlay(
+    filePlacement.number,
+    fileBoundaries,
+  );
+
+  const selectionOverlay = createFileSelectionOverlay(
+    filePlacement.number,
+    fileBoundaries,
+  );
 
   return {
     blocks: filePlacement.blocks,
     number: filePlacement.number,
     boundary: fileBoundaries,
-    overlay: fileOverlay,
+    overlay: {
+      danger: dangerOverlay,
+      selection: selectionOverlay,
+    },
   };
 };
 
@@ -132,31 +163,20 @@ const createBlockGroup = (
       fileBlockGroupsMap.get(fileNumber)?.push(newBlockGroup),
     );
 
-    // input handler for each file
+    // add sprites to stage
     newBlockGroup.files.forEach((file) => {
-      file.blocks.forEach(({ sprite }) => {
-        sprite.eventMode = "static";
-        sprite.cursor = "pointer";
-        sprite.on("pointerover", () => {
-          file.overlay.visible = true;
-        });
-
-        sprite.on("pointerout", () => {
-          file.overlay.visible = false;
-        });
-        sprite.on("pointertap", () => {
-          newBlockGroup.velocity = DEFAULT_POP_VELOCITY;
-          file.overlay.visible = false;
-        });
-      });
+      file.blocks.forEach((block) => addToBlocksLayer(block.sprite));
+      addToOverlayLayer(file.overlay.danger);
+      addToOverlayLayer(file.overlay.selection);
     });
+
     return newBlockGroup;
   } else {
     throw new Error("No IDs available to assign to newly-requested BlockGroup");
   }
 };
 
-const createSingleBlock = (fileNumber: FileNumber): BlockGroup => {
+export const createSingleBlock = (fileNumber: FileNumber): BlockGroup => {
   const initialBlock = createBlock({
     texture: getRandomBlockTexture(),
     initialPosition: {
@@ -174,7 +194,7 @@ const createSingleBlock = (fileNumber: FileNumber): BlockGroup => {
   ]);
 };
 
-const createVerticalTestGroup = (blockCount: number): BlockGroup => {
+export const createVerticalTestGroup = (blockCount: number): BlockGroup => {
   const file = getRandomFileNumber();
   const initialBlocks = [];
   for (let i = 0; i < blockCount; i++) {
@@ -194,4 +214,75 @@ const createVerticalTestGroup = (blockCount: number): BlockGroup => {
   ]);
 };
 
-export { createBlock, createSingleBlock, createVerticalTestGroup };
+export const combineBlockGroups = (
+  subjectBlockGroup: BlockGroup,
+  otherBlockGroup: BlockGroup,
+) => {
+  const { blockGroupsMap, selectedBlockGroup } = getWorld();
+
+  const combinedVelocity =
+    (getMomentum(subjectBlockGroup) + getMomentum(otherBlockGroup)) /
+    [...subjectBlockGroup.files, ...otherBlockGroup.files].reduce(
+      (totalBlocks, file) => totalBlocks + file.blocks.length,
+      0,
+    );
+
+  const subjectFilePlacements = getFilePlacements(subjectBlockGroup);
+  const otherFilePlacements = getFilePlacements(otherBlockGroup);
+  const combinedFilePlacements: FilePlacement[] = getCombinedFilePlacements(
+    subjectFilePlacements,
+    otherFilePlacements,
+  );
+
+  const combinedBlockGroup = createBlockGroup(
+    combinedFilePlacements,
+    combinedVelocity,
+  );
+
+  blockGroupsMap.set(combinedBlockGroup.id, combinedBlockGroup);
+
+  if (
+    selectedBlockGroup?.id === subjectBlockGroup.id ||
+    selectedBlockGroup?.id === otherBlockGroup.id
+  ) {
+    setSelectedBlockGroup(combinedBlockGroup);
+  }
+
+  removeBlockGroup(subjectBlockGroup);
+  removeBlockGroup(otherBlockGroup);
+
+  combinedBlockGroup.files.forEach((file) => {
+    file.blocks.forEach((block) => addToBlocksLayer(block.sprite));
+    addToOverlayLayer(file.overlay.danger);
+    addToOverlayLayer(file.overlay.selection);
+  });
+
+  return combinedBlockGroup;
+};
+
+export const removeBlockGroup = (blockGroup: BlockGroup) => {
+  const { blockGroupIdPool, blockGroupsMap, fileBlockGroupsMap } = getWorld();
+
+  blockGroupsMap.delete(blockGroup.id);
+
+  blockGroup.files.forEach((file) => {
+    const blockGroupsToFilter: BlockGroup[] =
+      fileBlockGroupsMap.get(file.number) || [];
+    if (blockGroupsToFilter.length > 0) {
+      const filteredBlockGroups = blockGroupsToFilter.filter(
+        (group) => group.id !== blockGroup.id,
+      );
+      fileBlockGroupsMap.set(file.number, filteredBlockGroups);
+    }
+  });
+
+  // return removed BlockGroup's ID back to the ID pool
+  blockGroupIdPool.push(blockGroup.id);
+
+  // remove sprites from the stage
+  blockGroup.files.forEach((file) => {
+    file.blocks.forEach((block) => block.sprite.removeFromParent());
+    file.overlay.danger.removeFromParent();
+    file.overlay.selection.removeFromParent();
+  });
+};

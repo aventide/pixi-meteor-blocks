@@ -3,13 +3,14 @@ import type { BlockGroup } from "../entities/types";
 import { getWorld } from "../world";
 import { DEFAULT_REFERENCE_HEIGHT } from "../constants";
 import {
+  getDirectionallyNearestGroup,
   getDistanceToCeiling,
   getDistanceToGround,
-  getNearestGroup,
 } from "../entities/util";
 import { clamp } from "../util";
+import { combineBlockGroups } from "../entities";
 
-export const velocityMutator = (blockGroup: BlockGroup, dt: number) => {
+export const positionMutator = (blockGroup: BlockGroup, dt: number) => {
   const { height: worldHeight } = getWorld();
 
   // normalize delta calculation based on screen height
@@ -18,8 +19,8 @@ export const velocityMutator = (blockGroup: BlockGroup, dt: number) => {
 
   if (targetDelta === 0) return;
 
-  // @todo emphasize that this means "nearest in this current direction"
-  const [nearestGroup, distanceToNearestGroup] = getNearestGroup(blockGroup);
+  const [nearestGroup, distanceToNearestGroup] =
+    getDirectionallyNearestGroup(blockGroup);
   const distanceToGround = getDistanceToGround(blockGroup);
   const distanceToCeiling = getDistanceToCeiling(blockGroup);
   const downwardsLimit = Math.min(distanceToGround, distanceToNearestGroup);
@@ -27,30 +28,32 @@ export const velocityMutator = (blockGroup: BlockGroup, dt: number) => {
 
   const resolvedDelta = clamp(targetDelta, upwardsLimit, downwardsLimit);
 
-  const collidedWithNearestGroup =
-    nearestGroup && resolvedDelta === distanceToNearestGroup;
-  const collidedWithCeiling = resolvedDelta === distanceToCeiling;
-
-  if (collidedWithNearestGroup) {
-    const averagedVelocity = (blockGroup.velocity + nearestGroup.velocity) / 2;
-    blockGroup.velocity = averagedVelocity;
-    nearestGroup.velocity = averagedVelocity;
-  }
-
-  if (collidedWithCeiling) {
-    blockGroup.velocity = 0;
-  }
-
   // do final calculated movement on group
   blockGroup.files.forEach((file) => {
     file.boundary.top += resolvedDelta;
     file.boundary.bottom += resolvedDelta;
-
-    file.overlay.y += resolvedDelta;
+    // overlays can just be position-set when made visible, technically
+    file.overlay.danger.y += resolvedDelta;
+    file.overlay.selection.y += resolvedDelta;
   });
   blockGroup.files.forEach((file) =>
     file.blocks.forEach((block) => {
       block.sprite.y += resolvedDelta;
     }),
   );
+
+  const collidedWithNearestGroup =
+    nearestGroup &&
+    (resolvedDelta > 0
+      ? resolvedDelta === distanceToNearestGroup
+      : resolvedDelta === -distanceToNearestGroup);
+  const collidedWithCeiling = resolvedDelta === distanceToCeiling;
+
+  if (collidedWithNearestGroup) {
+    combineBlockGroups(blockGroup, nearestGroup);
+  }
+
+  if (collidedWithCeiling) {
+    blockGroup.velocity = 0;
+  }
 };

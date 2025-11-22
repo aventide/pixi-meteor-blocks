@@ -5,14 +5,23 @@ export type Coord = {
   y: number;
 };
 
+export type BlockGroupId = number;
+
+export type FileNumber = number;
+
 export type Block = {
   sprite: Sprite;
-  file: number;
+  file: FileNumber;
 };
 
 export type FileBoundary = {
   bottom: number;
   top: number;
+};
+
+export type FileOverlay = {
+  danger: Container;
+  selection: Container;
 };
 
 export type FilePlacement = {
@@ -23,7 +32,7 @@ export type FilePlacement = {
 export type BlockGroupFile = {
   blocks: Block[];
   boundary: FileBoundary;
-  overlay: Container;
+  overlay: FileOverlay;
   number: FileNumber;
 };
 
@@ -32,7 +41,3 @@ export type BlockGroup = {
   files: BlockGroupFile[];
   velocity: number;
 };
-
-export type BlockGroupId = number;
-
-export type FileNumber = number;
