@@ -20,6 +20,7 @@ import {
 import { getRandomBlockTexture } from "../textures";
 import { DEFAULT_SPAWN_POINT } from "../constants";
 import {
+  assignGroupFileRanks,
   getCombinedFilePlacements,
   getFileBoundaries,
   getFilePlacements,
@@ -30,10 +31,12 @@ const createBlock = ({
   initialPosition,
   texture,
   file,
+  groupFileRank,
 }: {
   initialPosition: Coord;
   texture: Texture;
   file: number;
+  groupFileRank: number;
 }): Block => {
   const blockSize = getBlockSize();
   const sprite = new Sprite(texture);
@@ -49,6 +52,7 @@ const createBlock = ({
   return {
     sprite,
     file,
+    groupFileRank,
   };
 };
 
@@ -129,7 +133,7 @@ const createBlockGroupFile = (filePlacement: FilePlacement): BlockGroupFile => {
   );
 
   return {
-    blocks: filePlacement.blocks,
+    blocks: assignGroupFileRanks(filePlacement.blocks),
     number: filePlacement.number,
     boundary: fileBoundaries,
     overlay: {
@@ -184,6 +188,7 @@ export const createSingleBlock = (fileNumber: FileNumber): BlockGroup => {
       y: DEFAULT_SPAWN_POINT,
     },
     file: fileNumber,
+    groupFileRank: 1,
   });
 
   return createBlockGroup([
@@ -202,6 +207,7 @@ export const createVerticalTestGroup = (blockCount: number): BlockGroup => {
       initialPosition: { x: file, y: (i + 1) * -1 },
       texture: getRandomBlockTexture(),
       file,
+      groupFileRank: i + 1,
     });
     initialBlocks.push(newBlock);
   }
@@ -259,6 +265,21 @@ export const combineBlockGroups = (
 
   return combinedBlockGroup;
 };
+
+// create two new block groups, at a set of fracture points
+// probably best to do sorted file blocks after all
+// because it will make this, as well as swap, simpler
+// and not rely on coords
+// export const decombineBlockGroup = (
+//   blockGroup: BlockGroup,
+//   fracturePoints: number[],
+// ): BlockGroup[] => {
+//   const newBlockGroups: BlockGroup[] = [];
+
+//   removeBlockGroup(blockGroup);
+
+//   return newBlockGroups;
+// };
 
 export const removeBlockGroup = (blockGroup: BlockGroup) => {
   const { blockGroupIdPool, blockGroupsMap, fileBlockGroupsMap } = getWorld();

@@ -200,6 +200,17 @@ export const getFilePlacements = (blockGroup: BlockGroup): FilePlacement[] =>
     number: file.number,
   }));
 
+export const assignGroupFileRanks = (blocks: Block[]) => {
+  // sort blocks in ascending y coord
+  const sortedBlocks = blocks.sort(
+    (blockA, blockB) => blockA.sprite.y - blockB.sprite.y,
+  );
+
+  // then assign ranks
+  sortedBlocks.forEach((block, index) => (block.groupFileRank = index + 1));
+  return sortedBlocks;
+};
+
 export const getCombinedFilePlacements = (
   subjectFilePlacements: FilePlacement[],
   otherFilePlacements: FilePlacement[],
@@ -221,9 +232,14 @@ export const getCombinedFilePlacements = (
         (filePlacement) => filePlacement.number === fileNumber,
       )?.blocks || [];
 
+    const mergedFilePlacementBlocks = [
+      ...subjectFilePlacementBlocks,
+      ...otherFilePlacementBlocks,
+    ];
+
     mergedFilePlacements.push({
       number: fileNumber,
-      blocks: [...subjectFilePlacementBlocks, ...otherFilePlacementBlocks],
+      blocks: mergedFilePlacementBlocks,
     });
   });
 
@@ -237,27 +253,18 @@ export const getFileBlockDirectlyAbove = (subjectBlock: {
   // get the blockGroupFile of this block
   const { blockGroupsMap } = getWorld();
   const group = blockGroupsMap.get(subjectBlock.blockGroupId);
-  let blockAbove: Block | null = null;
-
   if (group) {
     // get file associated to block
     const file = group.files.find(
       (groupFile) => groupFile.number === subjectBlock.block.file,
     );
 
-    if (file) {
-      file.blocks.forEach((fileBlock) => {
-        if (
-          Math.round(fileBlock.sprite.y + getBlockSize()) ===
-          Math.round(subjectBlock.block.sprite.y)
-        ) {
-          blockAbove = fileBlock;
-        }
-      });
+    if (file && subjectBlock.block.groupFileRank > 1) {
+      return file.blocks[subjectBlock.block.groupFileRank - 1 - 1];
     }
   }
 
-  return blockAbove;
+  return null;
 };
 
 export const getFileBlockDirectlyBelow = (subjectBlock: {
@@ -267,7 +274,6 @@ export const getFileBlockDirectlyBelow = (subjectBlock: {
   // get the blockGroupFile of this block
   const { blockGroupsMap } = getWorld();
   const group = blockGroupsMap.get(subjectBlock.blockGroupId);
-  let blockAbove: Block | null = null;
 
   if (group) {
     // get file associated to block
@@ -275,27 +281,29 @@ export const getFileBlockDirectlyBelow = (subjectBlock: {
       (groupFile) => groupFile.number === subjectBlock.block.file,
     );
 
-    if (file) {
-      file.blocks.forEach((fileBlock) => {
-        if (
-          Math.round(fileBlock.sprite.y - getBlockSize()) ===
-          Math.round(subjectBlock.block.sprite.y)
-        ) {
-          blockAbove = fileBlock;
-        }
-      });
+    if (file && subjectBlock.block.groupFileRank < file.blocks.length) {
+      return file.blocks[subjectBlock.block.groupFileRank];
     }
   }
 
-  return blockAbove;
+  return null;
 };
 
 export const swapFileBlockPositions = (
+  blocks: Block[],
   subjectBlock: Block,
   otherBlock: Block,
 ) => {
   // blocks are assumed to be in the same file, hence only y position swap
   const swapYPosition = subjectBlock.sprite.y;
+  const swapGroupFileRank = subjectBlock.groupFileRank;
+
   subjectBlock.sprite.y = otherBlock.sprite.y;
+  subjectBlock.groupFileRank = otherBlock.groupFileRank;
+
   otherBlock.sprite.y = swapYPosition;
+  otherBlock.groupFileRank = swapGroupFileRank;
+
+  blocks[subjectBlock.groupFileRank - 1] = subjectBlock;
+  blocks[otherBlock.groupFileRank - 1] = otherBlock;
 };

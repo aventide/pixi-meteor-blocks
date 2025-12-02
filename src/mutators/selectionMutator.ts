@@ -45,7 +45,11 @@ export const selectionMutator = (blockGroup: BlockGroup) => {
             blockGroupId: blockGroup.id,
           });
           if (fileBlockDirectlyAbove) {
-            swapFileBlockPositions(selectedBlock, fileBlockDirectlyAbove);
+            swapFileBlockPositions(
+              file.blocks,
+              selectedBlock,
+              fileBlockDirectlyAbove,
+            );
           } else {
             // blockGroup.velocity = DEFAULT_POP_VELOCITY;
           }
@@ -56,7 +60,11 @@ export const selectionMutator = (blockGroup: BlockGroup) => {
             blockGroupId: blockGroup.id,
           });
           if (fileBlockDirectlyBelow) {
-            swapFileBlockPositions(selectedBlock, fileBlockDirectlyBelow);
+            swapFileBlockPositions(
+              file.blocks,
+              selectedBlock,
+              fileBlockDirectlyBelow,
+            );
           }
         }
       } else {
