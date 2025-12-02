@@ -1,8 +1,10 @@
-import { DEFAULT_FILE_LIMIT } from "../constants";
+import { DEFAULT_FILE_LIMIT, DEFAULT_POP_VELOCITY } from "../constants";
+import { decombineBlockGroup } from "../entities";
 import { Block, BlockGroup, BlockGroupFile } from "../entities/types";
 import {
   getFileBlockDirectlyAbove,
   getFileBlockDirectlyBelow,
+  getIsGroupRooted,
   swapFileBlockPositions,
 } from "../entities/util";
 import { getBlockSize, getWorld, setSelectedBlockGroup } from "../world";
@@ -50,8 +52,9 @@ export const selectionMutator = (blockGroup: BlockGroup) => {
               selectedBlock,
               fileBlockDirectlyAbove,
             );
-          } else {
-            // blockGroup.velocity = DEFAULT_POP_VELOCITY;
+          } else if (getIsGroupRooted(blockGroup)) {
+            const [, ejectedGroup] = decombineBlockGroup(blockGroup, 2);
+            ejectedGroup.velocity = DEFAULT_POP_VELOCITY;
           }
         }
         if (globalPointer.y > selectedBlock.sprite.y + blockSize) {

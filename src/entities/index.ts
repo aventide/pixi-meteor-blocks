@@ -24,6 +24,7 @@ import {
   getCombinedFilePlacements,
   getFileBoundaries,
   getFilePlacements,
+  getGroupBlockCount,
   getMomentum,
 } from "./util";
 
@@ -240,6 +241,9 @@ export const combineBlockGroups = (
     otherFilePlacements,
   );
 
+  removeBlockGroup(subjectBlockGroup);
+  removeBlockGroup(otherBlockGroup);
+
   const combinedBlockGroup = createBlockGroup(
     combinedFilePlacements,
     combinedVelocity,
@@ -254,32 +258,57 @@ export const combineBlockGroups = (
     setSelectedBlockGroup(combinedBlockGroup);
   }
 
-  removeBlockGroup(subjectBlockGroup);
-  removeBlockGroup(otherBlockGroup);
-
-  combinedBlockGroup.files.forEach((file) => {
-    file.blocks.forEach((block) => addToBlocksLayer(block.sprite));
-    addToOverlayLayer(file.overlay.danger);
-    addToOverlayLayer(file.overlay.selection);
-  });
-
   return combinedBlockGroup;
 };
 
 // create two new block groups, at a set of fracture points
-// probably best to do sorted file blocks after all
-// because it will make this, as well as swap, simpler
-// and not rely on coords
-// export const decombineBlockGroup = (
-//   blockGroup: BlockGroup,
-//   fracturePoints: number[],
-// ): BlockGroup[] => {
-//   const newBlockGroups: BlockGroup[] = [];
+// first returned group is intended to follow the "original" group properties
+// second return group is the "ejected" group which more likely will be altered
+export const decombineBlockGroup = (
+  originalBlockGroup: BlockGroup,
+  fracturePoint: number,
+): BlockGroup[] => {
+  if (getGroupBlockCount(originalBlockGroup) <= 1) {
+    return [originalBlockGroup, originalBlockGroup];
+  }
 
-//   removeBlockGroup(blockGroup);
+  const originalBlockGroupPlacements: FilePlacement[] =
+    getFilePlacements(originalBlockGroup);
 
-//   return newBlockGroups;
-// };
+  const basisGroupPlacements: FilePlacement[] = [];
+  const ejectedGroupPlacements: FilePlacement[] = [];
+
+  originalBlockGroupPlacements.forEach((originalPlacement: FilePlacement) => {
+    const individualFracturePoint = fracturePoint;
+
+    basisGroupPlacements.push({
+      blocks: originalPlacement.blocks.filter(
+        (block) => block.groupFileRank >= individualFracturePoint,
+      ),
+      number: originalPlacement.number,
+    });
+    ejectedGroupPlacements.push({
+      blocks: originalPlacement.blocks.filter(
+        (block) => block.groupFileRank < individualFracturePoint,
+      ),
+      number: originalPlacement.number,
+    });
+  });
+
+  // remove original blockGroup
+  removeBlockGroup(originalBlockGroup);
+
+  const basisGroup = createBlockGroup(
+    basisGroupPlacements,
+    originalBlockGroup.velocity,
+  );
+  const ejectedGroup = createBlockGroup(
+    ejectedGroupPlacements,
+    originalBlockGroup.velocity,
+  );
+
+  return [basisGroup, ejectedGroup];
+};
 
 export const removeBlockGroup = (blockGroup: BlockGroup) => {
   const { blockGroupIdPool, blockGroupsMap, fileBlockGroupsMap } = getWorld();
