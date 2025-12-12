@@ -7,7 +7,12 @@ import {
   getIsGroupRooted,
   swapFileBlockPositions,
 } from "../entities/util";
-import { getBlockSize, getWorld, setSelectedBlockGroup } from "../world";
+import {
+  getBlockSize,
+  getWorld,
+  setGlobalPointerDown,
+  setSelectedBlockGroup,
+} from "../world";
 
 let selectedFile: BlockGroupFile | null = null;
 let selectedBlock: Block | null = null;
@@ -52,8 +57,15 @@ export const selectionMutator = (blockGroup: BlockGroup) => {
               selectedBlock,
               fileBlockDirectlyAbove,
             );
-          } else if (getIsGroupRooted(blockGroup)) {
-            const [, ejectedGroup] = decombineBlockGroup(blockGroup, 2);
+          } else if (
+            getIsGroupRooted(blockGroup) &&
+            blockGroup.files.length === 1
+          ) {
+            const [, ejectedGroup] = decombineBlockGroup(blockGroup, {
+              [blockGroup.files[0].number]: 2,
+            });
+            setSelectedBlockGroup(null);
+            setGlobalPointerDown(false);
             ejectedGroup.velocity = DEFAULT_POP_VELOCITY;
           }
         }

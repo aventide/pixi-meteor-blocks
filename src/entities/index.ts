@@ -266,7 +266,7 @@ export const combineBlockGroups = (
 // second return group is the "ejected" group which more likely will be altered
 export const decombineBlockGroup = (
   originalBlockGroup: BlockGroup,
-  fracturePoint: number,
+  fracturePointMap: Record<FileNumber, number>,
 ): BlockGroup[] => {
   if (getGroupBlockCount(originalBlockGroup) <= 1) {
     return [originalBlockGroup, originalBlockGroup];
@@ -279,7 +279,7 @@ export const decombineBlockGroup = (
   const ejectedGroupPlacements: FilePlacement[] = [];
 
   originalBlockGroupPlacements.forEach((originalPlacement: FilePlacement) => {
-    const individualFracturePoint = fracturePoint;
+    const individualFracturePoint = fracturePointMap[originalPlacement.number];
 
     basisGroupPlacements.push({
       blocks: originalPlacement.blocks.filter(
