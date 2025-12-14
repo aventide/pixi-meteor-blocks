@@ -90,6 +90,7 @@ import { dangerAnimation } from "./animations";
   app.ticker.add((time) => {
     const { blockGroupsMap } = getWorld();
     const dt = time.deltaTime / 60;
+
     // apply mutators to each block group
     blockGroupsMap.forEach((blockGroup) => {
       descentMutator(blockGroup, dt);

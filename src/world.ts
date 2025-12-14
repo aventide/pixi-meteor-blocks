@@ -98,6 +98,6 @@ export const addToOverlayLayer = (sprite: Sprite | Container) => {
   if (world.stage) {
     world.stage.overlayLayer.addChild(sprite);
   } else {
-    throw "There is no blocks layer to add this sprite to";
+    throw "There is no overlay layer to add this sprite to";
   }
 };

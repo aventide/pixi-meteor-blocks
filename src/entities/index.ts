@@ -24,7 +24,6 @@ import {
   getCombinedFilePlacements,
   getFileBoundaries,
   getFilePlacements,
-  getGroupBlockCount,
   getMomentum,
 } from "./util";
 
@@ -148,6 +147,12 @@ const createBlockGroup = (
   filePlacements: FilePlacement[],
   velocity: number = 0,
 ): BlockGroup => {
+  filePlacements.forEach((fp) => {
+    if (fp.blocks.length === 0) {
+      throw "File for created BlockGroup must contain at least one block";
+    }
+  });
+
   const { blockGroupIdPool, blockGroupsMap, fileBlockGroupsMap } = getWorld();
   const assignedId = blockGroupIdPool.pop();
 
@@ -267,11 +272,7 @@ export const combineBlockGroups = (
 export const decombineBlockGroup = (
   originalBlockGroup: BlockGroup,
   fracturePointMap: Record<FileNumber, number>,
-): BlockGroup[] => {
-  if (getGroupBlockCount(originalBlockGroup) <= 1) {
-    return [originalBlockGroup, originalBlockGroup];
-  }
-
+): { basisGroup: BlockGroup | null; ejectedGroup: BlockGroup | null } => {
   const originalBlockGroupPlacements: FilePlacement[] =
     getFilePlacements(originalBlockGroup);
 
@@ -283,13 +284,13 @@ export const decombineBlockGroup = (
 
     basisGroupPlacements.push({
       blocks: originalPlacement.blocks.filter(
-        (block) => block.groupFileRank >= individualFracturePoint,
+        (block) => block.groupFileRank > individualFracturePoint,
       ),
       number: originalPlacement.number,
     });
     ejectedGroupPlacements.push({
       blocks: originalPlacement.blocks.filter(
-        (block) => block.groupFileRank < individualFracturePoint,
+        (block) => block.groupFileRank <= individualFracturePoint,
       ),
       number: originalPlacement.number,
     });
@@ -298,16 +299,28 @@ export const decombineBlockGroup = (
   // remove original blockGroup
   removeBlockGroup(originalBlockGroup);
 
-  const basisGroup = createBlockGroup(
-    basisGroupPlacements,
-    originalBlockGroup.velocity,
-  );
-  const ejectedGroup = createBlockGroup(
-    ejectedGroupPlacements,
-    originalBlockGroup.velocity,
-  );
+  let basisGroup: BlockGroup | null = null;
+  if (basisGroupPlacements.every((placement) => placement.blocks.length > 0)) {
+    basisGroup = createBlockGroup(
+      basisGroupPlacements,
+      originalBlockGroup.velocity,
+    );
+  }
 
-  return [basisGroup, ejectedGroup];
+  let ejectedGroup: BlockGroup | null = null;
+  if (
+    ejectedGroupPlacements.every((placement) => placement.blocks.length > 0)
+  ) {
+    ejectedGroup = createBlockGroup(
+      ejectedGroupPlacements,
+      originalBlockGroup.velocity,
+    );
+  }
+
+  return {
+    basisGroup,
+    ejectedGroup,
+  };
 };
 
 export const removeBlockGroup = (blockGroup: BlockGroup) => {
