@@ -1,4 +1,6 @@
-import { Block, BlockGroup } from "../entities/types";
+import { DEFAULT_POP_VELOCITY } from "../constants";
+import { decombineBlockGroup } from "../entities";
+import { Block, BlockGroup, FileNumber } from "../entities/types";
 import { getIsGroupRooted } from "../entities/util";
 
 export const sequenceMutator = (blockGroup: BlockGroup) => {
@@ -11,8 +13,22 @@ export const sequenceMutator = (blockGroup: BlockGroup) => {
   const verticalSequence = findVerticalSequence(blockGroup);
 
   if (verticalSequence) {
-    console.log(verticalSequence);
+    const { ejectedGroup } = decombineBlockGroup(
+      blockGroup,
+      getFracturePointMap(verticalSequence),
+    );
+    if (ejectedGroup) ejectedGroup.velocity = DEFAULT_POP_VELOCITY;
   }
+};
+
+const getFracturePointMap = (blocks: Block[]) => {
+  const map: Record<FileNumber, number> = {};
+
+  blocks.forEach((block) => {
+    map[block.file] = block.groupFileRank;
+  });
+
+  return map;
 };
 
 // for now, if we find one sequence, just return that first one
