@@ -1,4 +1,4 @@
-import { BlockGroup } from "../entities/types";
+import { Block, BlockGroup } from "../entities/types";
 import { getIsGroupRooted } from "../entities/util";
 
 export const sequenceMutator = (blockGroup: BlockGroup) => {
@@ -7,5 +7,36 @@ export const sequenceMutator = (blockGroup: BlockGroup) => {
     return blockGroup;
   }
 
-  return blockGroup;
+  // check for vertical sequences in the blockGroup
+  const verticalSequence = findVerticalSequence(blockGroup);
+
+  if (verticalSequence) {
+    console.log(verticalSequence);
+  }
+};
+
+// for now, if we find one sequence, just return that first one
+const findVerticalSequence = (blockGroup: BlockGroup) => {
+  for (const blockGroupFile of blockGroup.files) {
+    let sequence: Block[] = [];
+    for (const block of blockGroupFile.blocks) {
+      const comparableVariant = block.sprite.texture.label;
+      // if we're already in a sequence, check to see if it is being continued
+      if (
+        sequence.length > 0 &&
+        sequence[0].sprite.texture.label === comparableVariant
+      ) {
+        sequence.push(block);
+      } else {
+        if (sequence.length >= 3 && sequence.length <= 5) {
+          return sequence;
+        }
+        sequence = [block];
+      }
+    }
+
+    if (sequence.length >= 3 && sequence.length <= 5) {
+      return sequence;
+    }
+  }
 };
