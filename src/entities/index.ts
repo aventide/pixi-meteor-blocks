@@ -9,7 +9,6 @@ import type {
 } from "../entities/types";
 
 import { BlurFilter, Container, Graphics, Sprite, Texture } from "pixi.js";
-import { getRandomFileNumber } from "../util";
 import {
   addToBlocksLayer,
   addToOverlayLayer,
@@ -205,13 +204,16 @@ export const createSingleBlock = (fileNumber: FileNumber): BlockGroup => {
   ]);
 };
 
-export const createVerticalTestGroup = (blockCount: number): BlockGroup => {
-  const file = getRandomFileNumber();
+export const createVerticalTestGroup = (
+  file: number,
+  blockCount: number,
+): BlockGroup => {
+  const texture = getRandomBlockTexture();
   const initialBlocks = [];
   for (let i = 0; i < blockCount; i++) {
     const newBlock: Block = createBlock({
       initialPosition: { x: file, y: (i + 1) * -1 },
-      texture: getRandomBlockTexture(),
+      texture,
       file,
       groupFileRank: i + 1,
     });
