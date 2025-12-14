@@ -10,7 +10,12 @@ import {
 } from "./world";
 import type { WorldStage } from "./world";
 import { createSingleBlock } from "./entities";
-import { descentMutator, selectionMutator, positionMutator } from "./mutators";
+import {
+  descentMutator,
+  selectionMutator,
+  positionMutator,
+  sequenceMutator,
+} from "./mutators";
 import { getRandomFileNumber } from "./util";
 import { getIsSpawnPositionOpen } from "./entities/util";
 import {
@@ -96,6 +101,7 @@ import { dangerAnimation } from "./animations";
       descentMutator(blockGroup, dt);
       selectionMutator(blockGroup);
       positionMutator(blockGroup, dt);
+      sequenceMutator(blockGroup);
     });
 
     // apply per-tick animations
