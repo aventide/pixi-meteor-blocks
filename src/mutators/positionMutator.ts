@@ -62,26 +62,28 @@ export const positionMutator = (blockGroup: BlockGroup, dt: number) => {
     }),
   );
 
-  // After movement is applied for this frame, re-evaluate contacts using the
-  // current-frame positions (prevents missing merges due to checking before movement).
-  const { top: groupTopAfter, bottom: groupBottomAfter } =
+  // post-movement collision handling
+  const { top: groupTopPostMovement, bottom: groupBottomPostMovement } =
     getGroupBoundaries(blockGroup);
 
   if (nearestGroup) {
     const { top: nearestGroupTop, bottom: nearestGroupBottom } =
       getGroupBoundaries(nearestGroup);
 
-    if (blockGroup.velocity > 0 && groupBottomAfter === nearestGroupTop) {
+    if (
+      blockGroup.velocity > 0 &&
+      groupBottomPostMovement === nearestGroupTop
+    ) {
       combineBlockGroups(blockGroup, nearestGroup);
     } else if (
       blockGroup.velocity < 0 &&
-      groupTopAfter === nearestGroupBottom
+      groupTopPostMovement === nearestGroupBottom
     ) {
       combineBlockGroups(blockGroup, nearestGroup);
     }
   }
 
-  if (blockGroup.velocity < 0 && groupTopAfter === absoluteCeiling) {
+  if (blockGroup.velocity < 0 && groupTopPostMovement === absoluteCeiling) {
     blockGroup.velocity = 0;
   }
 };
