@@ -104,37 +104,6 @@ export const getGroupBoundaries = (blockGroup: BlockGroup): GroupBoundary => {
   };
 };
 
-export const getDistanceToCeiling = (blockGroup: BlockGroup): number => {
-  const ceiling = 0;
-  // const ceiling = worldHeight - blockSize * 12;
-
-  // if movement is downwards, this is irrelevant
-  if (blockGroup.velocity > 0) return Infinity;
-
-  let minDistance = Infinity;
-  blockGroup.files.forEach((file) => {
-    const distance = file.boundary.top - ceiling;
-    if (distance < minDistance) minDistance = distance;
-  });
-
-  return minDistance;
-};
-
-export const getDistanceToGround = (blockGroup: BlockGroup): number => {
-  const { height: worldHeight } = getWorld();
-
-  // if movement is upwards, this is irrelevant
-  if (blockGroup.velocity < 0) return Infinity;
-
-  let minDistance = Infinity;
-  blockGroup.files.forEach((file) => {
-    const distance = worldHeight - file.boundary.bottom;
-    if (distance < minDistance) minDistance = distance;
-  });
-
-  return minDistance;
-};
-
 export const getIsSpawnPositionOpen = (file: FileNumber): boolean => {
   const { fileBlockGroupsMap } = getWorld();
   const blockSize = getBlockSize();
