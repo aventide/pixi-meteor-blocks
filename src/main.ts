@@ -51,6 +51,9 @@ import { dangerAnimation } from "./animations";
     }
   });
 
+  let overrideDropInterval = false;
+
+  // pointer events
   app.stage.eventMode = "static";
   app.stage.hitArea = app.screen;
   app.stage.addEventListener("pointerdown", () => {
@@ -70,11 +73,26 @@ import { dangerAnimation } from "./animations";
     setSelectedBlockGroup(null);
   });
 
+  // keyboard events
+  window.addEventListener("keydown", (e) => {
+    if (e.code === "Space") {
+      overrideDropInterval = true;
+      app.ticker.speed = 15;
+    }
+  });
+
+  window.addEventListener("keyup", (e) => {
+    if (e.code === "Space") {
+      overrideDropInterval = false;
+      app.ticker.speed = 1;
+    }
+  });
+
   setWorldDimensions(app.screen.height, app.screen.width);
 
-  const dropInterval = DEFAULT_DROP_INTERVAL;
   let timeAccumulated = 0;
   app.ticker.add((time) => {
+    const dropInterval = overrideDropInterval ? 100 : DEFAULT_DROP_INTERVAL;
     timeAccumulated += time.deltaMS;
     if (timeAccumulated >= dropInterval) {
       timeAccumulated -= dropInterval;
@@ -96,12 +114,19 @@ import { dangerAnimation } from "./animations";
     const { blockGroupsMap } = getWorld();
     const dt = time.deltaTime / 60;
 
+    let iterations = 0;
+
     // apply mutators to each block group
     blockGroupsMap.forEach((blockGroup) => {
-      descentMutator(blockGroup, dt);
-      selectionMutator(blockGroup);
-      positionMutator(blockGroup, dt);
-      sequenceMutator(blockGroup);
+      if (iterations < 200) {
+        iterations++;
+        descentMutator(blockGroup, dt);
+        selectionMutator(blockGroup);
+        positionMutator(blockGroup, dt);
+        sequenceMutator(blockGroup);
+      } else {
+        throw new Error("Iteration pressure level exceeded threshold");
+      }
     });
 
     // apply per-tick animations
