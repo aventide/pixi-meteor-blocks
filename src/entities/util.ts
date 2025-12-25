@@ -5,6 +5,7 @@ import type {
   Block,
   FilePlacement,
   FileNumber,
+  GroupBoundary,
 } from "./types";
 
 import { getBlockSize, getWorld } from "../world";
@@ -84,6 +85,26 @@ export const getDirectionalBoundaryDistance = (
   return distance >= 0 ? distance : Infinity;
 };
 
+export const getGroupBoundaries = (blockGroup: BlockGroup): GroupBoundary => {
+  if (blockGroup.files.length === 0) {
+    throw new Error("BlockGroup must contain at least one file");
+  }
+
+  let bottomBoundary = blockGroup.files[0].boundary.bottom;
+  let topBoundary = blockGroup.files[0].boundary.top;
+
+  blockGroup.files.forEach((file) => {
+    if (file.boundary.top < topBoundary) topBoundary = file.boundary.top;
+    if (file.boundary.bottom > bottomBoundary)
+      bottomBoundary = file.boundary.bottom;
+  });
+
+  return {
+    bottom: bottomBoundary,
+    top: topBoundary,
+  };
+};
+
 export const getDistanceToCeiling = (blockGroup: BlockGroup): number => {
   const ceiling = 0;
   // const ceiling = worldHeight - blockSize * 12;
@@ -97,7 +118,7 @@ export const getDistanceToCeiling = (blockGroup: BlockGroup): number => {
     if (distance < minDistance) minDistance = distance;
   });
 
-  return Math.max(0, minDistance);
+  return minDistance;
 };
 
 export const getDistanceToGround = (blockGroup: BlockGroup): number => {

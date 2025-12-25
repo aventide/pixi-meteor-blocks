@@ -1,32 +1,53 @@
 import type { BlockGroup } from "../entities/types";
 
-import { getWorld } from "../world";
+import { getBlockSize, getWorld } from "../world";
 import { DEFAULT_REFERENCE_HEIGHT } from "../constants";
 import {
+  getGroupBoundaries,
   getDirectionallyNearestGroup,
-  getDistanceToCeiling,
-  getDistanceToGround,
 } from "../entities/util";
 import { clamp } from "../util";
 import { combineBlockGroups } from "../entities";
 
 export const positionMutator = (blockGroup: BlockGroup, dt: number) => {
   const { height: worldHeight } = getWorld();
+  const blockSize = getBlockSize();
+
+  // absolute ceiling and floor, nothing can ever vertically go beyond these bounds
+  const absoluteCeiling = 0 - 2 * blockSize;
+  const absoluteFloor = worldHeight;
+
+  let upwardBounds = absoluteCeiling;
+  let downwardBounds = absoluteFloor;
+
+  const [nearestGroup] = getDirectionallyNearestGroup(blockGroup);
+
+  const { top: groupTop, bottom: groupBottom } = getGroupBoundaries(blockGroup);
+
+  if (nearestGroup) {
+    const { top: nearestGroupTop, bottom: nearestGroupBottom } =
+      getGroupBoundaries(nearestGroup);
+
+    if (blockGroup.velocity > 0) {
+      downwardBounds = nearestGroupTop;
+    } else if (blockGroup.velocity < 0) {
+      upwardBounds = nearestGroupBottom;
+    }
+  }
+
+  // convert bounds to deltas
+  const upwardBoundDelta = groupTop - upwardBounds;
+  const downwardBoundDelta = downwardBounds - groupBottom;
 
   // normalize delta calculation based on screen height
   const targetDelta =
     blockGroup.velocity * dt * (worldHeight / DEFAULT_REFERENCE_HEIGHT);
 
-  if (targetDelta === 0) return;
-
-  const [nearestGroup, distanceToNearestGroup] =
-    getDirectionallyNearestGroup(blockGroup);
-  const distanceToGround = getDistanceToGround(blockGroup);
-  const distanceToCeiling = getDistanceToCeiling(blockGroup);
-  const downwardsLimit = Math.min(distanceToGround, distanceToNearestGroup);
-  const upwardsLimit = Math.max(-distanceToCeiling, -distanceToNearestGroup);
-
-  const resolvedDelta = clamp(targetDelta, upwardsLimit, downwardsLimit);
+  const resolvedDelta = clamp(
+    targetDelta,
+    -upwardBoundDelta,
+    downwardBoundDelta,
+  );
 
   // do final calculated movement on group
   blockGroup.files.forEach((file) => {
@@ -42,18 +63,26 @@ export const positionMutator = (blockGroup: BlockGroup, dt: number) => {
     }),
   );
 
-  const collidedWithNearestGroup =
-    nearestGroup &&
-    (resolvedDelta > 0
-      ? resolvedDelta === distanceToNearestGroup
-      : resolvedDelta === -distanceToNearestGroup);
-  const collidedWithCeiling = resolvedDelta === distanceToCeiling;
+  // After movement is applied for this frame, re-evaluate contacts using the
+  // current-frame positions (prevents missing merges due to checking before movement).
+  const { top: groupTopAfter, bottom: groupBottomAfter } =
+    getGroupBoundaries(blockGroup);
 
-  if (collidedWithNearestGroup) {
-    combineBlockGroups(blockGroup, nearestGroup);
+  if (nearestGroup) {
+    const { top: nearestGroupTop, bottom: nearestGroupBottom } =
+      getGroupBoundaries(nearestGroup);
+
+    if (blockGroup.velocity > 0 && groupBottomAfter === nearestGroupTop) {
+      combineBlockGroups(blockGroup, nearestGroup);
+    } else if (
+      blockGroup.velocity < 0 &&
+      groupTopAfter === nearestGroupBottom
+    ) {
+      combineBlockGroups(blockGroup, nearestGroup);
+    }
   }
 
-  if (collidedWithCeiling) {
+  if (blockGroup.velocity < 0 && groupTopAfter === absoluteCeiling) {
     blockGroup.velocity = 0;
   }
 };
