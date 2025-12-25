@@ -8,8 +8,7 @@ import type {
   GroupBoundary,
 } from "./types";
 
-import { getBlockSize, getWorld } from "../world";
-import { DEFAULT_SPAWN_POINT } from "../constants";
+import { getBlockSize, getCeiling, getWorld } from "../world";
 
 // get groups that the given group could possibly contact
 export const getContactableGroups = (subjectGroup: BlockGroup) => {
@@ -145,7 +144,7 @@ export const getIsSpawnPositionOpen = (file: FileNumber): boolean => {
 
   groupsInFile.forEach((blockGroup) =>
     blockGroup.files.forEach((blockGroupFile) => {
-      if (blockGroupFile.boundary.top < (DEFAULT_SPAWN_POINT + 1) * blockSize)
+      if (blockGroupFile.boundary.top < getCeiling() + blockSize)
         isPositionOpen = false;
     }),
   );

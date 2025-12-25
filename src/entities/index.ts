@@ -13,11 +13,11 @@ import {
   addToBlocksLayer,
   addToOverlayLayer,
   getBlockSize,
+  getCeiling,
   getWorld,
   setSelectedBlockGroup,
 } from "../world";
 import { getRandomBlockTexture } from "../textures";
-import { DEFAULT_SPAWN_POINT } from "../constants";
 import {
   assignGroupFileRanks,
   getCombinedFilePlacements,
@@ -190,7 +190,7 @@ export const createSingleBlock = (fileNumber: FileNumber): BlockGroup => {
     texture: getRandomBlockTexture(),
     initialPosition: {
       x: fileNumber,
-      y: DEFAULT_SPAWN_POINT,
+      y: getCeiling() / getBlockSize(),
     },
     file: fileNumber,
     groupFileRank: 1,
