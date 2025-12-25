@@ -1,6 +1,6 @@
 import type { BlockGroup } from "../entities/types";
 
-import { getCeiling, getWorld } from "../world";
+import { getCeiling, getFloor, getWorld } from "../world";
 import { DEFAULT_REFERENCE_HEIGHT } from "../constants";
 import {
   getGroupBoundaries,
@@ -14,7 +14,7 @@ export const positionMutator = (blockGroup: BlockGroup, dt: number) => {
 
   // absolute ceiling and floor, nothing can ever vertically go beyond these bounds
   const absoluteCeiling = getCeiling();
-  const absoluteFloor = worldHeight;
+  const absoluteFloor = getFloor();
 
   let upwardBounds = absoluteCeiling;
   let downwardBounds = absoluteFloor;
