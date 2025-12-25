@@ -5,10 +5,10 @@ import type {
   Block,
   FilePlacement,
   FileNumber,
+  GroupBoundary,
 } from "./types";
 
-import { getBlockSize, getWorld } from "../world";
-import { DEFAULT_SPAWN_POINT } from "../constants";
+import { getBlockSize, getCeiling, getWorld } from "../world";
 
 // get groups that the given group could possibly contact
 export const getContactableGroups = (subjectGroup: BlockGroup) => {
@@ -84,35 +84,24 @@ export const getDirectionalBoundaryDistance = (
   return distance >= 0 ? distance : Infinity;
 };
 
-export const getDistanceToCeiling = (blockGroup: BlockGroup): number => {
-  const ceiling = 0;
-  // const ceiling = worldHeight - blockSize * 12;
+export const getGroupBoundaries = (blockGroup: BlockGroup): GroupBoundary => {
+  if (blockGroup.files.length === 0) {
+    throw new Error("BlockGroup must contain at least one file");
+  }
 
-  // if movement is downwards, this is irrelevant
-  if (blockGroup.velocity > 0) return Infinity;
+  let bottomBoundary = blockGroup.files[0].boundary.bottom;
+  let topBoundary = blockGroup.files[0].boundary.top;
 
-  let minDistance = Infinity;
   blockGroup.files.forEach((file) => {
-    const distance = file.boundary.top - ceiling;
-    if (distance < minDistance) minDistance = distance;
+    if (file.boundary.top < topBoundary) topBoundary = file.boundary.top;
+    if (file.boundary.bottom > bottomBoundary)
+      bottomBoundary = file.boundary.bottom;
   });
 
-  return Math.max(0, minDistance);
-};
-
-export const getDistanceToGround = (blockGroup: BlockGroup): number => {
-  const { height: worldHeight } = getWorld();
-
-  // if movement is upwards, this is irrelevant
-  if (blockGroup.velocity < 0) return Infinity;
-
-  let minDistance = Infinity;
-  blockGroup.files.forEach((file) => {
-    const distance = worldHeight - file.boundary.bottom;
-    if (distance < minDistance) minDistance = distance;
-  });
-
-  return minDistance;
+  return {
+    bottom: bottomBoundary,
+    top: topBoundary,
+  };
 };
 
 export const getIsSpawnPositionOpen = (file: FileNumber): boolean => {
@@ -124,7 +113,7 @@ export const getIsSpawnPositionOpen = (file: FileNumber): boolean => {
 
   groupsInFile.forEach((blockGroup) =>
     blockGroup.files.forEach((blockGroupFile) => {
-      if (blockGroupFile.boundary.top < (DEFAULT_SPAWN_POINT + 1) * blockSize)
+      if (blockGroupFile.boundary.top < getCeiling() + blockSize)
         isPositionOpen = false;
     }),
   );

@@ -15,10 +15,13 @@ export type Block = {
   groupFileRank: number;
 };
 
-export type FileBoundary = {
+export type VerticalBoundary = {
   bottom: number;
   top: number;
 };
+
+export type FileBoundary = VerticalBoundary;
+export type GroupBoundary = VerticalBoundary;
 
 export type FileOverlay = {
   danger: Container;

@@ -50,10 +50,15 @@ const world: World = {
 
 export const getWorld = () => world;
 export const getBlockSize = () => world.width / DEFAULT_FILE_COUNT;
+export const getCeiling = () => 0 - 2 * getBlockSize();
+export const getFloor = () => world.height;
 
 export const setWorldDimensions = (height: number, width: number) => {
   world.height = height;
   world.width = width;
+  // const blockSize = width / DEFAULT_FILE_COUNT;
+  // world.height = blockSize * DEFAULT_FILE_LIMIT;
+  // world.width = width;
 };
 
 export const setWorldGravity = (gravity: number) => {
