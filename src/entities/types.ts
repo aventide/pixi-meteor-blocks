@@ -40,7 +40,7 @@ export type BlockGroupFile = {
   number: FileNumber;
 };
 
-export type BlockGroupType = "pop" | "launch" | "default";
+export type BlockGroupType = "default" | "launch" | "pop";
 
 export type BlockGroup = {
   id: BlockGroupId;

@@ -39,7 +39,8 @@ export const positionMutator = (blockGroup: BlockGroup, dt: number) => {
   if (velocity < 0 && groupTop + adjustedDelta <= veil) {
     exceededVeil = groupTop + adjustedDelta < veil;
     hitVeil = true;
-    adjustedDelta = blockGroup.type === "pop" ? veil - groupTop : adjustedDelta;
+    adjustedDelta =
+      blockGroup.type !== "launch" ? veil - groupTop : adjustedDelta;
   } else if (velocity > 0 && groupBottom + adjustedDelta >= floor) {
     adjustedDelta = floor - groupBottom;
   }
@@ -69,7 +70,7 @@ export const positionMutator = (blockGroup: BlockGroup, dt: number) => {
   if (hitNearestGroup && nearestGroup) {
     // first, if any new grouping, do that
     combineBlockGroups(blockGroup, nearestGroup);
-  } else if (hitVeil && blockGroup.type === "pop") {
+  } else if (hitVeil && blockGroup.type !== "launch") {
     // otherwise, if a pop block, stop at the veil
     blockGroup.velocity = 0;
   } else if (exceededVeil && blockGroup.type === "launch") {
@@ -83,15 +84,11 @@ export const positionMutator = (blockGroup: BlockGroup, dt: number) => {
     });
 
     if (breakPoint) {
-      const { ejectedGroup: vanishedGroup, basisGroup: remainingGroup } =
-        decombineBlockGroup(blockGroup, {
-          [blockGroup.files[0].number]: breakPoint,
-        });
+      const { ejectedGroup: vanishedGroup } = decombineBlockGroup(blockGroup, {
+        [blockGroup.files[0].number]: breakPoint,
+      });
       if (vanishedGroup) {
         removeBlockGroup(vanishedGroup);
-      }
-      if (remainingGroup) {
-        remainingGroup.type = "launch";
       }
     }
   }
