@@ -1,4 +1,3 @@
-import { DEFAULT_LAUNCH_DESCENT_RATE } from "../constants";
 import type { BlockGroup } from "../entities/types";
 
 import { getWorld } from "../world";
