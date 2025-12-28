@@ -114,7 +114,7 @@ import { dangerAnimation } from "./animations";
 
     let iterations = 0;
 
-    // apply mutators to each block group
+    // apply once per group per tick mutations
     blockGroupsMap.forEach((blockGroup) => {
       if (iterations < 200) {
         iterations++;
@@ -127,7 +127,10 @@ import { dangerAnimation } from "./animations";
       }
     });
 
-    // apply per-tick animations
+    // apply once per tick mutations
+    // @todo sequenceMutator will be moved here and possibly others
+
+    // apply animation progress once per tick
     dangerAnimation(dt);
 
     // check for losing state
