@@ -187,11 +187,7 @@ export const getGroupBlockCount = (blockGroup: BlockGroup): number =>
   blockGroup.files.reduce((count, file) => count + file.blocks.length, 0);
 
 export const getMomentum = (blockGroup: BlockGroup): number =>
-  blockGroup.velocity *
-  blockGroup.files.reduce(
-    (totalBlocks, file) => totalBlocks + file.blocks.length,
-    0,
-  );
+  blockGroup.velocity * getGroupBlockCount(blockGroup);
 
 export const getFilePlacements = (blockGroup: BlockGroup): FilePlacement[] =>
   blockGroup.files.map((file) => ({

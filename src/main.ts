@@ -19,9 +19,11 @@ import {
 import { getRandomFileNumber } from "./util";
 import { getIsSpawnPositionOpen } from "./entities/util";
 import {
+  ACCELERATED_MAIN_TICKER_SPEED,
   DEFAULT_DROP_INTERVAL,
   DEFAULT_FILE_COUNT,
   DEFAULT_FILE_LIMIT,
+  DEFAULT_MAIN_TICKER_SPEED,
   DEFAULT_POINTER_POSITION,
 } from "./constants";
 import { dangerAnimation } from "./animations";
@@ -51,8 +53,6 @@ import { dangerAnimation } from "./animations";
     }
   });
 
-  let overrideDropInterval = false;
-
   // pointer events
   app.stage.eventMode = "static";
   app.stage.hitArea = app.screen;
@@ -76,15 +76,13 @@ import { dangerAnimation } from "./animations";
   // keyboard events
   window.addEventListener("keydown", (e) => {
     if (e.code === "Space") {
-      overrideDropInterval = true;
-      app.ticker.speed = 15;
+      app.ticker.speed = ACCELERATED_MAIN_TICKER_SPEED;
     }
   });
 
   window.addEventListener("keyup", (e) => {
     if (e.code === "Space") {
-      overrideDropInterval = false;
-      app.ticker.speed = 1;
+      app.ticker.speed = DEFAULT_MAIN_TICKER_SPEED;
     }
   });
 
@@ -92,7 +90,7 @@ import { dangerAnimation } from "./animations";
 
   let timeAccumulated = 0;
   app.ticker.add((time) => {
-    const dropInterval = overrideDropInterval ? 100 : DEFAULT_DROP_INTERVAL;
+    const dropInterval = DEFAULT_DROP_INTERVAL;
     timeAccumulated += time.deltaMS;
     if (timeAccumulated >= dropInterval) {
       timeAccumulated -= dropInterval;

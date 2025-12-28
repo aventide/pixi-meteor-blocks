@@ -1,4 +1,4 @@
-import { DEFAULT_POP_VELOCITY } from "../constants";
+import { DEFAULT_LAUNCH_VELOCITY } from "../constants";
 import { decombineBlockGroup } from "../entities";
 import { Block, BlockGroup, FileNumber } from "../entities/types";
 import { getIsGroupRooted } from "../entities/util";
@@ -17,7 +17,10 @@ export const sequenceMutator = (blockGroup: BlockGroup) => {
       blockGroup,
       getFracturePointMap(verticalSequence),
     );
-    if (ejectedGroup) ejectedGroup.velocity = DEFAULT_POP_VELOCITY;
+    if (ejectedGroup) {
+      ejectedGroup.velocity = DEFAULT_LAUNCH_VELOCITY;
+      ejectedGroup.type = "launch";
+    }
   }
 };
 

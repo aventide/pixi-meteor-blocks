@@ -40,8 +40,11 @@ export type BlockGroupFile = {
   number: FileNumber;
 };
 
+export type BlockGroupType = "default" | "launch" | "pop";
+
 export type BlockGroup = {
   id: BlockGroupId;
   files: BlockGroupFile[];
   velocity: number;
+  type: BlockGroupType;
 };

@@ -67,6 +67,7 @@ export const selectionMutator = (blockGroup: BlockGroup) => {
             setSelectedBlockGroup(null);
             setGlobalPointerDown(false);
             if (ejectedGroup) {
+              ejectedGroup.type = "pop";
               ejectedGroup.velocity = DEFAULT_POP_VELOCITY;
             }
           }
