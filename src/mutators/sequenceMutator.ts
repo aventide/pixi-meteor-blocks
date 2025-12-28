@@ -47,14 +47,14 @@ const findVerticalSequence = (blockGroup: BlockGroup) => {
       ) {
         sequence.push(block);
       } else {
-        if (sequence.length >= 3 && sequence.length <= 5) {
+        if (sequence.length >= 3) {
           return sequence;
         }
         sequence = [block];
       }
     }
 
-    if (sequence.length >= 3 && sequence.length <= 5) {
+    if (sequence.length >= 3) {
       return sequence;
     }
   }
