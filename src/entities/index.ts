@@ -231,18 +231,53 @@ export const createVerticalTestGroup = (
   ]);
 };
 
+const getCombinedBlockGroupType = (
+  subjectBlockGroup: BlockGroup,
+  otherBlockGroup: BlockGroup,
+): BlockGroupType => {
+  if (
+    subjectBlockGroup.type === "launch" ||
+    otherBlockGroup.type === "launch"
+  ) {
+    return "launch";
+  } else if (
+    subjectBlockGroup.type === "pop" ||
+    otherBlockGroup.type === "pop"
+  ) {
+    return "pop";
+  }
+
+  return "default";
+};
+
+const getCombinedVelocity = (
+  subjectBlockGroup: BlockGroup,
+  otherBlockGroup: BlockGroup,
+): number => {
+  let combinedVelocity: number = 0;
+
+  // make modifications based on blockGroup types here
+
+  combinedVelocity =
+    (getMomentum(subjectBlockGroup) + getMomentum(otherBlockGroup)) /
+    [...subjectBlockGroup.files, ...otherBlockGroup.files].reduce(
+      (totalBlocks, file) => totalBlocks + file.blocks.length,
+      0,
+    );
+
+  return combinedVelocity;
+};
+
 export const combineBlockGroups = (
   subjectBlockGroup: BlockGroup,
   otherBlockGroup: BlockGroup,
 ) => {
   const { blockGroupsMap, selectedBlockGroup } = getWorld();
 
-  const combinedVelocity =
-    (getMomentum(subjectBlockGroup) + getMomentum(otherBlockGroup)) /
-    [...subjectBlockGroup.files, ...otherBlockGroup.files].reduce(
-      (totalBlocks, file) => totalBlocks + file.blocks.length,
-      0,
-    );
+  const combinedVelocity = getCombinedVelocity(
+    subjectBlockGroup,
+    otherBlockGroup,
+  );
 
   const subjectFilePlacements = getFilePlacements(subjectBlockGroup);
   const otherFilePlacements = getFilePlacements(otherBlockGroup);
@@ -251,12 +286,19 @@ export const combineBlockGroups = (
     otherFilePlacements,
   );
 
+  const combinedType = getCombinedBlockGroupType(
+    subjectBlockGroup,
+    otherBlockGroup,
+  );
+
+  // begin combination process
   removeBlockGroup(subjectBlockGroup);
   removeBlockGroup(otherBlockGroup);
 
   const combinedBlockGroup = createBlockGroup(
     combinedFilePlacements,
     combinedVelocity,
+    combinedType,
   );
 
   blockGroupsMap.set(combinedBlockGroup.id, combinedBlockGroup);
@@ -309,6 +351,7 @@ export const decombineBlockGroup = (
     basisGroup = createBlockGroup(
       basisGroupPlacements,
       originalBlockGroup.velocity,
+      originalBlockGroup.type,
     );
   }
 
@@ -319,6 +362,7 @@ export const decombineBlockGroup = (
     ejectedGroup = createBlockGroup(
       ejectedGroupPlacements,
       originalBlockGroup.velocity,
+      originalBlockGroup.type,
     );
   }
 

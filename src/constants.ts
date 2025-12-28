@@ -3,7 +3,7 @@ const DEFAULT_FILE_LIMIT = 14;
 const DEFAULT_GRAVITY = 980; // gravity is planet-wide (or level-wide) constant
 const DEFAULT_REFERENCE_HEIGHT = 1080; // baseline screen height for normalization
 const DEFAULT_POP_VELOCITY = -6000;
-const DEFAULT_LAUNCH_VELOCITY = -1800;
+const DEFAULT_LAUNCH_VELOCITY = -1500;
 const DEFAULT_POINTER_POSITION = { x: -1, y: -1 };
 const DEFAULT_DROP_INTERVAL = 700;
 
