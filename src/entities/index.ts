@@ -2,6 +2,7 @@ import type {
   Block,
   BlockGroup,
   BlockGroupFile,
+  BlockGroupType,
   Coord,
   FileBoundary,
   FileNumber,
@@ -145,6 +146,7 @@ const createBlockGroupFile = (filePlacement: FilePlacement): BlockGroupFile => {
 const createBlockGroup = (
   filePlacements: FilePlacement[],
   velocity: number = 0,
+  type: BlockGroupType = "default",
 ): BlockGroup => {
   filePlacements.forEach((fp) => {
     if (fp.blocks.length === 0) {
@@ -164,6 +166,7 @@ const createBlockGroup = (
       id: assignedId,
       files,
       velocity,
+      type,
     };
 
     // register the group and its files with the game world

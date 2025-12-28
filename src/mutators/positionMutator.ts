@@ -1,18 +1,22 @@
 import type { BlockGroup } from "../entities/types";
 
+import { getFloor, getVeil, getWorld } from "../world";
 import { DEFAULT_REFERENCE_HEIGHT } from "../constants";
-import { combineBlockGroups } from "../entities";
+import {
+  combineBlockGroups,
+  decombineBlockGroup,
+  removeBlockGroup,
+} from "../entities";
 import {
   getDirectionallyNearestGroup,
   getGroupBoundaries,
 } from "../entities/util";
-import { getCeiling, getFloor, getWorld } from "../world";
 
 export const positionMutator = (blockGroup: BlockGroup, dt: number) => {
   const { height: worldHeight } = getWorld();
 
-  const ceiling = getCeiling();
   const floor = getFloor();
+  const veil = getVeil();
 
   const velocity = blockGroup.velocity;
   if (velocity === 0) return;
@@ -27,13 +31,15 @@ export const positionMutator = (blockGroup: BlockGroup, dt: number) => {
   const targetDelta = velocity * dt * (worldHeight / DEFAULT_REFERENCE_HEIGHT);
   let adjustedDelta = targetDelta;
 
-  let hitCeiling = false;
+  let exceededVeil = false;
   let hitNearestGroup = false;
+  let hitVeil = false;
 
   // if colliding with ceiling/floor, snap back into place with it
-  if (velocity < 0 && groupTop + adjustedDelta <= ceiling) {
-    adjustedDelta = ceiling - groupTop;
-    hitCeiling = true;
+  if (velocity < 0 && groupTop + adjustedDelta <= veil) {
+    exceededVeil = groupTop + adjustedDelta < veil;
+    hitVeil = true;
+    adjustedDelta = blockGroup.type === "pop" ? veil - groupTop : adjustedDelta;
   } else if (velocity > 0 && groupBottom + adjustedDelta >= floor) {
     adjustedDelta = floor - groupBottom;
   }
@@ -59,12 +65,35 @@ export const positionMutator = (blockGroup: BlockGroup, dt: number) => {
   translateBlockGroupPosition(blockGroup, adjustedDelta);
 
   // post-translation reactions (based on hit flags)
-  if (nearestGroup && hitNearestGroup) {
-    combineBlockGroups(blockGroup, nearestGroup);
-  }
 
-  if (hitCeiling) {
+  if (hitNearestGroup && nearestGroup) {
+    // first, if any new grouping, do that
+    combineBlockGroups(blockGroup, nearestGroup);
+  } else if (hitVeil && blockGroup.type === "pop") {
+    // otherwise, if a pop block, stop at the veil
     blockGroup.velocity = 0;
+  } else if (exceededVeil && blockGroup.type === "launch") {
+    // otherwise, if a launch group exceeded the veil, remove the blocks beyond the veil
+    // @todo for now, just do this assuming a one-file group
+    let breakPoint: number | null = null;
+    blockGroup.files[0].blocks.forEach((block) => {
+      if (block.sprite.y < veil) {
+        breakPoint = block.groupFileRank;
+      }
+    });
+
+    if (breakPoint) {
+      const { ejectedGroup: vanishedGroup, basisGroup: remainingGroup } =
+        decombineBlockGroup(blockGroup, {
+          [blockGroup.files[0].number]: breakPoint,
+        });
+      if (vanishedGroup) {
+        removeBlockGroup(vanishedGroup);
+      }
+      if (remainingGroup) {
+        remainingGroup.type = "launch";
+      }
+    }
   }
 };
 
