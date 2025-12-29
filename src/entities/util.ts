@@ -195,6 +195,11 @@ export const getFilePlacements = (blockGroup: BlockGroup): FilePlacement[] =>
     number: file.number,
   }));
 
+export const assignBlockGroupId = (blocks: Block[], groupId: BlockGroupId) => {
+  blocks.forEach((block) => (block.groupId = groupId));
+  return blocks;
+};
+
 export const assignGroupFileRanks = (blocks: Block[]) => {
   // sort blocks in ascending y coord
   const sortedBlocks = blocks.sort(

@@ -13,6 +13,7 @@ export type Block = {
   sprite: Sprite;
   file: FileNumber;
   groupFileRank: number;
+  groupId?: BlockGroupId;
 };
 
 export type VerticalBoundary = {

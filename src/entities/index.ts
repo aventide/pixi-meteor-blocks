@@ -2,6 +2,7 @@ import type {
   Block,
   BlockGroup,
   BlockGroupFile,
+  BlockGroupId,
   BlockGroupType,
   Coord,
   FileBoundary,
@@ -20,6 +21,7 @@ import {
 } from "../world";
 import { getRandomBlockTexture } from "../textures";
 import {
+  assignBlockGroupId,
   assignGroupFileRanks,
   getCombinedFilePlacements,
   getFileBoundaries,
@@ -119,7 +121,10 @@ const createFileSelectionOverlay = (
   return overlay;
 };
 
-const createBlockGroupFile = (filePlacement: FilePlacement): BlockGroupFile => {
+const createBlockGroupFile = (
+  filePlacement: FilePlacement,
+  groupId: BlockGroupId,
+): BlockGroupFile => {
   const fileBoundaries = getFileBoundaries(filePlacement.blocks);
 
   const dangerOverlay = createFileDangerOverlay(
@@ -132,8 +137,13 @@ const createBlockGroupFile = (filePlacement: FilePlacement): BlockGroupFile => {
     fileBoundaries,
   );
 
+  // @todo consider making these assignment functions pure
+  // @todo consider doing id assignment as a separate step, though this is also fine
+  assignBlockGroupId(filePlacement.blocks, groupId);
+  assignGroupFileRanks(filePlacement.blocks);
+
   return {
-    blocks: assignGroupFileRanks(filePlacement.blocks),
+    blocks: filePlacement.blocks,
     number: filePlacement.number,
     boundary: fileBoundaries,
     overlay: {
@@ -159,7 +169,9 @@ const createBlockGroup = (
 
   if (assignedId) {
     // create files
-    const files: BlockGroupFile[] = filePlacements.map(createBlockGroupFile);
+    const files: BlockGroupFile[] = filePlacements.map((fp) =>
+      createBlockGroupFile(fp, assignedId),
+    );
     const fileNumbers = files.map((file) => file.number);
 
     const newBlockGroup: BlockGroup = {

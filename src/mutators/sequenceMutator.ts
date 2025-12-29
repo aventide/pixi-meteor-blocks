@@ -26,7 +26,40 @@ export const sequenceMutator = (blockGroup: BlockGroup) => {
 
   const rootedHorizontalSequence = findRootedHorizontalSequence();
   if (rootedHorizontalSequence) {
-    // console.log(rootedHorizontalSequence);
+    const ejectedGroups: BlockGroup[] = [];
+    rootedHorizontalSequence.forEach((block) => {
+      const associatedGroup = getGroupByBlock(block);
+      if (associatedGroup) {
+        const { ejectedGroup } = decombineBlockGroup(
+          associatedGroup,
+          getFracturePointMap(rootedHorizontalSequence),
+        );
+        if (ejectedGroup) {
+          ejectedGroup.velocity = DEFAULT_LAUNCH_VELOCITY;
+          ejectedGroup.type = "launch";
+          ejectedGroups.push(ejectedGroup);
+        }
+      }
+    });
+
+    // ejectedGroups.forEach((ejectedGroup, index) => {
+    //   if (ejectedGroups[index + 1]) {
+    //     combineBlockGroups(ejectedGroup, ejectedGroups[index + 1]);
+    //     ejectedGroups.splice(index + 1);
+    //   }
+    // });
+  }
+};
+
+const getGroupByBlock = (block: Block): BlockGroup | undefined => {
+  const { blockGroupsMap } = getWorld();
+
+  const associatedGroupId = block.groupId;
+  if (associatedGroupId) {
+    const associatedGroup = blockGroupsMap.get(associatedGroupId);
+    if (associatedGroup) {
+      return associatedGroup;
+    }
   }
 };
 
