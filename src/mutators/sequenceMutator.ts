@@ -1,22 +1,34 @@
 import { DEFAULT_LAUNCH_VELOCITY } from "../constants";
-import { decombineBlockGroup } from "../entities";
+import { combineBlockGroups, decombineBlockGroup } from "../entities";
 import { Block, BlockGroup, FileNumber } from "../entities/types";
 import { getIsGroupRooted } from "../entities/util";
-import { getWorld } from "../world";
+import { greyTexture } from "../textures";
+import { getBlockSize, getWorld } from "../world";
 
 export const sequenceMutator = (blockGroup: BlockGroup) => {
+  const blockSize = getBlockSize();
+
   // for now, we are only going to process blockGroups that are rooted to the bottom
   if (!getIsGroupRooted(blockGroup)) {
     return blockGroup;
   }
 
   // check for vertical sequences in the blockGroup
-  const verticalSequence = findVerticalSequence(blockGroup);
+  const rootedVerticalSequence = findRootedVerticalSequence(blockGroup);
 
-  if (verticalSequence) {
+  if (
+    rootedVerticalSequence &&
+    !rootedVerticalSequence[0].sprite.texture.label?.endsWith("tile_grey.svg")
+  ) {
+    console.log(rootedVerticalSequence[0].sprite.texture.label);
+    rootedVerticalSequence.forEach((block) => {
+      block.sprite.texture = greyTexture;
+      block.sprite.anchor.set(0);
+      block.sprite.setSize(blockSize);
+    });
     const { ejectedGroup } = decombineBlockGroup(
       blockGroup,
-      getFracturePointMap(verticalSequence),
+      getFracturePointMap(rootedVerticalSequence),
     );
     if (ejectedGroup) {
       ejectedGroup.velocity = DEFAULT_LAUNCH_VELOCITY;
@@ -25,7 +37,15 @@ export const sequenceMutator = (blockGroup: BlockGroup) => {
   }
 
   const rootedHorizontalSequence = findRootedHorizontalSequence();
-  if (rootedHorizontalSequence) {
+  if (
+    rootedHorizontalSequence &&
+    !rootedHorizontalSequence[0].sprite.texture.label?.endsWith("tile_grey.svg")
+  ) {
+    rootedHorizontalSequence.forEach((block) => {
+      block.sprite.texture = greyTexture;
+      block.sprite.anchor.set(0);
+      block.sprite.setSize(blockSize);
+    });
     const ejectedGroups: BlockGroup[] = [];
     rootedHorizontalSequence.forEach((block) => {
       const associatedGroup = getGroupByBlock(block);
@@ -42,12 +62,12 @@ export const sequenceMutator = (blockGroup: BlockGroup) => {
       }
     });
 
-    // ejectedGroups.forEach((ejectedGroup, index) => {
-    //   if (ejectedGroups[index + 1]) {
-    //     combineBlockGroups(ejectedGroup, ejectedGroups[index + 1]);
-    //     ejectedGroups.splice(index + 1);
-    //   }
-    // });
+    ejectedGroups.forEach((ejectedGroup, index) => {
+      if (ejectedGroups[index + 1]) {
+        combineBlockGroups(ejectedGroup, ejectedGroups[index + 1]);
+        ejectedGroups.splice(index + 1);
+      }
+    });
   }
 };
 
@@ -74,7 +94,7 @@ const getFracturePointMap = (blocks: Block[]) => {
 };
 
 // for now, if we find one sequence, just return that first one
-const findVerticalSequence = (blockGroup: BlockGroup) => {
+const findRootedVerticalSequence = (blockGroup: BlockGroup) => {
   for (const blockGroupFile of blockGroup.files) {
     let sequence: Block[] = [];
     for (const block of blockGroupFile.blocks) {
