@@ -61,9 +61,10 @@ export const selectionMutator = (blockGroup: BlockGroup) => {
             getIsGroupRooted(blockGroup) &&
             blockGroup.files.length === 1
           ) {
-            const { ejectedGroup } = decombineBlockGroup(blockGroup, {
-              [blockGroup.files[0].number]: 1,
-            });
+            const { ejectedGroup } = decombineBlockGroup(
+              blockGroup,
+              new Map([[blockGroup.files[0].number, 1]]),
+            );
             setSelectedBlockGroup(null);
             setGlobalPointerDown(false);
             if (ejectedGroup) {
