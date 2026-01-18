@@ -62,12 +62,10 @@ export const sequenceMutator = (blockGroup: BlockGroup) => {
       }
     });
 
-    ejectedGroups.forEach((ejectedGroup, index) => {
-      if (ejectedGroups[index + 1]) {
-        combineBlockGroups(ejectedGroup, ejectedGroups[index + 1]);
-        ejectedGroups.splice(index + 1);
-      }
-    });
+    let combined = ejectedGroups[0];
+    for (let i = 1; i < ejectedGroups.length; i++) {
+      combined = combineBlockGroups(combined, ejectedGroups[i]);
+    }
   }
 };
 
@@ -83,11 +81,11 @@ const getGroupByBlock = (block: Block): BlockGroup | undefined => {
   }
 };
 
-const getFracturePointMap = (blocks: Block[]) => {
-  const map: Record<FileNumber, number> = {};
+export const getFracturePointMap = (blocks: Block[]) => {
+  const map = new Map<FileNumber, number>();
 
   blocks.forEach((block) => {
-    map[block.file] = block.groupFileRank;
+    map.set(block.file, block.groupFileRank);
   });
 
   return map;

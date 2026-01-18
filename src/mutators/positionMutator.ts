@@ -1,4 +1,4 @@
-import type { BlockGroup } from "../entities/types";
+import type { Block, BlockGroup } from "../entities/types";
 
 import { getFloor, getVeil, getWorld } from "../world";
 import { DEFAULT_REFERENCE_HEIGHT } from "../constants";
@@ -11,6 +11,7 @@ import {
   getDirectionallyNearestGroup,
   getGroupBoundaries,
 } from "../entities/util";
+import { getFracturePointMap } from "./sequenceMutator";
 
 export const positionMutator = (blockGroup: BlockGroup, dt: number) => {
   const { height: worldHeight } = getWorld();
@@ -75,18 +76,24 @@ export const positionMutator = (blockGroup: BlockGroup, dt: number) => {
     blockGroup.velocity = 0;
   } else if (exceededVeil && blockGroup.type === "launch") {
     // otherwise, if a launch group exceeded the veil, remove the blocks beyond the veil
-    // @todo for now, just do this assuming a one-file group
-    let breakPoint: number | null = null;
-    blockGroup.files[0].blocks.forEach((block) => {
-      if (block.sprite.y < veil) {
-        breakPoint = block.groupFileRank;
+    const fracturePointBlocks: Block[] = [];
+    blockGroup.files.forEach((blockGroupFile) => {
+      let fracturePointBlock: Block | null = null;
+      blockGroupFile.blocks.forEach((block) => {
+        if (block.sprite.y < veil) {
+          fracturePointBlock = block;
+        }
+      });
+      if (fracturePointBlock) {
+        fracturePointBlocks.push(fracturePointBlock);
       }
     });
 
-    if (breakPoint) {
-      const { ejectedGroup: vanishedGroup } = decombineBlockGroup(blockGroup, {
-        [blockGroup.files[0].number]: breakPoint,
-      });
+    if (fracturePointBlocks.length > 0) {
+      const { ejectedGroup: vanishedGroup } = decombineBlockGroup(
+        blockGroup,
+        getFracturePointMap(fracturePointBlocks),
+      );
       if (vanishedGroup) {
         removeBlockGroup(vanishedGroup);
       }

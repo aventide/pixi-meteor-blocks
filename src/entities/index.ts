@@ -330,7 +330,7 @@ export const combineBlockGroups = (
 // second return group is the "ejected" group which more likely will be altered
 export const decombineBlockGroup = (
   originalBlockGroup: BlockGroup,
-  fracturePointMap: Record<FileNumber, number>,
+  fracturePointMap: Map<FileNumber, number>,
 ): { basisGroup: BlockGroup | null; ejectedGroup: BlockGroup | null } => {
   const originalBlockGroupPlacements: FilePlacement[] =
     getFilePlacements(originalBlockGroup);
@@ -339,44 +339,63 @@ export const decombineBlockGroup = (
   const ejectedGroupPlacements: FilePlacement[] = [];
 
   originalBlockGroupPlacements.forEach((originalPlacement: FilePlacement) => {
-    const individualFracturePoint = fracturePointMap[originalPlacement.number];
+    if (!fracturePointMap.has(originalPlacement.number)) {
+      basisGroupPlacements.push({
+        blocks: originalPlacement.blocks,
+        number: originalPlacement.number,
+      });
+      return;
+    }
 
-    basisGroupPlacements.push({
-      blocks: originalPlacement.blocks.filter(
-        (block) => block.groupFileRank > individualFracturePoint,
-      ),
-      number: originalPlacement.number,
+    const individualFracturePoint = fracturePointMap.get(
+      originalPlacement.number,
+    )!;
+
+    const basisBlocks: Block[] = [];
+    const ejectedBlocks: Block[] = [];
+
+    originalPlacement.blocks.forEach((block) => {
+      if (block.groupFileRank <= individualFracturePoint) {
+        ejectedBlocks.push(block);
+      } else {
+        basisBlocks.push(block);
+      }
     });
-    ejectedGroupPlacements.push({
-      blocks: originalPlacement.blocks.filter(
-        (block) => block.groupFileRank <= individualFracturePoint,
-      ),
-      number: originalPlacement.number,
-    });
+
+    if (basisBlocks.length > 0) {
+      basisGroupPlacements.push({
+        blocks: basisBlocks,
+        number: originalPlacement.number,
+      });
+    }
+    if (ejectedBlocks.length > 0) {
+      ejectedGroupPlacements.push({
+        blocks: ejectedBlocks,
+        number: originalPlacement.number,
+      });
+    }
   });
 
   // remove original blockGroup
   removeBlockGroup(originalBlockGroup);
 
-  let basisGroup: BlockGroup | null = null;
-  if (basisGroupPlacements.every((placement) => placement.blocks.length > 0)) {
-    basisGroup = createBlockGroup(
-      basisGroupPlacements,
-      originalBlockGroup.velocity,
-      originalBlockGroup.type,
-    );
-  }
+  const basisGroup: BlockGroup | null =
+    basisGroupPlacements.length > 0
+      ? createBlockGroup(
+          basisGroupPlacements,
+          originalBlockGroup.velocity,
+          originalBlockGroup.type,
+        )
+      : null;
 
-  let ejectedGroup: BlockGroup | null = null;
-  if (
-    ejectedGroupPlacements.every((placement) => placement.blocks.length > 0)
-  ) {
-    ejectedGroup = createBlockGroup(
-      ejectedGroupPlacements,
-      originalBlockGroup.velocity,
-      originalBlockGroup.type,
-    );
-  }
+  const ejectedGroup: BlockGroup | null =
+    ejectedGroupPlacements.length > 0
+      ? createBlockGroup(
+          ejectedGroupPlacements,
+          originalBlockGroup.velocity,
+          originalBlockGroup.type,
+        )
+      : null;
 
   return {
     basisGroup,
