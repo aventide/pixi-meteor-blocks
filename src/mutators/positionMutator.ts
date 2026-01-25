@@ -7,10 +7,7 @@ import {
   decombineBlockGroup,
   removeBlockGroup,
 } from "../entities";
-import {
-  getDirectionallyNearestGroup,
-  getGroupBoundaries,
-} from "../entities/util";
+import { getDirectionallyNearestGroup } from "../entities/util";
 import { getFracturePointMap } from "./sequenceMutator";
 
 export const positionMutator = (blockGroup: BlockGroup, dt: number) => {
@@ -22,12 +19,61 @@ export const positionMutator = (blockGroup: BlockGroup, dt: number) => {
   const velocity = blockGroup.velocity;
   if (velocity === 0) return;
 
-  const { top: groupTop, bottom: groupBottom } = getGroupBoundaries(blockGroup);
-
   const [nearestGroup] = getDirectionallyNearestGroup(blockGroup);
-  const nearestGroupBounds = nearestGroup
-    ? getGroupBoundaries(nearestGroup)
-    : null;
+
+  const getGroupBoundaryInFile = (
+    group: BlockGroup,
+    fileNumber: number,
+  ): { top: number; bottom: number } | null => {
+    const file = group.files.find((f) => f.number === fileNumber);
+    return file
+      ? { top: file.boundary.top, bottom: file.boundary.bottom }
+      : null;
+  };
+
+  const getStopDeltaForNearestGroupContact = (
+    subjectGroup: BlockGroup,
+    otherGroup: BlockGroup,
+    deltaY: number,
+  ): number | null => {
+    if (deltaY === 0) return null;
+
+    let minStopDelta: number | null = null;
+
+    subjectGroup.files.forEach((subjectFile) => {
+      const otherBoundary = getGroupBoundaryInFile(
+        otherGroup,
+        subjectFile.number,
+      );
+      if (!otherBoundary) return;
+
+      if (deltaY > 0) {
+        // moving down: subject bottom approaches other top
+        const subjectBottom = subjectFile.boundary.bottom;
+        const stopDelta = otherBoundary.top - subjectBottom;
+
+        // only consider contacts that occur during this move (including already intersecting -> stopDelta <= 0)
+        if (stopDelta <= deltaY) {
+          if (minStopDelta === null || stopDelta < minStopDelta) {
+            minStopDelta = stopDelta;
+          }
+        }
+      } else {
+        // moving up: subject top approaches other bottom
+        const subjectTop = subjectFile.boundary.top;
+        const stopDelta = otherBoundary.bottom - subjectTop;
+
+        // deltaY is negative; contact occurs if stopDelta >= deltaY (including already intersecting -> stopDelta >= 0)
+        if (stopDelta >= deltaY) {
+          if (minStopDelta === null || stopDelta > minStopDelta) {
+            minStopDelta = stopDelta;
+          }
+        }
+      }
+    });
+
+    return minStopDelta;
+  };
 
   const targetDelta = velocity * dt * (worldHeight / DEFAULT_REFERENCE_HEIGHT);
   let adjustedDelta = targetDelta;
@@ -37,29 +83,43 @@ export const positionMutator = (blockGroup: BlockGroup, dt: number) => {
   let hitVeil = false;
 
   // if colliding with ceiling/floor, snap back into place with it
-  if (velocity < 0 && groupTop + adjustedDelta <= veil) {
-    exceededVeil = groupTop + adjustedDelta < veil;
-    hitVeil = true;
-    adjustedDelta =
-      blockGroup.type !== "launch" ? veil - groupTop : adjustedDelta;
-  } else if (velocity > 0 && groupBottom + adjustedDelta >= floor) {
-    adjustedDelta = floor - groupBottom;
+  if (velocity < 0) {
+    // ceiling is based on the highest (minimum) file top in the group
+    let groupTop = blockGroup.files[0].boundary.top;
+    blockGroup.files.forEach((f) => {
+      if (f.boundary.top < groupTop) groupTop = f.boundary.top;
+    });
+
+    if (groupTop + adjustedDelta <= veil) {
+      exceededVeil = groupTop + adjustedDelta < veil;
+      hitVeil = true;
+      adjustedDelta =
+        blockGroup.type !== "launch" ? veil - groupTop : adjustedDelta;
+    }
+  } else if (velocity > 0) {
+    // floor is based on the lowest (maximum) file bottom in the group
+    let groupBottom = blockGroup.files[0].boundary.bottom;
+    blockGroup.files.forEach((f) => {
+      if (f.boundary.bottom > groupBottom) groupBottom = f.boundary.bottom;
+    });
+
+    if (groupBottom + adjustedDelta >= floor) {
+      adjustedDelta = floor - groupBottom;
+    }
   }
 
-  // if there is a group to collide with, snap into adjacency with it
-  if (nearestGroupBounds) {
-    if (velocity > 0) {
-      const bottomAfterMove = groupBottom + adjustedDelta;
-      if (bottomAfterMove >= nearestGroupBounds.top) {
-        adjustedDelta = nearestGroupBounds.top - groupBottom;
-        hitNearestGroup = true;
-      }
-    } else {
-      const topAfterMove = groupTop + adjustedDelta;
-      if (topAfterMove <= nearestGroupBounds.bottom) {
-        adjustedDelta = nearestGroupBounds.bottom - groupTop;
-        hitNearestGroup = true;
-      }
+  // if there is a group to collide with, snap into adjacency with it,
+  // but compute contact per-file rather than using absolute group bounds
+  if (nearestGroup) {
+    const stopDelta = getStopDeltaForNearestGroupContact(
+      blockGroup,
+      nearestGroup,
+      adjustedDelta,
+    );
+
+    if (stopDelta !== null) {
+      adjustedDelta = stopDelta;
+      hitNearestGroup = true;
     }
   }
 
