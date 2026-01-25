@@ -14,6 +14,10 @@ export const newPositionMutator = (blockGroup: BlockGroup, dt: number) => {
   const snappedPosition = getSnappedPosition(blockGroup, dt);
   const positionDelta = snappedPosition - leadingEdge;
   translatePosition(blockGroup, positionDelta);
+
+  // now we need to handle reactions to collisions/points of contact
+  // we could possibly get the singular point of contact from the getSnappedPosition function
+  // i.e it would return a string or enum that says which kind of collision happened
 };
 
 // applies an adjusted position (snap) to blockGroup based on velocity and obstacles
@@ -44,7 +48,7 @@ const getSnappedPosition = (blockGroup: BlockGroup, dt: number): number => {
 
   // finally, check for even sooner snap if colliding with a contactable BlockGroup
   const contactableEdge = getContactableGroupEdge(blockGroup);
-  if (contactableEdge) {
+  if (contactableEdge !== null) {
     if (movingDownwards && snappedPosition >= contactableEdge)
       snappedPosition = contactableEdge;
     else if (movingUpwards && snappedPosition <= contactableEdge)
