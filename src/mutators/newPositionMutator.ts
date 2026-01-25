@@ -1,23 +1,77 @@
 import { DEFAULT_REFERENCE_HEIGHT } from "../constants";
-import { BlockGroup } from "../entities/types";
+import {
+  combineBlockGroups,
+  decombineBlockGroup,
+  removeBlockGroup,
+} from "../entities";
+import { Block, BlockGroup } from "../entities/types";
 import {
   getContactableGroups,
   getDirectionalBoundaryDistance,
   getGroupBoundaries,
 } from "../entities/util";
 import { getFloor, getVeil, getWorld } from "../world";
+import { getFracturePointMap } from "./sequenceMutator";
 
 export const newPositionMutator = (blockGroup: BlockGroup, dt: number) => {
   if (blockGroup.velocity === 0) return;
 
+  // apply movement snap
   const leadingEdge = getGroupLeadingEdge(blockGroup);
   const snappedPosition = getSnappedPosition(blockGroup, dt);
   const positionDelta = snappedPosition - leadingEdge;
+
+  // apply translation to sprites
   translatePosition(blockGroup, positionDelta);
 
-  // now we need to handle reactions to collisions/points of contact
-  // we could possibly get the singular point of contact from the getSnappedPosition function
-  // i.e it would return a string or enum that says which kind of collision happened
+  // apply reactions to contact
+  applyContactReactions(blockGroup);
+};
+
+const applyContactReactions = (blockGroup: BlockGroup) => {
+  const veil = getVeil();
+
+  const groupLeadingEdge = getGroupLeadingEdge(blockGroup);
+
+  const hitVeil = groupLeadingEdge === veil;
+  const exceededVeil = groupLeadingEdge < veil;
+
+  // @todo consider calculating nearest neighbor ONCE and then passing that info on to snapping and reactions functions
+  const [contactableGroup, contactableEdge] = getContactableGroup(blockGroup);
+  const hitContactableGroup =
+    contactableEdge !== null && groupLeadingEdge === contactableEdge;
+
+  if (contactableGroup && hitContactableGroup) {
+    // first, if any new grouping, do that
+    combineBlockGroups(blockGroup, contactableGroup);
+  } else if (hitVeil && blockGroup.type !== "launch") {
+    // otherwise, if a pop block, stop at the veil
+    blockGroup.velocity = 0;
+  } else if (exceededVeil && blockGroup.type === "launch") {
+    // otherwise, if a launch group exceeded the veil, remove the blocks beyond the veil
+    const fracturePointBlocks: Block[] = [];
+    blockGroup.files.forEach((blockGroupFile) => {
+      let fracturePointBlock: Block | null = null;
+      blockGroupFile.blocks.forEach((block) => {
+        if (block.sprite.y < veil) {
+          fracturePointBlock = block;
+        }
+      });
+      if (fracturePointBlock) {
+        fracturePointBlocks.push(fracturePointBlock);
+      }
+    });
+
+    if (fracturePointBlocks.length > 0) {
+      const { ejectedGroup: vanishedGroup } = decombineBlockGroup(
+        blockGroup,
+        getFracturePointMap(fracturePointBlocks),
+      );
+      if (vanishedGroup) {
+        removeBlockGroup(vanishedGroup);
+      }
+    }
+  }
 };
 
 // applies an adjusted position (snap) to blockGroup based on velocity and obstacles
@@ -39,15 +93,15 @@ const getSnappedPosition = (blockGroup: BlockGroup, dt: number): number => {
   let snappedPosition = groupLeadingEdge + targetDelta;
 
   // check for sooner snap if moving downward
-  if (movingDownwards && snappedPosition > floor) snappedPosition = floor;
+  if (movingDownwards && snappedPosition >= floor) snappedPosition = floor;
 
   // check for sooner snap if moving upward
   // AND we care if we hit the veil, i.e. the group is a non launch type
-  if (movingUpwards && snappedPosition < veil && blockGroup.type !== "launch")
+  if (movingUpwards && snappedPosition <= veil && blockGroup.type !== "launch")
     snappedPosition = veil;
 
   // finally, check for even sooner snap if colliding with a contactable BlockGroup
-  const contactableEdge = getContactableGroupEdge(blockGroup);
+  const [, contactableEdge] = getContactableGroup(blockGroup);
   if (contactableEdge !== null) {
     if (movingDownwards && snappedPosition >= contactableEdge)
       snappedPosition = contactableEdge;
@@ -58,14 +112,14 @@ const getSnappedPosition = (blockGroup: BlockGroup, dt: number): number => {
   return snappedPosition;
 };
 
-export const getContactableGroupEdge = (
+export const getContactableGroup = (
   subjectGroup: BlockGroup,
-): number | null => {
+): [BlockGroup | null, number | null] => {
   const contactableGroups = getContactableGroups(subjectGroup);
 
   let minDistance = Infinity;
   let closestEdge = null;
-  // let minDistanceGroup = null;
+  let closestGroup = null;
 
   subjectGroup.files.forEach((subjectFile) => {
     contactableGroups.forEach((contactableGroup) => {
@@ -86,13 +140,13 @@ export const getContactableGroupEdge = (
           if (subjectGroup.velocity > 0)
             closestEdge = contactableFile.boundary.top;
           else closestEdge = contactableFile.boundary.bottom;
-          // minDistanceGroup = contactableGroup;
+          closestGroup = contactableGroup;
         }
       }
     });
   });
 
-  return closestEdge;
+  return [closestGroup, closestEdge];
 };
 
 // get the leading edge for an entire group, judging by the whole boundary box of the group
