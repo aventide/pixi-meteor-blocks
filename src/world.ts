@@ -2,6 +2,7 @@ import type {
   BlockGroup,
   BlockGroupId,
   Coord,
+  FileFragment,
   FileNumber,
 } from "./entities/types";
 
@@ -23,6 +24,7 @@ type World = {
   width: number;
   stage: WorldStage | null;
   fileBlockGroupsMap: Map<FileNumber, BlockGroup[]>;
+  fileFragmentsMap: Map<FileNumber, FileFragment[]>;
   blockGroupsMap: Map<BlockGroupId, BlockGroup>;
   blockGroupIdPool: BlockGroupId[];
   globalPointer: Coord;
@@ -40,6 +42,12 @@ const world: World = {
     Array.from({ length: DEFAULT_FILE_COUNT }, (_, i) => [
       i + 1,
       [] as BlockGroup[],
+    ]),
+  ),
+  fileFragmentsMap: new Map<FileNumber, FileFragment[]>(
+    Array.from({ length: DEFAULT_FILE_COUNT }, (_, i) => [
+      i + 1,
+      [] as FileFragment[],
     ]),
   ),
   blockGroupIdPool: Array.from({ length: 300 }, (_, i) => 300 - i),

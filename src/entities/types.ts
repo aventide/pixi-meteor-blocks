@@ -39,7 +39,10 @@ export type BlockGroupFile = {
   boundary: FileBoundary;
   overlay: FileOverlay;
   number: FileNumber;
+  groupId: BlockGroupId;
 };
+
+export type FileFragment = BlockGroupFile;
 
 export type BlockGroupType = "default" | "launch" | "pop";
 

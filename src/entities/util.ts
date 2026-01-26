@@ -105,18 +105,16 @@ export const getGroupBoundaries = (blockGroup: BlockGroup): GroupBoundary => {
 };
 
 export const getIsSpawnPositionOpen = (file: FileNumber): boolean => {
-  const { fileBlockGroupsMap } = getWorld();
+  const { fileFragmentsMap } = getWorld();
   const blockSize = getBlockSize();
 
-  const groupsInFile = fileBlockGroupsMap.get(file) || [];
+  const fragmentsInFile = fileFragmentsMap.get(file) || [];
   let isPositionOpen = true;
 
-  groupsInFile.forEach((blockGroup) =>
-    blockGroup.files.forEach((blockGroupFile) => {
-      if (blockGroupFile.boundary.top < getCeiling() + blockSize)
-        isPositionOpen = false;
-    }),
-  );
+  fragmentsInFile.forEach((fragment) => {
+    if (fragment.boundary.top < getCeiling() + blockSize)
+      isPositionOpen = false;
+  });
 
   return isPositionOpen;
 };

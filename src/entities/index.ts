@@ -125,6 +125,8 @@ const createBlockGroupFile = (
   filePlacement: FilePlacement,
   groupId: BlockGroupId,
 ): BlockGroupFile => {
+  const { fileFragmentsMap } = getWorld();
+
   const fileBoundaries = getFileBoundaries(filePlacement.blocks);
 
   const dangerOverlay = createFileDangerOverlay(
@@ -142,7 +144,7 @@ const createBlockGroupFile = (
   assignBlockGroupId(filePlacement.blocks, groupId);
   assignGroupFileRanks(filePlacement.blocks);
 
-  return {
+  const blockGroupFileFragment = {
     blocks: filePlacement.blocks,
     number: filePlacement.number,
     boundary: fileBoundaries,
@@ -150,7 +152,12 @@ const createBlockGroupFile = (
       danger: dangerOverlay,
       selection: selectionOverlay,
     },
+    groupId,
   };
+
+  fileFragmentsMap.get(filePlacement.number)?.push(blockGroupFileFragment);
+
+  return blockGroupFileFragment;
 };
 
 const createBlockGroup = (
@@ -404,7 +411,12 @@ export const decombineBlockGroup = (
 };
 
 export const removeBlockGroup = (blockGroup: BlockGroup) => {
-  const { blockGroupIdPool, blockGroupsMap, fileBlockGroupsMap } = getWorld();
+  const {
+    blockGroupIdPool,
+    blockGroupsMap,
+    fileBlockGroupsMap,
+    fileFragmentsMap,
+  } = getWorld();
 
   blockGroupsMap.delete(blockGroup.id);
 
@@ -416,6 +428,15 @@ export const removeBlockGroup = (blockGroup: BlockGroup) => {
         (group) => group.id !== blockGroup.id,
       );
       fileBlockGroupsMap.set(file.number, filteredBlockGroups);
+    }
+
+    // also remove its fragments from fileFragmentsMap
+    const fragmentsToFilter = fileFragmentsMap.get(file.number) || [];
+    if (fragmentsToFilter.length > 0) {
+      const filteredFragments = fragmentsToFilter.filter(
+        (fragment) => fragment.groupId !== blockGroup.id,
+      );
+      fileFragmentsMap.set(file.number, filteredFragments);
     }
   });
 
