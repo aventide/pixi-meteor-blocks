@@ -155,6 +155,7 @@ const createFileFragment = (
     groupId,
   };
 
+  // register file fragment with global tracking
   fileFragmentsMap.get(filePlacement.number)?.push(fileFragment);
 
   return fileFragment;
@@ -188,7 +189,7 @@ const createBlockGroup = (
       type,
     };
 
-    // register the group and its file fragments with the game world
+    // register block group with global tracking
     blockGroupsMap.set(assignedId, newBlockGroup);
     fileNumbers.forEach((fileNumber) =>
       fileBlockGroupsMap.get(fileNumber)?.push(newBlockGroup),
@@ -421,6 +422,7 @@ export const removeBlockGroup = (blockGroup: BlockGroup) => {
     fileFragmentsMap,
   } = getWorld();
 
+  // unregister block group from global tracking
   blockGroupsMap.delete(blockGroup.id);
 
   blockGroup.fileFragments.forEach((fileFragment) => {
@@ -433,7 +435,7 @@ export const removeBlockGroup = (blockGroup: BlockGroup) => {
       fileBlockGroupsMap.set(fileFragment.number, filteredBlockGroups);
     }
 
-    // also remove its fragments from fileFragmentsMap
+    // unregister file fragments from global tracking
     const fragmentsToFilter = fileFragmentsMap.get(fileFragment.number) || [];
     if (fragmentsToFilter.length > 0) {
       const filteredFragments = fragmentsToFilter.filter(
