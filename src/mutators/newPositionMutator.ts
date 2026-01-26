@@ -50,9 +50,9 @@ const applyContactReactions = (blockGroup: BlockGroup) => {
   } else if (exceededVeil && blockGroup.type === "launch") {
     // otherwise, if a launch group exceeded the veil, remove the blocks beyond the veil
     const fracturePointBlocks: Block[] = [];
-    blockGroup.files.forEach((blockGroupFile) => {
+    blockGroup.fileFragments.forEach((fileFragment) => {
       let fracturePointBlock: Block | null = null;
-      blockGroupFile.blocks.forEach((block) => {
+      fileFragment.blocks.forEach((block) => {
         if (block.sprite.y < veil) {
           fracturePointBlock = block;
         }
@@ -121,10 +121,10 @@ export const getContactableGroup = (
   let closestEdge = null;
   let closestGroup = null;
 
-  subjectGroup.files.forEach((subjectFile) => {
+  subjectGroup.fileFragments.forEach((subjectFile) => {
     contactableGroups.forEach((contactableGroup) => {
       // get the file on the contactableGroup
-      const contactableFile = contactableGroup.files.find(
+      const contactableFile = contactableGroup.fileFragments.find(
         (file) => file.number === subjectFile.number,
       );
 
@@ -137,9 +137,10 @@ export const getContactableGroup = (
 
         if (distance < minDistance) {
           minDistance = distance;
-          if (subjectGroup.velocity > 0)
-            closestEdge = contactableFile.boundary.top;
-          else closestEdge = contactableFile.boundary.bottom;
+          closestEdge =
+            subjectGroup.velocity > 0
+              ? contactableFile.boundary.top
+              : contactableFile.boundary.bottom;
           closestGroup = contactableGroup;
         }
       }
@@ -149,27 +150,23 @@ export const getContactableGroup = (
   return [closestGroup, closestEdge];
 };
 
-// get the leading edge for an entire group, judging by the whole boundary box of the group
-// returns the y position of the edge
 const getGroupLeadingEdge = (blockGroup: BlockGroup): number => {
-  const { top: groupTop, bottom: groupBottom } = getGroupBoundaries(blockGroup);
-
-  if (blockGroup.velocity > 0) return groupBottom;
-  else return groupTop;
+  const boundaries = getGroupBoundaries(blockGroup);
+  return blockGroup.velocity > 0 ? boundaries.bottom : boundaries.top;
 };
 
 const translatePosition = (blockGroup: BlockGroup, deltaY: number) => {
   if (deltaY === 0) return;
 
-  blockGroup.files.forEach((file) => {
-    file.boundary.top += deltaY;
-    file.boundary.bottom += deltaY;
-    file.overlay.danger.y += deltaY;
-    file.overlay.selection.y += deltaY;
+  blockGroup.fileFragments.forEach((fileFragment) => {
+    fileFragment.boundary.top += deltaY;
+    fileFragment.boundary.bottom += deltaY;
+    fileFragment.overlay.danger.y += deltaY;
+    fileFragment.overlay.selection.y += deltaY;
   });
 
-  blockGroup.files.forEach((file) =>
-    file.blocks.forEach((block) => {
+  blockGroup.fileFragments.forEach((fileFragment) =>
+    fileFragment.blocks.forEach((block) => {
       block.sprite.y += deltaY;
     }),
   );

@@ -25,9 +25,11 @@ export const positionMutator = (blockGroup: BlockGroup, dt: number) => {
     group: BlockGroup,
     fileNumber: number,
   ): { top: number; bottom: number } | null => {
-    const file = group.files.find((f) => f.number === fileNumber);
-    return file
-      ? { top: file.boundary.top, bottom: file.boundary.bottom }
+    const fileFragment = group.fileFragments.find(
+      (f) => f.number === fileNumber,
+    );
+    return fileFragment
+      ? { top: fileFragment.boundary.top, bottom: fileFragment.boundary.bottom }
       : null;
   };
 
@@ -40,16 +42,16 @@ export const positionMutator = (blockGroup: BlockGroup, dt: number) => {
 
     let minStopDelta: number | null = null;
 
-    subjectGroup.files.forEach((subjectFile) => {
+    subjectGroup.fileFragments.forEach((subjectFileFragment) => {
       const otherBoundary = getGroupBoundaryInFile(
         otherGroup,
-        subjectFile.number,
+        subjectFileFragment.number,
       );
       if (!otherBoundary) return;
 
       if (deltaY > 0) {
         // moving down: subject bottom approaches other top
-        const subjectBottom = subjectFile.boundary.bottom;
+        const subjectBottom = subjectFileFragment.boundary.bottom;
         const stopDelta = otherBoundary.top - subjectBottom;
 
         // only consider contacts that occur during this move (including already intersecting -> stopDelta <= 0)
@@ -60,7 +62,7 @@ export const positionMutator = (blockGroup: BlockGroup, dt: number) => {
         }
       } else {
         // moving up: subject top approaches other bottom
-        const subjectTop = subjectFile.boundary.top;
+        const subjectTop = subjectFileFragment.boundary.top;
         const stopDelta = otherBoundary.bottom - subjectTop;
 
         // deltaY is negative; contact occurs if stopDelta >= deltaY (including already intersecting -> stopDelta >= 0)
@@ -85,8 +87,8 @@ export const positionMutator = (blockGroup: BlockGroup, dt: number) => {
   // if colliding with ceiling/floor, snap back into place with it
   if (velocity < 0) {
     // ceiling is based on the highest (minimum) file top in the group
-    let groupTop = blockGroup.files[0].boundary.top;
-    blockGroup.files.forEach((f) => {
+    let groupTop = blockGroup.fileFragments[0].boundary.top;
+    blockGroup.fileFragments.forEach((f) => {
       if (f.boundary.top < groupTop) groupTop = f.boundary.top;
     });
 
@@ -98,8 +100,8 @@ export const positionMutator = (blockGroup: BlockGroup, dt: number) => {
     }
   } else if (velocity > 0) {
     // floor is based on the lowest (maximum) file bottom in the group
-    let groupBottom = blockGroup.files[0].boundary.bottom;
-    blockGroup.files.forEach((f) => {
+    let groupBottom = blockGroup.fileFragments[0].boundary.bottom;
+    blockGroup.fileFragments.forEach((f) => {
       if (f.boundary.bottom > groupBottom) groupBottom = f.boundary.bottom;
     });
 
@@ -137,9 +139,9 @@ export const positionMutator = (blockGroup: BlockGroup, dt: number) => {
   } else if (exceededVeil && blockGroup.type === "launch") {
     // otherwise, if a launch group exceeded the veil, remove the blocks beyond the veil
     const fracturePointBlocks: Block[] = [];
-    blockGroup.files.forEach((blockGroupFile) => {
+    blockGroup.fileFragments.forEach((fileFragment) => {
       let fracturePointBlock: Block | null = null;
-      blockGroupFile.blocks.forEach((block) => {
+      fileFragment.blocks.forEach((block) => {
         if (block.sprite.y < veil) {
           fracturePointBlock = block;
         }
@@ -167,15 +169,15 @@ const translateBlockGroupPosition = (
 ) => {
   if (deltaY === 0) return;
 
-  blockGroup.files.forEach((file) => {
-    file.boundary.top += deltaY;
-    file.boundary.bottom += deltaY;
-    file.overlay.danger.y += deltaY;
-    file.overlay.selection.y += deltaY;
+  blockGroup.fileFragments.forEach((fileFragment) => {
+    fileFragment.boundary.top += deltaY;
+    fileFragment.boundary.bottom += deltaY;
+    fileFragment.overlay.danger.y += deltaY;
+    fileFragment.overlay.selection.y += deltaY;
   });
 
-  blockGroup.files.forEach((file) =>
-    file.blocks.forEach((block) => {
+  blockGroup.fileFragments.forEach((fileFragment) =>
+    fileFragment.blocks.forEach((block) => {
       block.sprite.y += deltaY;
     }),
   );

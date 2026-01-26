@@ -14,7 +14,9 @@ import { getBlockSize, getCeiling, getWorld } from "../world";
 export const getContactableGroups = (subjectGroup: BlockGroup) => {
   const { fileBlockGroupsMap } = getWorld();
 
-  const subjectFileNumbers = subjectGroup.files.map((file) => file.number);
+  const subjectFileNumbers = subjectGroup.fileFragments.map(
+    (fileFragment) => fileFragment.number,
+  );
   const contactableGroupIds: Set<BlockGroupId> = new Set();
   const contactableGroups: BlockGroup[] = [];
 
@@ -42,17 +44,17 @@ export const getDirectionallyNearestGroup = (
   let minDistance = Infinity;
   let minDistanceGroup = null;
 
-  subjectGroup.files.forEach((subjectFile) => {
+  subjectGroup.fileFragments.forEach((subjectFile) => {
     contactableGroups.forEach((contactableGroup) => {
-      // get the file on the contactableGroup
-      const contactableFile = contactableGroup.files.find(
-        (file) => file.number === subjectFile.number,
+      // get the file fragment on the contactableGroup
+      const contactableFileFragment = contactableGroup.fileFragments.find(
+        (fileFragment) => fileFragment.number === subjectFile.number,
       );
 
-      if (contactableFile) {
+      if (contactableFileFragment) {
         const distance = getDirectionalBoundaryDistance(
           subjectFile.boundary,
-          contactableFile.boundary,
+          contactableFileFragment.boundary,
           subjectGroup.velocity,
         );
 
@@ -85,17 +87,18 @@ export const getDirectionalBoundaryDistance = (
 };
 
 export const getGroupBoundaries = (blockGroup: BlockGroup): GroupBoundary => {
-  if (blockGroup.files.length === 0) {
-    throw new Error("BlockGroup must contain at least one file");
+  if (blockGroup.fileFragments.length === 0) {
+    throw new Error("BlockGroup must contain at least one file fragment");
   }
 
-  let bottomBoundary = blockGroup.files[0].boundary.bottom;
-  let topBoundary = blockGroup.files[0].boundary.top;
+  let bottomBoundary = blockGroup.fileFragments[0].boundary.bottom;
+  let topBoundary = blockGroup.fileFragments[0].boundary.top;
 
-  blockGroup.files.forEach((file) => {
-    if (file.boundary.top < topBoundary) topBoundary = file.boundary.top;
-    if (file.boundary.bottom > bottomBoundary)
-      bottomBoundary = file.boundary.bottom;
+  blockGroup.fileFragments.forEach((fileFragment) => {
+    if (fileFragment.boundary.top < topBoundary)
+      topBoundary = fileFragment.boundary.top;
+    if (fileFragment.boundary.bottom > bottomBoundary)
+      bottomBoundary = fileFragment.boundary.bottom;
   });
 
   return {
@@ -123,18 +126,18 @@ export const getIsGroupInIntersection = (subjectGroup: BlockGroup): boolean => {
   const contactableGroups = getContactableGroups(subjectGroup);
   let isIntersecting = false;
 
-  subjectGroup.files.forEach((subjectFile) => {
+  subjectGroup.fileFragments.forEach((subjectFileFragment) => {
     contactableGroups.forEach((contactableGroup) => {
-      // get the file on the contactableGroup
-      const contactableFile = contactableGroup.files.find(
-        (file) => file.number === subjectFile.number,
+      // get the file fragment on the contactableGroup
+      const contactableFileFragment = contactableGroup.fileFragments.find(
+        (fileFragment) => fileFragment.number === subjectFileFragment.number,
       );
 
       if (
-        contactableFile &&
+        contactableFileFragment &&
         getAreBoundariesIntersecting(
-          subjectFile.boundary,
-          contactableFile.boundary,
+          subjectFileFragment.boundary,
+          contactableFileFragment.boundary,
         )
       )
         isIntersecting = true;
@@ -176,21 +179,24 @@ export const getFileBoundaries = (blocks: Block[]) => {
 
 export const getIsGroupRooted = (blockGroup: BlockGroup): boolean => {
   const { height: worldHeight } = getWorld();
-  return blockGroup.files.some(
-    (blockGroupFile) => blockGroupFile.boundary.bottom === worldHeight,
+  return blockGroup.fileFragments.some(
+    (fileFragment) => fileFragment.boundary.bottom === worldHeight,
   );
 };
 
 export const getGroupBlockCount = (blockGroup: BlockGroup): number =>
-  blockGroup.files.reduce((count, file) => count + file.blocks.length, 0);
+  blockGroup.fileFragments.reduce(
+    (count, fileFragment) => count + fileFragment.blocks.length,
+    0,
+  );
 
 export const getMomentum = (blockGroup: BlockGroup): number =>
   blockGroup.velocity * getGroupBlockCount(blockGroup);
 
 export const getFilePlacements = (blockGroup: BlockGroup): FilePlacement[] =>
-  blockGroup.files.map((file) => ({
-    blocks: file.blocks,
-    number: file.number,
+  blockGroup.fileFragments.map((fileFragment) => ({
+    blocks: fileFragment.blocks,
+    number: fileFragment.number,
   }));
 
 export const assignBlockGroupId = (blocks: Block[], groupId: BlockGroupId) => {
@@ -248,17 +254,17 @@ export const getFileBlockDirectlyAbove = (subjectBlock: {
   blockGroupId: BlockGroupId;
   block: Block;
 }): Block | null => {
-  // get the blockGroupFile of this block
+  // get the file fragment of this block
   const { blockGroupsMap } = getWorld();
   const group = blockGroupsMap.get(subjectBlock.blockGroupId);
   if (group) {
-    // get file associated to block
-    const file = group.files.find(
-      (groupFile) => groupFile.number === subjectBlock.block.file,
+    // get fragment associated to block's file
+    const fragment = group.fileFragments.find(
+      (fileFragment) => fileFragment.number === subjectBlock.block.file,
     );
 
-    if (file && subjectBlock.block.groupFileRank > 1) {
-      return file.blocks[subjectBlock.block.groupFileRank - 1 - 1];
+    if (fragment && subjectBlock.block.groupFileRank > 1) {
+      return fragment.blocks[subjectBlock.block.groupFileRank - 1 - 1];
     }
   }
 
@@ -269,18 +275,18 @@ export const getFileBlockDirectlyBelow = (subjectBlock: {
   blockGroupId: BlockGroupId;
   block: Block;
 }): Block | null => {
-  // get the blockGroupFile of this block
+  // get the file fragment of this block
   const { blockGroupsMap } = getWorld();
   const group = blockGroupsMap.get(subjectBlock.blockGroupId);
 
   if (group) {
-    // get file associated to block
-    const file = group.files.find(
-      (groupFile) => groupFile.number === subjectBlock.block.file,
+    // get fragment associated to block's file
+    const fragment = group.fileFragments.find(
+      (fileFragment) => fileFragment.number === subjectBlock.block.file,
     );
 
-    if (file && subjectBlock.block.groupFileRank < file.blocks.length) {
-      return file.blocks[subjectBlock.block.groupFileRank];
+    if (fragment && subjectBlock.block.groupFileRank < fragment.blocks.length) {
+      return fragment.blocks[subjectBlock.block.groupFileRank];
     }
   }
 

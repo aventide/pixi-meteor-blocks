@@ -1,6 +1,6 @@
 import { DEFAULT_FILE_LIMIT, DEFAULT_POP_VELOCITY } from "../constants";
 import { decombineBlockGroup } from "../entities";
-import { Block, BlockGroup, BlockGroupFile } from "../entities/types";
+import { Block, BlockGroup, FileFragment } from "../entities/types";
 import {
   getFileBlockDirectlyAbove,
   getFileBlockDirectlyBelow,
@@ -14,7 +14,7 @@ import {
   setSelectedBlockGroup,
 } from "../world";
 
-let selectedFile: BlockGroupFile | null = null;
+let selectedFileFragment: FileFragment | null = null;
 let selectedBlock: Block | null = null;
 
 export const selectionMutator = (blockGroup: BlockGroup) => {
@@ -22,25 +22,25 @@ export const selectionMutator = (blockGroup: BlockGroup) => {
   const blockSize = getBlockSize();
 
   if (!globalPointerDown) {
-    selectedFile = null;
+    selectedFileFragment = null;
     selectedBlock = null;
     setSelectedBlockGroup(null);
   }
 
-  blockGroup.files.forEach((file) => {
-    // check for danger condition on group file
-    if (file.blocks.length > DEFAULT_FILE_LIMIT) {
-      file.overlay.danger.visible = true;
+  blockGroup.fileFragments.forEach((fileFragment) => {
+    // check for danger condition on group file fragment
+    if (fileFragment.blocks.length > DEFAULT_FILE_LIMIT) {
+      fileFragment.overlay.danger.visible = true;
     } else {
-      file.overlay.danger.visible = false;
+      fileFragment.overlay.danger.visible = false;
     }
 
     // need access to a globally-stored group id because the groups merge
-    file.overlay.selection.visible =
-      file.number === selectedFile?.number &&
+    fileFragment.overlay.selection.visible =
+      fileFragment.number === selectedFileFragment?.number &&
       blockGroup.id === selectedBlockGroup?.id;
 
-    file.blocks.forEach((block) => {
+    fileFragment.blocks.forEach((block) => {
       // if current block being iterated is the selected block
       if (selectedBlock && selectedBlock.sprite.uid === block.sprite.uid) {
         block.sprite.alpha = 0.5;
@@ -53,17 +53,17 @@ export const selectionMutator = (blockGroup: BlockGroup) => {
           });
           if (fileBlockDirectlyAbove) {
             swapFileBlockPositions(
-              file.blocks,
+              fileFragment.blocks,
               selectedBlock,
               fileBlockDirectlyAbove,
             );
           } else if (
             getIsGroupRooted(blockGroup) &&
-            blockGroup.files.length === 1
+            blockGroup.fileFragments.length === 1
           ) {
             const { ejectedGroup } = decombineBlockGroup(
               blockGroup,
-              new Map([[blockGroup.files[0].number, 1]]),
+              new Map([[blockGroup.fileFragments[0].number, 1]]),
             );
             setSelectedBlockGroup(null);
             setGlobalPointerDown(false);
@@ -80,7 +80,7 @@ export const selectionMutator = (blockGroup: BlockGroup) => {
           });
           if (fileBlockDirectlyBelow) {
             swapFileBlockPositions(
-              file.blocks,
+              fileFragment.blocks,
               selectedBlock,
               fileBlockDirectlyBelow,
             );
@@ -97,9 +97,9 @@ export const selectionMutator = (blockGroup: BlockGroup) => {
         globalPointer.y >= block.sprite.y &&
         globalPointer.y <= block.sprite.y + blockSize &&
         globalPointerDown &&
-        !selectedFile
+        !selectedFileFragment
       ) {
-        selectedFile = file;
+        selectedFileFragment = fileFragment;
         selectedBlock = block;
         setSelectedBlockGroup(blockGroup);
       }

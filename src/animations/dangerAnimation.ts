@@ -14,8 +14,8 @@ export const dangerAnimation = (dt: number) => {
     (1 + Math.cos(dangerOscillationPhase * Math.PI * 2)) / 2;
 
   blockGroupsMap.forEach((blockGroup) => {
-    blockGroup.files.forEach((file) => {
-      file.overlay.danger.alpha =
+    blockGroup.fileFragments.forEach((fileFragment) => {
+      fileFragment.overlay.danger.alpha =
         dangerOscillation * DANGER_ANIMATION_MAX_OPACITY;
     });
   });

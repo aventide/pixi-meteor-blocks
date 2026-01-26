@@ -1,11 +1,11 @@
 import type {
   Block,
   BlockGroup,
-  BlockGroupFile,
   BlockGroupId,
   BlockGroupType,
   Coord,
   FileBoundary,
+  FileFragment,
   FileNumber,
   FilePlacement,
 } from "../entities/types";
@@ -121,10 +121,10 @@ const createFileSelectionOverlay = (
   return overlay;
 };
 
-const createBlockGroupFile = (
+const createFileFragment = (
   filePlacement: FilePlacement,
   groupId: BlockGroupId,
-): BlockGroupFile => {
+): FileFragment => {
   const { fileFragmentsMap } = getWorld();
 
   const fileBoundaries = getFileBoundaries(filePlacement.blocks);
@@ -144,7 +144,7 @@ const createBlockGroupFile = (
   assignBlockGroupId(filePlacement.blocks, groupId);
   assignGroupFileRanks(filePlacement.blocks);
 
-  const blockGroupFileFragment = {
+  const fileFragment = {
     blocks: filePlacement.blocks,
     number: filePlacement.number,
     boundary: fileBoundaries,
@@ -155,9 +155,9 @@ const createBlockGroupFile = (
     groupId,
   };
 
-  fileFragmentsMap.get(filePlacement.number)?.push(blockGroupFileFragment);
+  fileFragmentsMap.get(filePlacement.number)?.push(fileFragment);
 
-  return blockGroupFileFragment;
+  return fileFragment;
 };
 
 const createBlockGroup = (
@@ -175,30 +175,30 @@ const createBlockGroup = (
   const assignedId = blockGroupIdPool.pop();
 
   if (assignedId) {
-    // create files
-    const files: BlockGroupFile[] = filePlacements.map((fp) =>
-      createBlockGroupFile(fp, assignedId),
+    // create file fragments
+    const fragments: FileFragment[] = filePlacements.map((fp) =>
+      createFileFragment(fp, assignedId),
     );
-    const fileNumbers = files.map((file) => file.number);
+    const fileNumbers = fragments.map((fragment) => fragment.number);
 
     const newBlockGroup: BlockGroup = {
       id: assignedId,
-      files,
+      fileFragments: fragments,
       velocity,
       type,
     };
 
-    // register the group and its files with the game world
+    // register the group and its file fragments with the game world
     blockGroupsMap.set(assignedId, newBlockGroup);
     fileNumbers.forEach((fileNumber) =>
       fileBlockGroupsMap.get(fileNumber)?.push(newBlockGroup),
     );
 
     // add sprites to stage
-    newBlockGroup.files.forEach((file) => {
-      file.blocks.forEach((block) => addToBlocksLayer(block.sprite));
-      addToOverlayLayer(file.overlay.danger);
-      addToOverlayLayer(file.overlay.selection);
+    newBlockGroup.fileFragments.forEach((fileFragment) => {
+      fileFragment.blocks.forEach((block) => addToBlocksLayer(block.sprite));
+      addToOverlayLayer(fileFragment.overlay.danger);
+      addToOverlayLayer(fileFragment.overlay.selection);
     });
 
     return newBlockGroup;
@@ -279,8 +279,11 @@ const getCombinedVelocity = (
 
   combinedVelocity =
     (getMomentum(subjectBlockGroup) + getMomentum(otherBlockGroup)) /
-    [...subjectBlockGroup.files, ...otherBlockGroup.files].reduce(
-      (totalBlocks, file) => totalBlocks + file.blocks.length,
+    [
+      ...subjectBlockGroup.fileFragments,
+      ...otherBlockGroup.fileFragments,
+    ].reduce(
+      (totalBlocks, fileFragment) => totalBlocks + fileFragment.blocks.length,
       0,
     );
 
@@ -420,23 +423,23 @@ export const removeBlockGroup = (blockGroup: BlockGroup) => {
 
   blockGroupsMap.delete(blockGroup.id);
 
-  blockGroup.files.forEach((file) => {
+  blockGroup.fileFragments.forEach((fileFragment) => {
     const blockGroupsToFilter: BlockGroup[] =
-      fileBlockGroupsMap.get(file.number) || [];
+      fileBlockGroupsMap.get(fileFragment.number) || [];
     if (blockGroupsToFilter.length > 0) {
       const filteredBlockGroups = blockGroupsToFilter.filter(
         (group) => group.id !== blockGroup.id,
       );
-      fileBlockGroupsMap.set(file.number, filteredBlockGroups);
+      fileBlockGroupsMap.set(fileFragment.number, filteredBlockGroups);
     }
 
     // also remove its fragments from fileFragmentsMap
-    const fragmentsToFilter = fileFragmentsMap.get(file.number) || [];
+    const fragmentsToFilter = fileFragmentsMap.get(fileFragment.number) || [];
     if (fragmentsToFilter.length > 0) {
       const filteredFragments = fragmentsToFilter.filter(
         (fragment) => fragment.groupId !== blockGroup.id,
       );
-      fileFragmentsMap.set(file.number, filteredFragments);
+      fileFragmentsMap.set(fileFragment.number, filteredFragments);
     }
   });
 
@@ -444,9 +447,9 @@ export const removeBlockGroup = (blockGroup: BlockGroup) => {
   blockGroupIdPool.push(blockGroup.id);
 
   // remove sprites from the stage
-  blockGroup.files.forEach((file) => {
-    file.blocks.forEach((block) => block.sprite.removeFromParent());
-    file.overlay.danger.removeFromParent();
-    file.overlay.selection.removeFromParent();
+  blockGroup.fileFragments.forEach((fileFragment) => {
+    fileFragment.blocks.forEach((block) => block.sprite.removeFromParent());
+    fileFragment.overlay.danger.removeFromParent();
+    fileFragment.overlay.selection.removeFromParent();
   });
 };

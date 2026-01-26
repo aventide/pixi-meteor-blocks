@@ -93,9 +93,9 @@ export const getFracturePointMap = (blocks: Block[]) => {
 
 // for now, if we find one sequence, just return that first one
 const findRootedVerticalSequence = (blockGroup: BlockGroup) => {
-  for (const blockGroupFile of blockGroup.files) {
+  for (const fileFragment of blockGroup.fileFragments) {
     let sequence: Block[] = [];
-    for (const block of blockGroupFile.blocks) {
+    for (const block of fileFragment.blocks) {
       const comparableVariant = block.sprite.texture.label;
       // if we're already in a sequence, check to see if it is being continued
       if (
@@ -128,9 +128,9 @@ const findRootedHorizontalSequence = () => {
   // build up the map
   adjacentFileSequences.forEach((adjacentFileSequence: BlockGroup[]) => {
     adjacentFileSequence.forEach((blockGroup) => {
-      blockGroup.files[0].blocks.forEach((block) => {
+      blockGroup.fileFragments[0].blocks.forEach((block) => {
         const blocksFromBottom =
-          blockGroup.files[0].blocks.length - block.groupFileRank;
+          blockGroup.fileFragments[0].blocks.length - block.groupFileRank;
 
         const currentRecord = boardRankBlockRecord.get(blocksFromBottom);
         if (currentRecord) {
@@ -178,7 +178,8 @@ const findAdjacentFileSequences = (): BlockGroup[][] => {
     // check if one of the associated blockGroups is rooted and single-file
     const currentFileBlockGroup = fileBlockGroups.find(
       (fileBlockGroup) =>
-        getIsGroupRooted(fileBlockGroup) && fileBlockGroup.files.length === 1,
+        getIsGroupRooted(fileBlockGroup) &&
+        fileBlockGroup.fileFragments.length === 1,
     );
     if (currentFileBlockGroup) {
       // if so, we can add it to the sequence of adjacent files

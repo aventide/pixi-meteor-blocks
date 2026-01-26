@@ -34,7 +34,7 @@ export type FilePlacement = {
   number: FileNumber;
 };
 
-export type BlockGroupFile = {
+export type FileFragment = {
   blocks: Block[];
   boundary: FileBoundary;
   overlay: FileOverlay;
@@ -42,13 +42,11 @@ export type BlockGroupFile = {
   groupId: BlockGroupId;
 };
 
-export type FileFragment = BlockGroupFile;
-
 export type BlockGroupType = "default" | "launch" | "pop";
 
 export type BlockGroup = {
   id: BlockGroupId;
-  files: BlockGroupFile[];
+  fileFragments: FileFragment[];
   velocity: number;
   type: BlockGroupType;
 };

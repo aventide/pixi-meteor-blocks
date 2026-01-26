@@ -13,7 +13,6 @@ import { createSingleBlock } from "./entities";
 import {
   descentMutator,
   selectionMutator,
-  positionMutator,
   newPositionMutator,
   sequenceMutator,
 } from "./mutators";
@@ -142,8 +141,8 @@ import { BlockGroup } from "./entities/types";
     // @todo consider adding a 1-2 sec "tolerance" once file limit is reached
     // before the file is considered for placement (and game loss)
     blockGroupsMap.forEach((blockGroup) =>
-      blockGroup.files.forEach((file) => {
-        if (file.blocks.length >= DEFAULT_FILE_LIMIT + 2) {
+      blockGroup.fileFragments.forEach((fileFragment) => {
+        if (fileFragment.blocks.length >= DEFAULT_FILE_LIMIT + 2) {
           alert("You have lost the game.");
           app.stop();
         }
