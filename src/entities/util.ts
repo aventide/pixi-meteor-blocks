@@ -3,6 +3,7 @@ import type {
   FileBoundary,
   BlockGroupId,
   Block,
+  FileFragment,
   FilePlacement,
   FileNumber,
   GroupBoundary,
@@ -250,47 +251,20 @@ export const getCombinedFilePlacements = (
   return mergedFilePlacements;
 };
 
-export const getFileBlockDirectlyAbove = (subjectBlock: {
-  blockGroupId: BlockGroupId;
-  block: Block;
-}): Block | null => {
-  // get the file fragment of this block
-  const { blockGroupsMap } = getWorld();
-  const group = blockGroupsMap.get(subjectBlock.blockGroupId);
-  if (group) {
-    // get fragment associated to block's file
-    const fragment = group.fileFragments.find(
-      (fileFragment) => fileFragment.number === subjectBlock.block.file,
-    );
-
-    if (fragment && subjectBlock.block.groupFileRank > 1) {
-      return fragment.blocks[subjectBlock.block.groupFileRank - 1 - 1];
-    }
-  }
-
-  return null;
+export const getBlockAboveInFragment = (
+  fileFragment: FileFragment,
+  block: Block,
+): Block | null => {
+  if (block.groupFileRank <= 1) return null;
+  return fileFragment.blocks[block.groupFileRank - 2] || null;
 };
 
-export const getFileBlockDirectlyBelow = (subjectBlock: {
-  blockGroupId: BlockGroupId;
-  block: Block;
-}): Block | null => {
-  // get the file fragment of this block
-  const { blockGroupsMap } = getWorld();
-  const group = blockGroupsMap.get(subjectBlock.blockGroupId);
-
-  if (group) {
-    // get fragment associated to block's file
-    const fragment = group.fileFragments.find(
-      (fileFragment) => fileFragment.number === subjectBlock.block.file,
-    );
-
-    if (fragment && subjectBlock.block.groupFileRank < fragment.blocks.length) {
-      return fragment.blocks[subjectBlock.block.groupFileRank];
-    }
-  }
-
-  return null;
+export const getBlockBelowInFragment = (
+  fileFragment: FileFragment,
+  block: Block,
+): Block | null => {
+  if (block.groupFileRank >= fileFragment.blocks.length) return null;
+  return fileFragment.blocks[block.groupFileRank] || null;
 };
 
 export const swapFileBlockPositions = (

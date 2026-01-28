@@ -2,8 +2,8 @@ import { DEFAULT_FILE_LIMIT, DEFAULT_POP_VELOCITY } from "../constants";
 import { decombineBlockGroup } from "../entities";
 import { Block, BlockGroup, FileFragment } from "../entities/types";
 import {
-  getFileBlockDirectlyAbove,
-  getFileBlockDirectlyBelow,
+  getBlockAboveInFragment,
+  getBlockBelowInFragment,
   getIsGroupRooted,
   swapFileBlockPositions,
 } from "../entities/util";
@@ -47,10 +47,10 @@ export const selectionMutator = (blockGroup: BlockGroup) => {
 
         // if pointer moves relative to selected block, handle block swap
         if (globalPointer.y < selectedBlock.sprite.y) {
-          const fileBlockDirectlyAbove = getFileBlockDirectlyAbove({
-            block: selectedBlock,
-            blockGroupId: blockGroup.id,
-          });
+          const fileBlockDirectlyAbove = getBlockAboveInFragment(
+            fileFragment,
+            selectedBlock,
+          );
           if (fileBlockDirectlyAbove) {
             swapFileBlockPositions(
               fileFragment.blocks,
@@ -74,10 +74,10 @@ export const selectionMutator = (blockGroup: BlockGroup) => {
           }
         }
         if (globalPointer.y > selectedBlock.sprite.y + blockSize) {
-          const fileBlockDirectlyBelow = getFileBlockDirectlyBelow({
-            block: selectedBlock,
-            blockGroupId: blockGroup.id,
-          });
+          const fileBlockDirectlyBelow = getBlockBelowInFragment(
+            fileFragment,
+            selectedBlock,
+          );
           if (fileBlockDirectlyBelow) {
             swapFileBlockPositions(
               fileFragment.blocks,
