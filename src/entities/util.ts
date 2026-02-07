@@ -1,112 +1,13 @@
 import type {
   BlockGroup,
-  FileBoundary,
   BlockGroupId,
   Block,
   FileFragment,
   FilePlacement,
   FileNumber,
-  GroupBoundary,
 } from "./types";
 
 import { getBlockSize, getCeiling, getWorld } from "../world";
-
-// get groups that the given group could possibly contact
-export const getContactableGroups = (subjectGroup: BlockGroup) => {
-  const { fileBlockGroupsMap } = getWorld();
-
-  const subjectFileNumbers = subjectGroup.fileFragments.map(
-    (fileFragment) => fileFragment.number,
-  );
-  const contactableGroupIds: Set<BlockGroupId> = new Set();
-  const contactableGroups: BlockGroup[] = [];
-
-  subjectFileNumbers.forEach((subjectFileNumber) => {
-    const otherGroupsInFile: BlockGroup[] = (
-      fileBlockGroupsMap.get(subjectFileNumber) || []
-    ).filter((group) => group.id !== subjectGroup.id);
-
-    otherGroupsInFile.forEach((otherGroup) => {
-      if (!contactableGroupIds.has(otherGroup.id)) {
-        contactableGroupIds.add(otherGroup.id);
-        contactableGroups.push(otherGroup);
-      }
-    });
-  });
-
-  return contactableGroups;
-};
-
-export const getDirectionallyNearestGroup = (
-  subjectGroup: BlockGroup,
-): [BlockGroup | null, number] => {
-  const contactableGroups = getContactableGroups(subjectGroup);
-
-  let minDistance = Infinity;
-  let minDistanceGroup = null;
-
-  subjectGroup.fileFragments.forEach((subjectFile) => {
-    contactableGroups.forEach((contactableGroup) => {
-      // get the file fragment on the contactableGroup
-      const contactableFileFragment = contactableGroup.fileFragments.find(
-        (fileFragment) => fileFragment.number === subjectFile.number,
-      );
-
-      if (contactableFileFragment) {
-        const distance = getDirectionalBoundaryDistance(
-          subjectFile.boundary,
-          contactableFileFragment.boundary,
-          subjectGroup.velocity,
-        );
-
-        if (distance < minDistance) {
-          minDistance = distance;
-          minDistanceGroup = contactableGroup;
-        }
-      }
-    });
-  });
-
-  return [minDistanceGroup, minDistance];
-};
-
-// get the distance between two group boundary sets, with respect to the velocity of
-// a subject boundary set
-export const getDirectionalBoundaryDistance = (
-  subjectBoundary: FileBoundary,
-  otherBoundary: FileBoundary,
-  subjectVelocity: number,
-): number => {
-  if (subjectVelocity === 0) return Infinity;
-
-  const distance =
-    subjectVelocity > 0
-      ? otherBoundary.top - subjectBoundary.bottom
-      : subjectBoundary.top - otherBoundary.bottom;
-
-  return distance >= 0 ? distance : Infinity;
-};
-
-export const getGroupBoundaries = (blockGroup: BlockGroup): GroupBoundary => {
-  if (blockGroup.fileFragments.length === 0) {
-    throw new Error("BlockGroup must contain at least one file fragment");
-  }
-
-  let bottomBoundary = blockGroup.fileFragments[0].boundary.bottom;
-  let topBoundary = blockGroup.fileFragments[0].boundary.top;
-
-  blockGroup.fileFragments.forEach((fileFragment) => {
-    if (fileFragment.boundary.top < topBoundary)
-      topBoundary = fileFragment.boundary.top;
-    if (fileFragment.boundary.bottom > bottomBoundary)
-      bottomBoundary = fileFragment.boundary.bottom;
-  });
-
-  return {
-    bottom: bottomBoundary,
-    top: topBoundary,
-  };
-};
 
 export const getIsSpawnPositionOpen = (file: FileNumber): boolean => {
   const { fileFragmentsMap } = getWorld();
@@ -121,41 +22,6 @@ export const getIsSpawnPositionOpen = (file: FileNumber): boolean => {
   });
 
   return isPositionOpen;
-};
-
-export const getIsGroupInIntersection = (subjectGroup: BlockGroup): boolean => {
-  const contactableGroups = getContactableGroups(subjectGroup);
-  let isIntersecting = false;
-
-  subjectGroup.fileFragments.forEach((subjectFileFragment) => {
-    contactableGroups.forEach((contactableGroup) => {
-      // get the file fragment on the contactableGroup
-      const contactableFileFragment = contactableGroup.fileFragments.find(
-        (fileFragment) => fileFragment.number === subjectFileFragment.number,
-      );
-
-      if (
-        contactableFileFragment &&
-        getAreBoundariesIntersecting(
-          subjectFileFragment.boundary,
-          contactableFileFragment.boundary,
-        )
-      )
-        isIntersecting = true;
-    });
-  });
-
-  return isIntersecting;
-};
-
-export const getAreBoundariesIntersecting = (
-  subjectBoundary: FileBoundary,
-  otherBoundary: FileBoundary,
-) => {
-  return (
-    Math.min(subjectBoundary.bottom, otherBoundary.bottom) >
-    Math.max(subjectBoundary.top, otherBoundary.top)
-  );
 };
 
 // input must be a "file" aka blocks all with the same y coord

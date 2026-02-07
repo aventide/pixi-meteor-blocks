@@ -8,6 +8,7 @@ import type {
   FileFragment,
   FileNumber,
   FilePlacement,
+  GroupBoundary,
 } from "../entities/types";
 
 import { BlurFilter, Container, Graphics, Sprite, Texture } from "pixi.js";
@@ -175,6 +176,25 @@ const createBlockGroup = (
   const { blockGroupIdPool, blockGroupsMap, fileBlockGroupsMap } = getWorld();
   const assignedId = blockGroupIdPool.pop();
 
+  const computeGroupBoundary = (
+    fileFragments: FileFragment[],
+  ): GroupBoundary => {
+    if (fileFragments.length === 0) {
+      throw new Error("BlockGroup must contain at least one file fragment");
+    }
+
+    let top = fileFragments[0].boundary.top;
+    let bottom = fileFragments[0].boundary.bottom;
+
+    for (const fileFragment of fileFragments) {
+      if (fileFragment.boundary.top < top) top = fileFragment.boundary.top;
+      if (fileFragment.boundary.bottom > bottom)
+        bottom = fileFragment.boundary.bottom;
+    }
+
+    return { top, bottom };
+  };
+
   if (assignedId) {
     // create file fragments
     const fragments: FileFragment[] = filePlacements.map((fp) =>
@@ -187,6 +207,7 @@ const createBlockGroup = (
       fileFragments: fragments,
       velocity,
       type,
+      boundary: computeGroupBoundary(fragments),
     };
 
     // register block group with global tracking

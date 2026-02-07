@@ -49,4 +49,7 @@ export type BlockGroup = {
   fileFragments: FileFragment[];
   velocity: number;
   type: BlockGroupType;
+
+  // Cached boundaries for the whole group (min top / max bottom across file fragments).
+  boundary: GroupBoundary;
 };

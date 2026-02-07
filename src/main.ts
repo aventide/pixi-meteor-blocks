@@ -13,8 +13,8 @@ import { createSingleBlock } from "./entities";
 import {
   descentMutator,
   selectionMutator,
-  newPositionMutator,
   sequenceMutator,
+  positionMutator,
 } from "./mutators";
 import { getRandomFileNumber } from "./util";
 import { getIsSpawnPositionOpen } from "./entities/util";
@@ -27,7 +27,6 @@ import {
   DEFAULT_POINTER_POSITION,
 } from "./constants";
 import { dangerAnimation } from "./animations";
-import { BlockGroup } from "./entities/types";
 
 (async () => {
   const app = new Application();
@@ -109,9 +108,6 @@ import { BlockGroup } from "./entities/types";
     }
   });
 
-  const effectivePositionMutator = (blockGroup: BlockGroup, dt: number) =>
-    newPositionMutator(blockGroup, dt);
-
   app.ticker.add((time) => {
     const { blockGroupsMap } = getWorld();
     const dt = time.deltaTime / 60;
@@ -124,7 +120,7 @@ import { BlockGroup } from "./entities/types";
         iterations++;
         descentMutator(blockGroup, dt);
         selectionMutator(blockGroup);
-        effectivePositionMutator(blockGroup, dt);
+        positionMutator(blockGroup, dt);
         sequenceMutator(blockGroup);
       } else {
         throw new Error("Iteration pressure level exceeded threshold");
