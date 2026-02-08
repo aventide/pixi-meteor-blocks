@@ -20,7 +20,6 @@ export const sequenceMutator = (blockGroup: BlockGroup) => {
     rootedVerticalSequence &&
     !rootedVerticalSequence[0].sprite.texture.label?.endsWith("tile_grey.svg")
   ) {
-    console.log(rootedVerticalSequence[0].sprite.texture.label);
     rootedVerticalSequence.forEach((block) => {
       block.sprite.texture = greyTexture;
       block.sprite.anchor.set(0);
