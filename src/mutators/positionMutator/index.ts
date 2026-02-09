@@ -16,32 +16,31 @@ const positionMutator = (group: BlockGroup, dt: number) => {
   // for now, do not process upwards movement
   if (velocity < 0) return;
 
-  // collect all diffs (after y coord - before y coord)
-  const diffs: number[] = [];
-
   // full movement diff based on group's velocity
   const movementDiff = velocity * dt * (worldHeight / DEFAULT_REFERENCE_HEIGHT);
-  diffs.push(movementDiff);
+
+  let minDiff = movementDiff;
+  let contactSnap = group.boundary.bottom + minDiff;
 
   // diffs to obstacles below - check each fragment
   group.fileFragments.forEach((frag) => {
     // calculate and store diff to floor for this frag
     const diffToFloor = floor - frag.boundary.bottom;
-    diffs.push(diffToFloor);
+    minDiff = Math.min(diffToFloor, minDiff);
+    contactSnap = floor;
 
     // then calculate and track diffs to any fragments below in this file
     const closestFragmentBelow = getClosestFragmentBelow(frag);
     if (closestFragmentBelow) {
       const diffToClosestFragment =
         closestFragmentBelow.boundary.top - frag.boundary.bottom;
-      diffs.push(diffToClosestFragment);
+
+      minDiff = Math.min(diffToClosestFragment, minDiff);
+      contactSnap = Math.min(closestFragmentBelow.boundary.top, contactSnap);
     }
   });
 
-  // we have all the diffs now. Find the shortest one and use that to decide how much to move
-  const shortestDiff = Math.min(...diffs);
-
-  translatePosition(group, shortestDiff);
+  translatePosition(group, minDiff);
 };
 
 export default positionMutator;
