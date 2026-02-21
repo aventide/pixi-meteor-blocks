@@ -22,7 +22,7 @@ export type VerticalBoundary = {
 };
 
 export type FileBoundary = VerticalBoundary;
-export type GroupBoundary = VerticalBoundary;
+export type FileFragmentBoundary = VerticalBoundary;
 
 export type FileOverlay = {
   danger: Container;
@@ -36,7 +36,7 @@ export type FilePlacement = {
 
 export type FileFragment = {
   blocks: Block[];
-  boundary: FileBoundary;
+  boundary: FileFragmentBoundary;
   overlay: FileOverlay;
   number: FileNumber;
   groupId: BlockGroupId;
@@ -49,7 +49,4 @@ export type BlockGroup = {
   fileFragments: FileFragment[];
   velocity: number;
   type: BlockGroupType;
-
-  // Cached boundaries for the whole group (min top / max bottom across file fragments).
-  boundary: GroupBoundary;
 };

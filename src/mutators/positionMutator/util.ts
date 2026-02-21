@@ -77,9 +77,6 @@ export const translatePosition = (blockGroup: BlockGroup, deltaY: number) => {
   const snap = (value: number) =>
     Math.round(value / DEFAULT_FLOAT_TOLERANCE) * DEFAULT_FLOAT_TOLERANCE;
 
-  blockGroup.boundary.top = snap(blockGroup.boundary.top + deltaY);
-  blockGroup.boundary.bottom = snap(blockGroup.boundary.bottom + deltaY);
-
   blockGroup.fileFragments.forEach((fileFragment) => {
     fileFragment.boundary.top = snap(fileFragment.boundary.top + deltaY);
     fileFragment.boundary.bottom = snap(fileFragment.boundary.bottom + deltaY);
