@@ -18,7 +18,7 @@ let selectedFileFragment: FileFragment | null = null;
 let selectedBlock: Block | null = null;
 
 export const selectionMutator = (blockGroup: BlockGroup) => {
-  const { globalPointer, globalPointerDown, selectedBlockGroup } = getWorld();
+  const { globalPointer, globalPointerDown } = getWorld();
   const blockSize = getBlockSize();
 
   if (!globalPointerDown) {
@@ -34,11 +34,6 @@ export const selectionMutator = (blockGroup: BlockGroup) => {
     } else {
       fileFragment.overlay.danger.visible = false;
     }
-
-    // need access to a globally-stored group id because the groups merge
-    fileFragment.overlay.selection.visible =
-      fileFragment.number === selectedFileFragment?.number &&
-      blockGroup.id === selectedBlockGroup?.id;
 
     fileFragment.blocks.forEach((block) => {
       // if current block being iterated is the selected block

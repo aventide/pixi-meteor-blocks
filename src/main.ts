@@ -1,14 +1,13 @@
-import { Application, Container } from "pixi.js";
+import { Application } from "pixi.js";
 
 import {
   getWorld,
   setGlobalPointer,
   setGlobalPointerDown,
-  setStage,
   setSelectedBlockGroup,
   setWorldDimensions,
+  initializeStage,
 } from "./world";
-import type { WorldStage } from "./world";
 import { createSingleBlock } from "./entities";
 import {
   descentMutator,
@@ -37,12 +36,7 @@ import { dangerAnimation } from "./animations";
     resizeTo: document.getElementById("pixi-container") || window,
   });
 
-  const blocksLayer = new Container();
-  const overlayLayer = new Container();
-  app.stage.addChild(blocksLayer);
-  app.stage.addChild(overlayLayer);
-  Object.assign(app.stage, { blocksLayer, overlayLayer });
-  setStage(app.stage as WorldStage);
+  initializeStage(app.stage);
 
   document.getElementById("pixi-container")!.appendChild(app.canvas);
   document.addEventListener("visibilitychange", () => {

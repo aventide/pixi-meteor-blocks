@@ -18,11 +18,17 @@ export type WorldStage = Container & {
   overlayLayer: Container;
 };
 
+export type StageLayers = {
+  blocksLayer: Container;
+  overlayLayer: Container;
+};
+
 type World = {
   gravity: number;
   height: number;
   width: number;
-  stage: WorldStage | null;
+  stage: Container | null;
+  stageLayers: StageLayers;
   fileBlockGroupsMap: Map<FileNumber, BlockGroup[]>;
   fileFragmentsMap: Map<FileNumber, FileFragment[]>;
   blockGroupsMap: Map<BlockGroupId, BlockGroup>;
@@ -30,6 +36,7 @@ type World = {
   globalPointer: Coord;
   globalPointerDown: boolean;
   selectedBlockGroup: BlockGroup | null;
+  selectionFragmentOverlay: Container | null;
 };
 
 const world: World = {
@@ -37,6 +44,10 @@ const world: World = {
   height: 0,
   width: 0,
   stage: null,
+  stageLayers: {
+    blocksLayer: new Container(),
+    overlayLayer: new Container(),
+  },
   blockGroupsMap: new Map<BlockGroupId, BlockGroup>(),
   fileBlockGroupsMap: new Map<FileNumber, BlockGroup[]>(
     Array.from({ length: DEFAULT_FILE_COUNT }, (_, i) => [
@@ -54,6 +65,7 @@ const world: World = {
   globalPointer: DEFAULT_POINTER_POSITION,
   globalPointerDown: false,
   selectedBlockGroup: null,
+  selectionFragmentOverlay: null,
 };
 
 export const getWorld = () => world;
@@ -72,10 +84,6 @@ export const setWorldDimensions = (height: number, width: number) => {
 
 export const setWorldGravity = (gravity: number) => {
   world.gravity = gravity;
-};
-
-export const setStage = (newStage: WorldStage) => {
-  world.stage = newStage;
 };
 
 export const setGlobalPointer = (newCoord: Coord) => {
@@ -102,7 +110,7 @@ export const addToStage = (sprite: Sprite | Container) => {
 
 export const addToBlocksLayer = (sprite: Sprite | Container) => {
   if (world.stage) {
-    world.stage.blocksLayer.addChild(sprite);
+    world.stageLayers.blocksLayer.addChild(sprite);
   } else {
     throw "There is no blocks layer to add this sprite to";
   }
@@ -110,8 +118,23 @@ export const addToBlocksLayer = (sprite: Sprite | Container) => {
 
 export const addToOverlayLayer = (sprite: Sprite | Container) => {
   if (world.stage) {
-    world.stage.overlayLayer.addChild(sprite);
+    world.stageLayers.overlayLayer.addChild(sprite);
   } else {
     throw "There is no overlay layer to add this sprite to";
   }
+};
+
+export const initializeStage = (stage: Container) => {
+  world.stage = stage;
+
+  const selectionFragmentOverlay = new Container();
+  world.selectionFragmentOverlay = selectionFragmentOverlay;
+  world.stageLayers.overlayLayer.addChild(selectionFragmentOverlay);
+
+  // add our currently-empty layers to the stage
+  // ORDER MATTERS HERE
+  world.stage.addChild(
+    world.stageLayers.blocksLayer,
+    world.stageLayers.overlayLayer,
+  );
 };

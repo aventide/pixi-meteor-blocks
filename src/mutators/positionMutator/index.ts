@@ -1,4 +1,5 @@
 import { DEFAULT_REFERENCE_HEIGHT } from "../../constants";
+import { combineBlockGroups } from "../../entities";
 
 import { BlockGroup } from "../../entities/types";
 
@@ -12,7 +13,7 @@ type Contact = {
 };
 
 const positionMutator = (group: BlockGroup, dt: number) => {
-  const { height: worldHeight } = getWorld();
+  const { height: worldHeight, blockGroupsMap } = getWorld();
   const floor = getFloor();
 
   const velocity = group.velocity;
@@ -45,7 +46,14 @@ const positionMutator = (group: BlockGroup, dt: number) => {
 
       if (diffToClosestFragment < minDiff) {
         minDiff = diffToClosestFragment;
-        contact = { type: "contacted-group" };
+        const closestGroupBelow = blockGroupsMap.get(
+          closestFragmentBelow.groupId,
+        );
+        const contactedGroups = closestGroupBelow ? [closestGroupBelow] : [];
+        contact = {
+          type: "contacted-group",
+          contactedGroups,
+        };
       }
     }
   }
@@ -55,8 +63,13 @@ const positionMutator = (group: BlockGroup, dt: number) => {
   if (contact) {
     if (contact.type === "contacted-floor") {
       group.velocity = 0;
-    } else if (contact.type === "contacted-group" && group.type !== "launch") {
-      group.velocity = 0;
+    } else if (
+      contact.type === "contacted-group" &&
+      contact.contactedGroups &&
+      group.type !== "launch"
+    ) {
+      // group.velocity = 0;
+      combineBlockGroups(group, contact.contactedGroups[0]);
     }
   }
 };

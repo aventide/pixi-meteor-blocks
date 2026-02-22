@@ -10,7 +10,7 @@ import type {
   FilePlacement,
 } from "../entities/types";
 
-import { BlurFilter, Container, Graphics, Sprite, Texture } from "pixi.js";
+import { Container, Graphics, Sprite, Texture } from "pixi.js";
 import {
   addToBlocksLayer,
   addToOverlayLayer,
@@ -84,43 +84,6 @@ const createFileDangerOverlay = (
   return overlay;
 };
 
-const createFileSelectionOverlay = (
-  fileNumber: FileNumber,
-  boundary: FileBoundary,
-): Container => {
-  const blockSize = getBlockSize();
-
-  const x = (fileNumber - 1) * blockSize;
-  const y = boundary.top;
-  const width = blockSize;
-  const height = boundary.bottom - boundary.top;
-
-  const overlay = new Container();
-  overlay.visible = false;
-  overlay.eventMode = "none";
-
-  const glow = new Graphics();
-  const border = new Graphics();
-
-  const blur = new BlurFilter();
-  blur.strength = 2;
-
-  glow.clear();
-  glow
-    .rect(x, y, width, height)
-    .stroke({ width: 6, color: 0xffffff, alpha: 0.35 });
-  glow.filters = [blur];
-
-  border.clear();
-  border
-    .rect(x + 0.5, y + 0.5, width - 1, height - 1)
-    .stroke({ width: 2, color: 0xffffff, alpha: 1.0 });
-
-  overlay.addChild(glow, border);
-
-  return overlay;
-};
-
 const createFileFragment = (
   filePlacement: FilePlacement,
   groupId: BlockGroupId,
@@ -134,23 +97,17 @@ const createFileFragment = (
     fileBoundaries,
   );
 
-  const selectionOverlay = createFileSelectionOverlay(
-    filePlacement.number,
-    fileBoundaries,
-  );
-
   // @todo consider making these assignment functions pure
   // @todo consider doing id assignment as a separate step, though this is also fine
   assignBlockGroupId(filePlacement.blocks, groupId);
   assignGroupFileRanks(filePlacement.blocks);
 
-  const fileFragment = {
+  const fileFragment: FileFragment = {
     blocks: filePlacement.blocks,
     number: filePlacement.number,
     boundary: fileBoundaries,
     overlay: {
       danger: dangerOverlay,
-      selection: selectionOverlay,
     },
     groupId,
   };
@@ -199,7 +156,6 @@ const createBlockGroup = (
     newBlockGroup.fileFragments.forEach((fileFragment) => {
       fileFragment.blocks.forEach((block) => addToBlocksLayer(block.sprite));
       addToOverlayLayer(fileFragment.overlay.danger);
-      addToOverlayLayer(fileFragment.overlay.selection);
     });
 
     return newBlockGroup;
@@ -452,6 +408,5 @@ export const removeBlockGroup = (blockGroup: BlockGroup) => {
   blockGroup.fileFragments.forEach((fileFragment) => {
     fileFragment.blocks.forEach((block) => block.sprite.removeFromParent());
     fileFragment.overlay.danger.removeFromParent();
-    fileFragment.overlay.selection.removeFromParent();
   });
 };

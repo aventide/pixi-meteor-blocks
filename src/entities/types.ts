@@ -26,7 +26,6 @@ export type FileFragmentBoundary = VerticalBoundary;
 
 export type FileOverlay = {
   danger: Container;
-  selection: Container;
 };
 
 export type FilePlacement = {

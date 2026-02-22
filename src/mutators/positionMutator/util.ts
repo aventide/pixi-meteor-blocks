@@ -83,9 +83,6 @@ export const translatePosition = (blockGroup: BlockGroup, deltaY: number) => {
     fileFragment.overlay.danger.y = snap(
       fileFragment.overlay.danger.y + deltaY,
     );
-    fileFragment.overlay.selection.y = snap(
-      fileFragment.overlay.selection.y + deltaY,
-    );
   });
 
   blockGroup.fileFragments.forEach((fileFragment) =>
