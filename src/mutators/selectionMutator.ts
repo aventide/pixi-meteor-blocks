@@ -1,6 +1,13 @@
+import { Container, Graphics, BlurFilter } from "pixi.js";
 import { DEFAULT_FILE_LIMIT, DEFAULT_POP_VELOCITY } from "../constants";
 import { decombineBlockGroup } from "../entities";
-import { Block, BlockGroup, FileFragment } from "../entities/types";
+import {
+  Block,
+  BlockGroup,
+  FileBoundary,
+  FileFragment,
+  FileNumber,
+} from "../entities/types";
 import {
   getBlockAboveInFragment,
   getBlockBelowInFragment,
@@ -12,6 +19,7 @@ import {
   getWorld,
   setGlobalPointerDown,
   setSelectedBlockGroup,
+  setSelectedFragmentOverlay,
 } from "../world";
 
 let selectedFileFragment: FileFragment | null = null;
@@ -25,6 +33,7 @@ export const selectionMutator = (blockGroup: BlockGroup) => {
     selectedFileFragment = null;
     selectedBlock = null;
     setSelectedBlockGroup(null);
+    setSelectedFragmentOverlay(null);
   }
 
   blockGroup.fileFragments.forEach((fileFragment) => {
@@ -97,7 +106,49 @@ export const selectionMutator = (blockGroup: BlockGroup) => {
         selectedFileFragment = fileFragment;
         selectedBlock = block;
         setSelectedBlockGroup(blockGroup);
+        const selectedFragmentOverlay = createFileSelectionOverlay(
+          selectedFileFragment.number,
+          selectedFileFragment.boundary,
+        );
+
+        setSelectedFragmentOverlay(selectedFragmentOverlay);
       }
     });
   });
+};
+
+const createFileSelectionOverlay = (
+  fileNumber: FileNumber,
+  boundary: FileBoundary,
+): Container => {
+  const blockSize = getBlockSize();
+
+  const x = (fileNumber - 1) * blockSize;
+  const y = boundary.top;
+  const width = blockSize;
+  const height = boundary.bottom - boundary.top;
+
+  const overlay = new Container();
+  overlay.eventMode = "none";
+
+  const glow = new Graphics();
+  const border = new Graphics();
+
+  const blur = new BlurFilter();
+  blur.strength = 2;
+
+  glow.clear();
+  glow
+    .rect(x, y, width, height)
+    .stroke({ width: 6, color: 0xffffff, alpha: 0.35 });
+  glow.filters = [blur];
+
+  border.clear();
+  border
+    .rect(x + 0.5, y + 0.5, width - 1, height - 1)
+    .stroke({ width: 2, color: 0xffffff, alpha: 1.0 });
+
+  overlay.addChild(glow, border);
+
+  return overlay;
 };

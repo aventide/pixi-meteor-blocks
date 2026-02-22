@@ -36,7 +36,7 @@ type World = {
   globalPointer: Coord;
   globalPointerDown: boolean;
   selectedBlockGroup: BlockGroup | null;
-  selectionFragmentOverlay: Container | null;
+  selectedFragmentOverlay: Container | null;
 };
 
 const world: World = {
@@ -65,7 +65,7 @@ const world: World = {
   globalPointer: DEFAULT_POINTER_POSITION,
   globalPointerDown: false,
   selectedBlockGroup: null,
-  selectionFragmentOverlay: null,
+  selectedFragmentOverlay: null,
 };
 
 export const getWorld = () => world;
@@ -100,6 +100,22 @@ export const setSelectedBlockGroup = (
   world.selectedBlockGroup = newSelectedBlockGroup;
 };
 
+export const setSelectedFragmentOverlay = (
+  newSelectedFragmentOverlay: Container | null,
+) => {
+  if (world.selectedFragmentOverlay?.parent) {
+    world.selectedFragmentOverlay.parent.removeChild(
+      world.selectedFragmentOverlay,
+    );
+  }
+
+  world.selectedFragmentOverlay = newSelectedFragmentOverlay;
+
+  if (newSelectedFragmentOverlay) {
+    world.stageLayers.overlayLayer.addChild(newSelectedFragmentOverlay);
+  }
+};
+
 export const addToStage = (sprite: Sprite | Container) => {
   if (world.stage) {
     world.stage.addChild(sprite);
@@ -127,9 +143,9 @@ export const addToOverlayLayer = (sprite: Sprite | Container) => {
 export const initializeStage = (stage: Container) => {
   world.stage = stage;
 
-  const selectionFragmentOverlay = new Container();
-  world.selectionFragmentOverlay = selectionFragmentOverlay;
-  world.stageLayers.overlayLayer.addChild(selectionFragmentOverlay);
+  const selectedFragmentOverlay = new Container();
+  world.selectedFragmentOverlay = selectedFragmentOverlay;
+  world.stageLayers.overlayLayer.addChild(selectedFragmentOverlay);
 
   // add our currently-empty layers to the stage
   // ORDER MATTERS HERE
