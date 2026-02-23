@@ -14,6 +14,7 @@ import {
   selectionMutator,
   sequenceMutator,
   positionMutator,
+  selectionFragmentMutator,
 } from "./mutators";
 import { getRandomFileNumber } from "./util";
 import { getIsSpawnPositionOpen } from "./entities/util";
@@ -21,7 +22,7 @@ import {
   ACCELERATED_MAIN_TICKER_SPEED,
   DEFAULT_DROP_INTERVAL,
   DEFAULT_FILE_COUNT,
-  DEFAULT_FILE_LIMIT,
+  DEFAULT_FILE_BLOCKS_LIMIT,
   DEFAULT_MAIN_TICKER_SPEED,
   DEFAULT_POINTER_POSITION,
 } from "./constants";
@@ -110,7 +111,7 @@ import { dangerAnimation } from "./animations";
 
     // apply once per group per tick mutations
     blockGroupsMap.forEach((blockGroup) => {
-      if (iterations < 200) {
+      if (iterations <= 300) {
         iterations++;
         descentMutator(blockGroup, dt);
         selectionMutator(blockGroup);
@@ -123,6 +124,7 @@ import { dangerAnimation } from "./animations";
 
     // apply once per tick mutations
     // @todo sequenceMutator will be moved here and possibly others
+    selectionFragmentMutator();
 
     // apply animation progress once per tick
     dangerAnimation(dt);
@@ -132,7 +134,7 @@ import { dangerAnimation } from "./animations";
     // before the file is considered for placement (and game loss)
     blockGroupsMap.forEach((blockGroup) =>
       blockGroup.fileFragments.forEach((fileFragment) => {
-        if (fileFragment.blocks.length >= DEFAULT_FILE_LIMIT + 2) {
+        if (fileFragment.blocks.length >= DEFAULT_FILE_BLOCKS_LIMIT + 2) {
           alert("You have lost the game.");
           app.stop();
         }

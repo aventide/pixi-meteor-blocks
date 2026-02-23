@@ -78,7 +78,7 @@ export const setWorldDimensions = (height: number, width: number) => {
   world.height = height;
   world.width = width;
   // const blockSize = width / DEFAULT_FILE_COUNT;
-  // world.height = blockSize * DEFAULT_FILE_LIMIT;
+  // world.height = blockSize * DEFAULT_FILE_BLOCKS_LIMIT;
   // world.width = width;
 };
 
