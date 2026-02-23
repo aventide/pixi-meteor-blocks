@@ -7,8 +7,9 @@ import {
 } from "./util";
 
 // this is likely the successor to selectionMutator as a whole, sorry dude
+// this mutator really does multiple things - it should be split up/renamed
 const selectionFragmentMutator = () => {
-  // clear old selection
+  // clear selection overlay
   setSelectedFragmentOverlay(null);
 
   // iterate one file at a time
@@ -16,10 +17,8 @@ const selectionFragmentMutator = () => {
     // get all selectionFragments for file
     const selectionFileFragments = getSelectionFileFragments(fileNumber);
 
-    // in the future this loop will run on each selection fragment
     for (const selectionFileFragment of selectionFileFragments) {
-      // find each selectionFragment and check for overlay display and vertical matches
-
+      // set selection overlay
       const hoveredBlock = getHoveredBlock(selectionFileFragment);
       if (hoveredBlock) {
         const selectionFragmentOverlay = createFileSelectionOverlay(
@@ -29,6 +28,9 @@ const selectionFragmentMutator = () => {
 
         setSelectedFragmentOverlay(selectionFragmentOverlay);
       }
+
+      // do vertical and horizontal matching here
+      // you can sort the blocks each of the selection fragments to do block swap
     }
   }
 };
