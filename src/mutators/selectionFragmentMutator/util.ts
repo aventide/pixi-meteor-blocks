@@ -108,6 +108,21 @@ export const getSelectedBlock = (fileFragment: FileFragment): Block | null => {
 };
 
 export const createFileSelectionOverlay = (
+  block: Block,
+  fileNumber: FileNumber,
+  boundary: FileBoundary,
+) => {
+  const overlay = new Container();
+  overlay.eventMode = "none";
+
+  const overlayBorder = createFileSelectionOverlayBorder(fileNumber, boundary);
+  const overlayBlock = createFileSelectionOverlayBlock(block);
+  overlay.addChild(overlayBorder, overlayBlock);
+
+  return overlay;
+};
+
+const createFileSelectionOverlayBorder = (
   fileNumber: FileNumber,
   boundary: FileBoundary,
 ): Container => {
@@ -137,6 +152,39 @@ export const createFileSelectionOverlay = (
   border
     .rect(x + 0.5, y + 0.5, width - 1, height - 1)
     .stroke({ width: 2, color: 0xffffff, alpha: 1.0 });
+
+  overlay.addChild(glow, border);
+
+  return overlay;
+};
+
+const createFileSelectionOverlayBlock = (block: Block): Container => {
+  const blockSize = getBlockSize();
+
+  const x = block.sprite.x;
+  const y = block.sprite.y;
+  const width = blockSize;
+  const height = blockSize;
+
+  const overlay = new Container();
+  overlay.eventMode = "none";
+
+  const glow = new Graphics();
+  const border = new Graphics();
+
+  const blur = new BlurFilter();
+  blur.strength = 2;
+
+  glow.clear();
+  glow
+    .rect(x - 3, y - 3, width + 6, height + 6)
+    .stroke({ width: 8, color: 0xffffff, alpha: 0.35 });
+  glow.filters = [blur];
+
+  border.clear();
+  border
+    .rect(x - 1.5, y - 1.5, width + 3, height + 3)
+    .stroke({ width: 4, color: 0xffffff, alpha: 1.0 });
 
   overlay.addChild(glow, border);
 

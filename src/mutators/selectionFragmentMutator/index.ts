@@ -22,6 +22,7 @@ const selectionFragmentMutator = () => {
       const hoveredBlock = getHoveredBlock(selectionFileFragment);
       if (hoveredBlock) {
         const selectionFragmentOverlay = createFileSelectionOverlay(
+          hoveredBlock,
           selectionFileFragment.number,
           selectionFileFragment.boundary,
         );
