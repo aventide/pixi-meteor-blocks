@@ -7,12 +7,7 @@ import {
   getIsGroupRooted,
   swapFileBlockPositions,
 } from "../entities/util";
-import {
-  getBlockSize,
-  getWorld,
-  setGlobalPointerDown,
-  setSelectedBlockGroup,
-} from "../world";
+import { getBlockSize, getWorld, setGlobalPointerDown } from "../world";
 
 let selectedBlock: Block | null = null;
 
@@ -22,7 +17,6 @@ export const selectionMutator = (blockGroup: BlockGroup) => {
 
   if (!globalPointerDown) {
     selectedBlock = null;
-    setSelectedBlockGroup(null);
   }
 
   blockGroup.fileFragments.forEach((fileFragment) => {
@@ -58,7 +52,6 @@ export const selectionMutator = (blockGroup: BlockGroup) => {
               blockGroup,
               new Map([[blockGroup.fileFragments[0].number, 1]]),
             );
-            setSelectedBlockGroup(null);
             setGlobalPointerDown(false);
             if (ejectedGroup) {
               ejectedGroup.type = "pop";

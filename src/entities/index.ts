@@ -17,7 +17,6 @@ import {
   getBlockSize,
   getCeiling,
   getWorld,
-  setSelectedBlockGroup,
 } from "../world";
 import { getRandomBlockTexture } from "../textures";
 import {
@@ -251,7 +250,7 @@ export const combineBlockGroups = (
   subjectBlockGroup: BlockGroup,
   otherBlockGroup: BlockGroup,
 ) => {
-  const { blockGroupsMap, selectedBlockGroup } = getWorld();
+  const { blockGroupsMap } = getWorld();
 
   const combinedVelocity = getCombinedVelocity(
     subjectBlockGroup,
@@ -281,13 +280,6 @@ export const combineBlockGroups = (
   );
 
   blockGroupsMap.set(combinedBlockGroup.id, combinedBlockGroup);
-
-  if (
-    selectedBlockGroup?.id === subjectBlockGroup.id ||
-    selectedBlockGroup?.id === otherBlockGroup.id
-  ) {
-    setSelectedBlockGroup(combinedBlockGroup);
-  }
 
   return combinedBlockGroup;
 };

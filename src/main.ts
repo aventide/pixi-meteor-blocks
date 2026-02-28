@@ -4,7 +4,6 @@ import {
   getWorld,
   setGlobalPointer,
   setGlobalPointerDown,
-  setSelectedBlockGroup,
   setWorldDimensions,
   initializeStage,
 } from "./world";
@@ -56,7 +55,6 @@ import { dangerAnimation } from "./animations";
   });
   app.stage.addEventListener("pointerup", () => {
     setGlobalPointerDown(false);
-    setSelectedBlockGroup(null);
   });
   app.stage.addEventListener("pointermove", (e) => {
     const { x, y } = e.global;
@@ -65,7 +63,6 @@ import { dangerAnimation } from "./animations";
   app.stage.addEventListener("pointerleave", () => {
     setGlobalPointer(DEFAULT_POINTER_POSITION);
     setGlobalPointerDown(false);
-    setSelectedBlockGroup(null);
   });
 
   // keyboard events

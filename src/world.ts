@@ -35,7 +35,6 @@ type World = {
   blockGroupIdPool: BlockGroupId[];
   globalPointer: Coord;
   globalPointerDown: boolean;
-  selectedBlockGroup: BlockGroup | null;
   selectedFragmentOverlay: Container | null;
 };
 
@@ -64,7 +63,6 @@ const world: World = {
   blockGroupIdPool: Array.from({ length: 300 }, (_, i) => 300 - i),
   globalPointer: DEFAULT_POINTER_POSITION,
   globalPointerDown: false,
-  selectedBlockGroup: null,
   selectedFragmentOverlay: null,
 };
 
@@ -92,12 +90,6 @@ export const setGlobalPointer = (newCoord: Coord) => {
 
 export const setGlobalPointerDown = (isPointerDown: boolean) => {
   world.globalPointerDown = isPointerDown;
-};
-
-export const setSelectedBlockGroup = (
-  newSelectedBlockGroup: BlockGroup | null,
-) => {
-  world.selectedBlockGroup = newSelectedBlockGroup;
 };
 
 export const setSelectedFragmentOverlay = (
