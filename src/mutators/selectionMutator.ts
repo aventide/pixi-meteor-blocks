@@ -1,4 +1,4 @@
-import { DEFAULT_FILE_BLOCKS_LIMIT, DEFAULT_POP_VELOCITY } from "../constants";
+import { DEFAULT_POP_VELOCITY } from "../constants";
 import { decombineBlockGroup } from "../entities";
 import { Block, BlockGroup } from "../entities/types";
 import {
@@ -20,13 +20,6 @@ export const selectionMutator = (blockGroup: BlockGroup) => {
   }
 
   blockGroup.fileFragments.forEach((fileFragment) => {
-    // check for danger condition on group file fragment
-    if (fileFragment.blocks.length > DEFAULT_FILE_BLOCKS_LIMIT) {
-      fileFragment.overlay.danger.visible = true;
-    } else {
-      fileFragment.overlay.danger.visible = false;
-    }
-
     fileFragment.blocks.forEach((block) => {
       // if current block being iterated is the selected block
       if (selectedBlock && selectedBlock.sprite.uid === block.sprite.uid) {
