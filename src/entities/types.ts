@@ -41,6 +41,8 @@ export type FileFragment = {
   groupId: BlockGroupId;
 };
 
+export type SelectionFileFragment = Omit<FileFragment, "groupId" | "overlay">;
+
 export type BlockGroupType = "default" | "launch" | "pop";
 
 export type BlockGroup = {

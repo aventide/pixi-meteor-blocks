@@ -4,12 +4,11 @@ import {
   FileBoundary,
   Block,
   FileFragment,
+  SelectionFileFragment,
 } from "../../entities/types";
 import { getBlockSize, getWorld } from "../../world";
 import { isClose } from "../../util";
 import { getFileBoundaries } from "../../entities/util";
-
-type SelectionFileFragment = Omit<FileFragment, "groupId" | "overlay">;
 
 // get all contiguous selection fragments in a given file
 export const getSelectionFileFragments = (
@@ -109,13 +108,12 @@ export const getSelectedBlock = (fileFragment: FileFragment): Block | null => {
 
 export const createFileSelectionOverlay = (
   block: Block,
-  fileNumber: FileNumber,
   boundary: FileBoundary,
 ) => {
   const overlay = new Container();
   overlay.eventMode = "none";
 
-  const overlayBorder = createFileSelectionOverlayBorder(fileNumber, boundary);
+  const overlayBorder = createFileSelectionOverlayBorder(block.file, boundary);
   const overlayBlock = createFileSelectionOverlayBlock(block);
   overlay.addChild(overlayBorder, overlayBlock);
 
