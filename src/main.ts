@@ -53,16 +53,15 @@ import { dangerAnimation } from "./animations";
   app.stage.addEventListener("pointerdown", () => {
     setGlobalPointerDown(true);
   });
-  app.stage.addEventListener("pointerup", () => {
-    setGlobalPointerDown(false);
-  });
-  app.stage.addEventListener("pointermove", (e) => {
-    const { x, y } = e.global;
-    setGlobalPointer({ x, y });
-  });
-  app.stage.addEventListener("pointerleave", () => {
+  window.addEventListener("pointerup", () => {
     setGlobalPointer(DEFAULT_POINTER_POSITION);
     setGlobalPointerDown(false);
+  });
+  window.addEventListener("pointermove", (e) => {
+    const rect = app.canvas.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * app.screen.width;
+    const y = ((e.clientY - rect.top) / rect.height) * app.screen.height;
+    setGlobalPointer({ x, y });
   });
 
   // keyboard events
