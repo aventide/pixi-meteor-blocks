@@ -1,10 +1,6 @@
 import { DEFAULT_FILE_COUNT } from "../../constants";
 import { Block } from "../../entities/types";
 import {
-  sortBlocksAscending,
-  swapFileBlockPositions,
-} from "../../entities/util";
-import {
   getBlockSize,
   getWorld,
   setSelectedFragmentOverlay,
@@ -22,9 +18,7 @@ type Visibility = "hover" | "press";
 const visibility: Visibility = "hover";
 let selectedBlock: Block | null = null;
 
-// this mutator really does multiple things - it should be split up/renamed
-// this mutator is the next selectionMutator. The finding of the selection fragments will be done separately in the future
-const selectionFragmentMutator = () => {
+const selectionMutator = () => {
   const { globalPointer, globalPointerDown } = getWorld();
   const blockSize = getBlockSize();
 
@@ -88,4 +82,4 @@ const selectionFragmentMutator = () => {
   }
 };
 
-export default selectionFragmentMutator;
+export default selectionMutator;

@@ -2,7 +2,6 @@ import type {
   BlockGroup,
   BlockGroupId,
   Block,
-  FileFragment,
   FilePlacement,
   FileNumber,
 } from "./types";
@@ -71,17 +70,6 @@ export const assignBlockGroupId = (blocks: Block[], groupId: BlockGroupId) => {
   return blocks;
 };
 
-export const assignGroupFileRanks = (blocks: Block[]) => {
-  // sort blocks in ascending y coord
-  const sortedBlocks = blocks.sort(
-    (blockA, blockB) => blockA.sprite.y - blockB.sprite.y,
-  );
-
-  // then assign ranks
-  sortedBlocks.forEach((block, index) => (block.groupFileRank = index + 1));
-  return sortedBlocks;
-};
-
 export const getCombinedFilePlacements = (
   subjectFilePlacements: FilePlacement[],
   otherFilePlacements: FilePlacement[],
@@ -115,41 +103,6 @@ export const getCombinedFilePlacements = (
   });
 
   return mergedFilePlacements;
-};
-
-export const getBlockAboveInFragment = (
-  fileFragment: FileFragment,
-  block: Block,
-): Block | null => {
-  if (block.groupFileRank <= 1) return null;
-  return fileFragment.blocks[block.groupFileRank - 2] || null;
-};
-
-export const getBlockBelowInFragment = (
-  fileFragment: FileFragment,
-  block: Block,
-): Block | null => {
-  if (block.groupFileRank >= fileFragment.blocks.length) return null;
-  return fileFragment.blocks[block.groupFileRank] || null;
-};
-
-export const swapFileBlockPositions = (
-  blocks: Block[],
-  subjectBlock: Block,
-  otherBlock: Block,
-) => {
-  // blocks are assumed to be in the same file, hence only y position swap
-  const swapYPosition = subjectBlock.sprite.y;
-  const swapGroupFileRank = subjectBlock.groupFileRank;
-
-  subjectBlock.sprite.y = otherBlock.sprite.y;
-  subjectBlock.groupFileRank = otherBlock.groupFileRank;
-
-  otherBlock.sprite.y = swapYPosition;
-  otherBlock.groupFileRank = swapGroupFileRank;
-
-  blocks[subjectBlock.groupFileRank - 1] = subjectBlock;
-  blocks[otherBlock.groupFileRank - 1] = otherBlock;
 };
 
 export const sortBlocksAscending = (blocks: Block[]) =>

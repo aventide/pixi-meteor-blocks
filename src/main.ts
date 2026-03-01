@@ -10,10 +10,9 @@ import {
 import { createSingleBlock } from "./entities";
 import {
   descentMutator,
-  selectionMutator,
   sequenceMutator,
   positionMutator,
-  selectionFragmentMutator,
+  selectionMutator,
 } from "./mutators";
 import { getRandomFileNumber } from "./util";
 import { getIsSpawnPositionOpen } from "./entities/util";
@@ -23,7 +22,6 @@ import {
   DEFAULT_FILE_COUNT,
   DEFAULT_FILE_BLOCKS_LIMIT,
   DEFAULT_MAIN_TICKER_SPEED,
-  DEFAULT_POINTER_POSITION,
 } from "./constants";
 import { dangerAnimation } from "./animations";
 
@@ -109,7 +107,6 @@ import { dangerAnimation } from "./animations";
       if (iterations <= 300) {
         iterations++;
         descentMutator(blockGroup, dt);
-        selectionMutator(blockGroup);
         positionMutator(blockGroup, dt);
         sequenceMutator(blockGroup);
       } else {
@@ -119,7 +116,7 @@ import { dangerAnimation } from "./animations";
 
     // apply once per tick mutations
     // @todo sequenceMutator will be moved here and possibly others
-    selectionFragmentMutator();
+    selectionMutator();
 
     // apply animation progress once per tick
     dangerAnimation(dt);

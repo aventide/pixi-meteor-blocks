@@ -82,9 +82,12 @@ const getGroupByBlock = (block: Block): BlockGroup | undefined => {
 
 export const getFracturePointMap = (blocks: Block[]) => {
   const map = new Map<FileNumber, number>();
+  const sortedBlocks = [...blocks].sort(
+    (blockA, blockB) => blockA.sprite.y - blockB.sprite.y,
+  );
 
-  blocks.forEach((block) => {
-    map.set(block.file, block.groupFileRank);
+  sortedBlocks.forEach((block, index) => {
+    map.set(block.file, index + 1);
   });
 
   return map;
@@ -127,9 +130,12 @@ const findRootedHorizontalSequence = () => {
   // build up the map
   adjacentFileSequences.forEach((adjacentFileSequence: BlockGroup[]) => {
     adjacentFileSequence.forEach((blockGroup) => {
-      blockGroup.fileFragments[0].blocks.forEach((block) => {
-        const blocksFromBottom =
-          blockGroup.fileFragments[0].blocks.length - block.groupFileRank;
+      const sortedBlocks = [...blockGroup.fileFragments[0].blocks].sort(
+        (blockA, blockB) => blockA.sprite.y - blockB.sprite.y,
+      );
+
+      sortedBlocks.forEach((block, index) => {
+        const blocksFromBottom = sortedBlocks.length - (index + 1);
 
         const currentRecord = boardRankBlockRecord.get(blocksFromBottom);
         if (currentRecord) {

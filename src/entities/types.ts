@@ -12,7 +12,6 @@ export type FileNumber = number;
 export type Block = {
   sprite: Sprite;
   file: FileNumber;
-  groupFileRank: number;
   groupId?: BlockGroupId;
 };
 

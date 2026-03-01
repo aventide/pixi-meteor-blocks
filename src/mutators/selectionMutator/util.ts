@@ -3,16 +3,12 @@ import {
   FileNumber,
   FileBoundary,
   Block,
-  FileFragment,
   SelectionFileFragment,
+  FileFragment,
 } from "../../entities/types";
 import { getBlockSize, getWorld } from "../../world";
 import { isClose } from "../../util";
-import {
-  assignGroupFileRanks,
-  getFileBoundaries,
-  sortBlocksAscending,
-} from "../../entities/util";
+import { getFileBoundaries, sortBlocksAscending } from "../../entities/util";
 
 // get all contiguous selection fragments in a given file
 export const getSelectionFileFragments = (
@@ -99,14 +95,6 @@ export const getHoveredBlock = (
       return block;
     }
   }
-  return null;
-};
-
-export const getSelectedBlock = (fileFragment: FileFragment): Block | null => {
-  const { globalPointerDown } = getWorld();
-
-  const hoveredBlock = getHoveredBlock(fileFragment);
-  if (hoveredBlock && globalPointerDown) return hoveredBlock;
   return null;
 };
 
@@ -214,6 +202,23 @@ export const swapWithBlockAbove = (
   if (blockAbove) {
     swapSelectionFileBlocks(subjectBlock, blockAbove);
   }
+
+  // apply pop velocity
+  // else if() {}
+  // else if (
+  //   getIsGroupRooted(blockGroup) &&
+  //   blockGroup.fileFragments.length === 1
+  // ) {
+  //   const { ejectedGroup } = decombineBlockGroup(
+  //     blockGroup,
+  //     new Map([[blockGroup.fileFragments[0].number, 1]]),
+  //   );
+  //   setGlobalPointerDown(false);
+  //   if (ejectedGroup) {
+  //     ejectedGroup.type = "pop";
+  //     ejectedGroup.velocity = DEFAULT_POP_VELOCITY;
+  //   }
+  // }
 };
 
 export const swapWithBlockBelow = (

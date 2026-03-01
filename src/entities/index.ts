@@ -21,7 +21,6 @@ import {
 import { getRandomBlockTexture } from "../textures";
 import {
   assignBlockGroupId,
-  assignGroupFileRanks,
   getCombinedFilePlacements,
   getFileBoundaries,
   getFilePlacements,
@@ -32,12 +31,10 @@ const createBlock = ({
   initialPosition,
   texture,
   file,
-  groupFileRank,
 }: {
   initialPosition: Coord;
   texture: Texture;
   file: number;
-  groupFileRank: number;
 }): Block => {
   const blockSize = getBlockSize();
   const sprite = new Sprite(texture);
@@ -53,7 +50,6 @@ const createBlock = ({
   return {
     sprite,
     file,
-    groupFileRank,
   };
 };
 
@@ -99,7 +95,6 @@ const createFileFragment = (
   // @todo consider making these assignment functions pure
   // @todo consider doing id assignment as a separate step, though this is also fine
   assignBlockGroupId(filePlacement.blocks, groupId);
-  assignGroupFileRanks(filePlacement.blocks);
 
   const fileFragment: FileFragment = {
     blocks: filePlacement.blocks,
@@ -171,7 +166,6 @@ export const createSingleBlock = (fileNumber: FileNumber): BlockGroup => {
       y: getCeiling() / getBlockSize(),
     },
     file: fileNumber,
-    groupFileRank: 1,
   });
 
   return createBlockGroup([
@@ -193,7 +187,6 @@ export const createVerticalTestGroup = (
       initialPosition: { x: file, y: (i + 1) * -1 },
       texture,
       file,
-      groupFileRank: i + 1,
     });
     initialBlocks.push(newBlock);
   }
@@ -312,9 +305,13 @@ export const decombineBlockGroup = (
 
     const basisBlocks: Block[] = [];
     const ejectedBlocks: Block[] = [];
+    const sortedBlocks = [...originalPlacement.blocks].sort(
+      (blockA, blockB) => blockA.sprite.y - blockB.sprite.y,
+    );
 
-    originalPlacement.blocks.forEach((block) => {
-      if (block.groupFileRank <= individualFracturePoint) {
+    sortedBlocks.forEach((block, index) => {
+      const blockRank = index + 1;
+      if (blockRank <= individualFracturePoint) {
         ejectedBlocks.push(block);
       } else {
         basisBlocks.push(block);
