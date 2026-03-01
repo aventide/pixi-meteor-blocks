@@ -151,3 +151,6 @@ export const swapFileBlockPositions = (
   blocks[subjectBlock.groupFileRank - 1] = subjectBlock;
   blocks[otherBlock.groupFileRank - 1] = otherBlock;
 };
+
+export const sortBlocksAscending = (blocks: Block[]) =>
+  blocks.sort((blockA, blockB) => blockA.sprite.y - blockB.sprite.y);

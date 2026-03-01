@@ -8,7 +8,11 @@ import {
 } from "../../entities/types";
 import { getBlockSize, getWorld } from "../../world";
 import { isClose } from "../../util";
-import { getFileBoundaries } from "../../entities/util";
+import {
+  assignGroupFileRanks,
+  getFileBoundaries,
+  sortBlocksAscending,
+} from "../../entities/util";
 
 // get all contiguous selection fragments in a given file
 export const getSelectionFileFragments = (
@@ -187,4 +191,62 @@ const createFileSelectionOverlayBlock = (block: Block): Container => {
   overlay.addChild(glow, border);
 
   return overlay;
+};
+
+export const swapWithBlockAbove = (
+  subjectBlock: Block,
+  selectionFileFragment: SelectionFileFragment,
+) => {
+  const sortedBlocks = sortBlocksAscending(selectionFileFragment.blocks);
+
+  const currentBlockIndex = sortedBlocks.findIndex(
+    (block) => block.sprite.uid === subjectBlock?.sprite.uid,
+  );
+
+  if (currentBlockIndex === -1) {
+    return;
+  }
+
+  const blockAboveIndex = currentBlockIndex - 1;
+  const blockAbove =
+    blockAboveIndex >= 0 ? sortedBlocks[blockAboveIndex] : null;
+
+  if (blockAbove) {
+    swapSelectionFileBlocks(subjectBlock, blockAbove);
+  }
+};
+
+export const swapWithBlockBelow = (
+  subjectBlock: Block,
+  selectionFileFragment: SelectionFileFragment,
+) => {
+  const sortedBlocks = sortBlocksAscending(selectionFileFragment.blocks);
+
+  const currentBlockIndex = sortedBlocks.findIndex(
+    (block) => block.sprite.uid === subjectBlock?.sprite.uid,
+  );
+
+  if (currentBlockIndex === -1) {
+    return;
+  }
+
+  const blockBelowIndex = currentBlockIndex + 1;
+  const blockBelow =
+    blockBelowIndex < sortedBlocks.length
+      ? sortedBlocks[blockBelowIndex]
+      : null;
+
+  if (blockBelow) {
+    swapSelectionFileBlocks(subjectBlock, blockBelow);
+  }
+};
+
+export const swapSelectionFileBlocks = (
+  subjectBlock: Block,
+  otherBlock: Block,
+) => {
+  const swapYPosition = subjectBlock.sprite.y;
+
+  subjectBlock.sprite.y = otherBlock.sprite.y;
+  otherBlock.sprite.y = swapYPosition;
 };

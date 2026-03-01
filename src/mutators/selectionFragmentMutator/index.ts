@@ -1,10 +1,20 @@
 import { DEFAULT_FILE_COUNT } from "../../constants";
 import { Block } from "../../entities/types";
-import { getWorld, setSelectedFragmentOverlay } from "../../world";
+import {
+  sortBlocksAscending,
+  swapFileBlockPositions,
+} from "../../entities/util";
+import {
+  getBlockSize,
+  getWorld,
+  setSelectedFragmentOverlay,
+} from "../../world";
 import {
   createFileSelectionOverlay,
   getHoveredBlock,
   getSelectionFileFragments,
+  swapWithBlockAbove,
+  swapWithBlockBelow,
 } from "./util";
 
 type Visibility = "hover" | "press";
@@ -15,7 +25,8 @@ let selectedBlock: Block | null = null;
 // this mutator really does multiple things - it should be split up/renamed
 // this mutator is the next selectionMutator. The finding of the selection fragments will be done separately in the future
 const selectionFragmentMutator = () => {
-  const { globalPointerDown } = getWorld();
+  const { globalPointer, globalPointerDown } = getWorld();
+  const blockSize = getBlockSize();
 
   // clear selection overlay
   setSelectedFragmentOverlay(null);
@@ -48,6 +59,13 @@ const selectionFragmentMutator = () => {
 
         // this is where we would check the globalPointer position to check
         // for a block swap
+        if (globalPointer.y < selectedBlock.sprite.y) {
+          swapWithBlockAbove(selectedBlock, selectionFileFragment);
+        }
+
+        if (globalPointer.y > selectedBlock.sprite.y + blockSize) {
+          swapWithBlockBelow(selectedBlock, selectionFileFragment);
+        }
       }
 
       // otherwise, try to show hover if hover visibility is enabled
