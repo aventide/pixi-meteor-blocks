@@ -54,7 +54,6 @@ import { dangerAnimation } from "./animations";
     setGlobalPointerDown(true);
   });
   window.addEventListener("pointerup", () => {
-    setGlobalPointer(DEFAULT_POINTER_POSITION);
     setGlobalPointerDown(false);
   });
   window.addEventListener("pointermove", (e) => {

@@ -95,10 +95,8 @@ export const setGlobalPointerDown = (isPointerDown: boolean) => {
 export const setSelectedFragmentOverlay = (
   newSelectedFragmentOverlay: Container | null,
 ) => {
-  if (world.selectedFragmentOverlay?.parent) {
-    world.selectedFragmentOverlay.parent.removeChild(
-      world.selectedFragmentOverlay,
-    );
+  if (world.selectedFragmentOverlay) {
+    world.stageLayers.overlayLayer.removeChild(world.selectedFragmentOverlay);
   }
 
   world.selectedFragmentOverlay = newSelectedFragmentOverlay;

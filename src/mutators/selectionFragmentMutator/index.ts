@@ -37,25 +37,29 @@ const selectionFragmentMutator = () => {
       const hoveredBlock = getHoveredBlock(selectionFileFragment);
 
       // if this block is the selected one, show the overlay for this selectionFragment
+      // and possibly do a block swap, if cursor is above or below the block coordinates
       if (selectedBlock && isSelectedBlockInFragment) {
-        const selectionFragmentOverlay = createFileSelectionOverlay(
-          selectedBlock,
-          selectionFileFragment.boundary,
+        setSelectedFragmentOverlay(
+          createFileSelectionOverlay(
+            selectedBlock,
+            selectionFileFragment.boundary,
+          ),
         );
 
-        setSelectedFragmentOverlay(selectionFragmentOverlay);
+        // this is where we would check the globalPointer position to check
+        // for a block swap
       }
 
       // otherwise, try to show hover if hover visibility is enabled
       else if (!selectedBlock && hoveredBlock) {
         if (visibility === "hover") {
           // set selection overlay for selected block/selectionFragment
-          const selectionFragmentOverlay = createFileSelectionOverlay(
-            hoveredBlock,
-            selectionFileFragment.boundary,
+          setSelectedFragmentOverlay(
+            createFileSelectionOverlay(
+              hoveredBlock,
+              selectionFileFragment.boundary,
+            ),
           );
-
-          setSelectedFragmentOverlay(selectionFragmentOverlay);
         }
 
         if (globalPointerDown) {
