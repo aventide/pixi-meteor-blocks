@@ -1,4 +1,3 @@
-import { DEFAULT_FILE_COUNT } from "../../constants";
 import { Block } from "../../entities/types";
 import {
   getBlockSize,
@@ -7,8 +6,8 @@ import {
 } from "../../world";
 import {
   createFileSelectionOverlay,
+  getAllSelectionFileFragments,
   getHoveredBlock,
-  getSelectionFileFragments,
   swapWithBlockAbove,
   swapWithBlockBelow,
 } from "./util";
@@ -30,53 +29,50 @@ const selectionMutator = () => {
     selectedBlock = null;
   }
 
-  // iterate one file at a time
-  for (let fileNumber = 1; fileNumber <= DEFAULT_FILE_COUNT; fileNumber++) {
-    // get all selectionFragments for file
-    const selectionFileFragments = getSelectionFileFragments(fileNumber);
+  // get all selectionFragments for file
+  const allSelectionFileFragments = getAllSelectionFileFragments();
 
-    for (const selectionFileFragment of selectionFileFragments) {
-      const isSelectedBlockInFragment = selectedBlock
-        ? selectionFileFragment.blocks.includes(selectedBlock)
-        : false;
-      const hoveredBlock = getHoveredBlock(selectionFileFragment);
+  for (const selectionFileFragment of allSelectionFileFragments) {
+    const isSelectedBlockInFragment = selectedBlock
+      ? selectionFileFragment.blocks.includes(selectedBlock)
+      : false;
+    const hoveredBlock = getHoveredBlock(selectionFileFragment);
 
-      // if this block is the selected one, show the overlay for this selectionFragment
-      // and possibly do a block swap, if cursor is above or below the block coordinates
-      if (selectedBlock && isSelectedBlockInFragment) {
+    // if this block is the selected one, show the overlay for this selectionFragment
+    // and possibly do a block swap, if cursor is above or below the block coordinates
+    if (selectedBlock && isSelectedBlockInFragment) {
+      setSelectedFragmentOverlay(
+        createFileSelectionOverlay(
+          selectedBlock,
+          selectionFileFragment.boundary,
+        ),
+      );
+
+      // this is where we would check the globalPointer position to check
+      // for a block swap
+      if (globalPointer.y < selectedBlock.sprite.y) {
+        swapWithBlockAbove(selectedBlock, selectionFileFragment);
+      }
+
+      if (globalPointer.y > selectedBlock.sprite.y + blockSize) {
+        swapWithBlockBelow(selectedBlock, selectionFileFragment);
+      }
+    }
+
+    // otherwise, try to show hover if hover visibility is enabled
+    else if (!selectedBlock && hoveredBlock) {
+      if (visibility === "hover") {
+        // set selection overlay for selected block/selectionFragment
         setSelectedFragmentOverlay(
           createFileSelectionOverlay(
-            selectedBlock,
+            hoveredBlock,
             selectionFileFragment.boundary,
           ),
         );
-
-        // this is where we would check the globalPointer position to check
-        // for a block swap
-        if (globalPointer.y < selectedBlock.sprite.y) {
-          swapWithBlockAbove(selectedBlock, selectionFileFragment);
-        }
-
-        if (globalPointer.y > selectedBlock.sprite.y + blockSize) {
-          swapWithBlockBelow(selectedBlock, selectionFileFragment);
-        }
       }
 
-      // otherwise, try to show hover if hover visibility is enabled
-      else if (!selectedBlock && hoveredBlock) {
-        if (visibility === "hover") {
-          // set selection overlay for selected block/selectionFragment
-          setSelectedFragmentOverlay(
-            createFileSelectionOverlay(
-              hoveredBlock,
-              selectionFileFragment.boundary,
-            ),
-          );
-        }
-
-        if (globalPointerDown) {
-          selectedBlock = hoveredBlock;
-        }
+      if (globalPointerDown) {
+        selectedBlock = hoveredBlock;
       }
     }
   }

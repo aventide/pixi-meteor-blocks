@@ -9,6 +9,7 @@ import {
 import { getBlockSize, getWorld } from "../../world";
 import { isClose } from "../../util";
 import { getFileBoundaries, sortBlocksAscending } from "../../entities/util";
+import { DEFAULT_FILE_COUNT } from "../../constants";
 
 // get all contiguous selection fragments in a given file
 export const getSelectionFileFragments = (
@@ -74,6 +75,15 @@ const createSelectionFileFragment = (
   };
 
   return selectionFileFragment;
+};
+
+// get all selection file fragments in every file
+export const getAllSelectionFileFragments = () => {
+  const allSelectionFileFragments: SelectionFileFragment[] = [];
+  for (let fileNumber = 1; fileNumber <= DEFAULT_FILE_COUNT; fileNumber++) {
+    allSelectionFileFragments.push(...getSelectionFileFragments(fileNumber));
+  }
+  return allSelectionFileFragments;
 };
 
 export const getHoveredBlock = (
@@ -254,4 +264,49 @@ export const swapSelectionFileBlocks = (
 
   subjectBlock.sprite.y = otherBlock.sprite.y;
   otherBlock.sprite.y = swapYPosition;
+
+  // @todo consider simpler implementation such as swapping
+  // texture only, and then updating selectedBlock to the one above/below
+  const subjectGroupId = subjectBlock.groupId;
+  const otherGroupId = otherBlock.groupId;
+
+  if (!subjectGroupId || !otherGroupId || subjectGroupId === otherGroupId) {
+    return;
+  }
+
+  const { blockGroupsMap } = getWorld();
+  const subjectGroup = blockGroupsMap.get(subjectGroupId);
+  const otherGroup = blockGroupsMap.get(otherGroupId);
+
+  if (!subjectGroup || !otherGroup) {
+    return;
+  }
+
+  const subjectFragment = subjectGroup.fileFragments.find(
+    (fragment) => fragment.number === subjectBlock.file,
+  );
+  const otherFragment = otherGroup.fileFragments.find(
+    (fragment) => fragment.number === otherBlock.file,
+  );
+
+  if (!subjectFragment || !otherFragment) {
+    return;
+  }
+
+  const subjectIndex = subjectFragment.blocks.findIndex(
+    (block) => block.sprite.uid === subjectBlock.sprite.uid,
+  );
+  const otherIndex = otherFragment.blocks.findIndex(
+    (block) => block.sprite.uid === otherBlock.sprite.uid,
+  );
+
+  if (subjectIndex === -1 || otherIndex === -1) {
+    return;
+  }
+
+  subjectFragment.blocks.splice(subjectIndex, 1, otherBlock);
+  otherFragment.blocks.splice(otherIndex, 1, subjectBlock);
+
+  subjectBlock.groupId = otherGroupId;
+  otherBlock.groupId = subjectGroupId;
 };
