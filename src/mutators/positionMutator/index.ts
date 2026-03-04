@@ -13,18 +13,25 @@ type Contact = {
 };
 
 const positionMutator = (group: BlockGroup, dt: number) => {
-  const { height: worldHeight, blockGroupsMap } = getWorld();
-  const floor = getFloor();
-
+  const { height: worldHeight } = getWorld();
   const velocity = group.velocity;
-  if (velocity === 0) return;
-
-  // assuming downward velocity for now
-  // for now, do not process upwards movement
-  if (velocity < 0) return;
 
   // full movement diff based on group's velocity
   const movementDiff = velocity * dt * (worldHeight / DEFAULT_REFERENCE_HEIGHT);
+
+  if (velocity > 0) {
+    handleDownwardMotion(group, movementDiff);
+  } else if (velocity < 0) {
+    return;
+  } else {
+    return;
+  }
+};
+
+const handleDownwardMotion = (group: BlockGroup, movementDiff: number) => {
+  const { blockGroupsMap } = getWorld();
+
+  const floor = getFloor();
 
   let minDiff = movementDiff;
   let contact: Contact | null = null;
@@ -68,7 +75,6 @@ const positionMutator = (group: BlockGroup, dt: number) => {
       contact.contactedGroups &&
       group.type !== "launch"
     ) {
-      // group.velocity = 0;
       combineBlockGroups(group, contact.contactedGroups[0]);
     }
   }
