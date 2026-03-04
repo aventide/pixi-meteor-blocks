@@ -1,7 +1,7 @@
 import { DEFAULT_LAUNCH_VELOCITY } from "../constants";
 import { combineBlockGroups, decombineBlockGroup } from "../entities";
 import { Block, BlockGroup, FileNumber } from "../entities/types";
-import { getIsGroupRooted } from "../entities/util";
+import { getGroupByBlock, getIsGroupRooted } from "../entities/util";
 import { greyTexture } from "../textures";
 import { getBlockSize, getWorld } from "../world";
 
@@ -64,18 +64,6 @@ export const sequenceMutator = (blockGroup: BlockGroup) => {
     let combined = ejectedGroups[0];
     for (let i = 1; i < ejectedGroups.length; i++) {
       combined = combineBlockGroups(combined, ejectedGroups[i]);
-    }
-  }
-};
-
-const getGroupByBlock = (block: Block): BlockGroup | undefined => {
-  const { blockGroupsMap } = getWorld();
-
-  const associatedGroupId = block.groupId;
-  if (associatedGroupId) {
-    const associatedGroup = blockGroupsMap.get(associatedGroupId);
-    if (associatedGroup) {
-      return associatedGroup;
     }
   }
 };

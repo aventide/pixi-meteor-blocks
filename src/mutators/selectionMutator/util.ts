@@ -8,7 +8,11 @@ import {
 } from "../../entities/types";
 import { getBlockSize, getWorld } from "../../world";
 import { isClose } from "../../util";
-import { getFileBoundaries, sortBlocksAscending } from "../../entities/util";
+import {
+  getFileBoundaries,
+  getGroupByBlock,
+  sortBlocksAscending,
+} from "../../entities/util";
 import { DEFAULT_FILE_COUNT } from "../../constants";
 
 // get all contiguous selection fragments in a given file
@@ -274,9 +278,8 @@ export const swapSelectionFileBlocks = (
     return;
   }
 
-  const { blockGroupsMap } = getWorld();
-  const subjectGroup = blockGroupsMap.get(subjectGroupId);
-  const otherGroup = blockGroupsMap.get(otherGroupId);
+  const subjectGroup = getGroupByBlock(subjectBlock);
+  const otherGroup = getGroupByBlock(otherBlock);
 
   if (!subjectGroup || !otherGroup) {
     return;

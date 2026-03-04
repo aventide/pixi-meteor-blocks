@@ -70,6 +70,18 @@ export const assignBlockGroupId = (blocks: Block[], groupId: BlockGroupId) => {
   return blocks;
 };
 
+export const getGroupByBlock = (block: Block): BlockGroup | undefined => {
+  const { blockGroupsMap } = getWorld();
+
+  const associatedGroupId = block.groupId;
+  if (associatedGroupId) {
+    const associatedGroup = blockGroupsMap.get(associatedGroupId);
+    if (associatedGroup) {
+      return associatedGroup;
+    }
+  }
+};
+
 export const getCombinedFilePlacements = (
   subjectFilePlacements: FilePlacement[],
   otherFilePlacements: FilePlacement[],
