@@ -45,25 +45,38 @@ export const sequenceMutator = (blockGroup: BlockGroup) => {
       block.sprite.anchor.set(0);
       block.sprite.setSize(blockSize);
     });
+
     const ejectedGroups: BlockGroup[] = [];
+    const processedGroupIds = new Set<number>();
+
     rootedHorizontalSequence.forEach((block) => {
       const associatedGroup = getGroupByBlock(block);
-      if (associatedGroup) {
-        const { ejectedGroup } = decombineBlockGroup(
+      if (!associatedGroup || processedGroupIds.has(associatedGroup.id)) {
+        return;
+      }
+
+      processedGroupIds.add(associatedGroup.id);
+
+      const { ejectedGroup } = decombineBlockGroup(
+        associatedGroup,
+        getHorizontalFracturePointMap(
           associatedGroup,
-          getFracturePointMap(rootedHorizontalSequence),
-        );
-        if (ejectedGroup) {
-          ejectedGroup.velocity = DEFAULT_LAUNCH_VELOCITY;
-          ejectedGroup.type = "launch";
-          ejectedGroups.push(ejectedGroup);
-        }
+          rootedHorizontalSequence,
+        ),
+      );
+
+      if (ejectedGroup) {
+        ejectedGroup.velocity = DEFAULT_LAUNCH_VELOCITY;
+        ejectedGroup.type = "launch";
+        ejectedGroups.push(ejectedGroup);
       }
     });
 
-    let combined = ejectedGroups[0];
-    for (let i = 1; i < ejectedGroups.length; i++) {
-      combined = combineBlockGroups(combined, ejectedGroups[i]);
+    if (ejectedGroups.length > 0) {
+      let combined = ejectedGroups[0];
+      for (let i = 1; i < ejectedGroups.length; i++) {
+        combined = combineBlockGroups(combined, ejectedGroups[i]);
+      }
     }
   }
 };
@@ -105,6 +118,38 @@ const findRootedVerticalSequence = (blockGroup: BlockGroup) => {
       return sequence;
     }
   }
+};
+
+const getHorizontalFracturePointMap = (
+  blockGroup: BlockGroup,
+  sequence: Block[],
+) => {
+  const sequenceBlocksByFile = new Map<FileNumber, Block>();
+  sequence.forEach((block) => {
+    sequenceBlocksByFile.set(block.file, block);
+  });
+
+  const map = new Map<FileNumber, number>();
+
+  blockGroup.fileFragments.forEach((fileFragment) => {
+    const matchedBlock = sequenceBlocksByFile.get(fileFragment.number);
+    if (!matchedBlock) {
+      return;
+    }
+
+    const sortedBlocks = [...fileFragment.blocks].sort(
+      (blockA, blockB) => blockA.sprite.y - blockB.sprite.y,
+    );
+    const matchedBlockIndex = sortedBlocks.findIndex(
+      (block) => block === matchedBlock,
+    );
+
+    if (matchedBlockIndex >= 0) {
+      map.set(fileFragment.number, matchedBlockIndex + 1);
+    }
+  });
+
+  return map;
 };
 
 const findRootedHorizontalSequence = () => {
