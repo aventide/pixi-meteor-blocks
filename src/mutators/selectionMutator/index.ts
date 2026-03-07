@@ -1,4 +1,4 @@
-import { Block } from "../../entities/types";
+import { Block, SelectionFileFragment } from "../../entities/types";
 import {
   getBlockSize,
   getWorld,
@@ -6,7 +6,6 @@ import {
 } from "../../world";
 import {
   createFileSelectionOverlay,
-  getAllSelectionFileFragments,
   getHoveredBlock,
   swapWithBlockAbove,
   swapWithBlockBelow,
@@ -17,7 +16,9 @@ type Visibility = "hover" | "press";
 const visibility: Visibility = "hover";
 let selectedBlock: Block | null = null;
 
-const selectionMutator = () => {
+const selectionMutator = (
+  allSelectionFileFragments: SelectionFileFragment[],
+) => {
   const { globalPointer, globalPointerDown } = getWorld();
   const blockSize = getBlockSize();
 
@@ -28,9 +29,6 @@ const selectionMutator = () => {
   if (!globalPointerDown) {
     selectedBlock = null;
   }
-
-  // get all selectionFragments for file
-  const allSelectionFileFragments = getAllSelectionFileFragments();
 
   for (const selectionFileFragment of allSelectionFileFragments) {
     const isSelectedBlockInFragment = selectedBlock

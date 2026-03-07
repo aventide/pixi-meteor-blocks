@@ -24,6 +24,7 @@ import {
   DEFAULT_MAIN_TICKER_SPEED,
 } from "./constants";
 import { dangerAnimation } from "./animations";
+import { getAllSelectionFileFragments } from "./mutators/selectionMutator/util";
 
 (async () => {
   const app = new Application();
@@ -116,7 +117,11 @@ import { dangerAnimation } from "./animations";
 
     // apply once per tick mutations
     // @todo sequenceMutator will be moved here and possibly others
-    selectionMutator();
+
+    // get all selectionFragments for file
+    const allSelectionFileFragments = getAllSelectionFileFragments();
+
+    selectionMutator(allSelectionFileFragments);
 
     // apply animation progress once per tick
     dangerAnimation(dt);
