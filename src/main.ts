@@ -25,6 +25,7 @@ import {
 } from "./constants";
 import { dangerAnimation } from "./animations";
 import { getAllSelectionFileFragments } from "./mutators/selectionMutator/util";
+import { loadTextures } from "./textures";
 
 (async () => {
   const app = new Application();
@@ -34,6 +35,8 @@ import { getAllSelectionFileFragments } from "./mutators/selectionMutator/util";
     resolution: Math.max(1, window.devicePixelRatio),
     resizeTo: document.getElementById("pixi-container") || window,
   });
+
+  await loadTextures();
 
   initializeStage(app.stage);
 
