@@ -1,7 +1,7 @@
 import positionMutator from "./positionMutator";
 import selectionMutator from "./selectionMutator";
+import sequenceMutator from "./sequenceMutator";
 
-export { positionMutator, selectionMutator };
+export { positionMutator, selectionMutator, sequenceMutator };
 
 export { descentMutator } from "./descentMutator";
-export { sequenceMutator } from "./sequenceMutator";

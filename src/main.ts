@@ -109,7 +109,6 @@ import { getAllSelectionFileFragments } from "./mutators/selectionMutator/util";
         iterations++;
         descentMutator(blockGroup, dt);
         positionMutator(blockGroup, dt);
-        sequenceMutator(blockGroup);
       } else {
         throw new Error("Iteration pressure level exceeded threshold");
       }
@@ -122,6 +121,7 @@ import { getAllSelectionFileFragments } from "./mutators/selectionMutator/util";
     const allSelectionFileFragments = getAllSelectionFileFragments();
 
     selectionMutator(allSelectionFileFragments);
+    sequenceMutator(allSelectionFileFragments);
 
     // apply animation progress once per tick
     dangerAnimation(dt);
