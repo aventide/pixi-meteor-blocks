@@ -5,7 +5,7 @@ let redTexture: Texture | null = null;
 let blueTexture: Texture | null = null;
 let greenTexture: Texture | null = null;
 let yellowTexture: Texture | null = null;
-let greyTexture: Texture | null = null;
+let burnedTexture: Texture | null = null;
 
 export const loadTextures = async (): Promise<void> => {
   if (
@@ -13,25 +13,25 @@ export const loadTextures = async (): Promise<void> => {
     blueTexture &&
     greenTexture &&
     yellowTexture &&
-    greyTexture
+    burnedTexture
   ) {
     return;
   }
 
-  const [loadedRed, loadedBlue, loadedGreen, loadedYellow, loadedGrey] =
+  const [loadedRed, loadedBlue, loadedGreen, loadedYellow, loadedBurned] =
     await Promise.all([
       Assets.load("/assets/tile_red.svg"),
       Assets.load("/assets/tile_blue.svg"),
       Assets.load("/assets/tile_green.svg"),
       Assets.load("/assets/tile_yellow.svg"),
-      Assets.load("/assets/tile_grey.svg"),
+      Assets.load("/assets/tile_burned.svg"),
     ]);
 
   redTexture = loadedRed;
   blueTexture = loadedBlue;
   greenTexture = loadedGreen;
   yellowTexture = loadedYellow;
-  greyTexture = loadedGrey;
+  burnedTexture = loadedBurned;
 };
 
 const requireTexture = (
@@ -47,8 +47,8 @@ const requireTexture = (
   return texture;
 };
 
-export const getGreyTexture = (): Texture =>
-  requireTexture(greyTexture, "grey");
+export const getBurnedTexture = (): Texture =>
+  requireTexture(burnedTexture, "burned");
 
 export const getRandomBlockTexture = (): Texture => {
   const textureOptions: Texture[] = [
