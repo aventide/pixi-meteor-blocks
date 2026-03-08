@@ -9,8 +9,9 @@ import {
 import { getBlockSize, getWorld } from "../../world";
 import { isClose } from "../../util";
 import {
-  getFileBoundaries,
-  getGroupByBlock,
+  assignBlockToGroup,
+  getBlockGroupById,
+  getFileFragmentBoundary,
   getIsGroupRooted,
   sortBlocksAscending,
 } from "../../entities/util";
@@ -77,7 +78,7 @@ const createSelectionFileFragment = (
   const selectionFileFragment: SelectionFileFragment = {
     blocks: [...selectionBlocks],
     number: fileNumber,
-    boundary: getFileBoundaries(selectionBlocks),
+    boundary: getFileFragmentBoundary(selectionBlocks),
   };
 
   return selectionFileFragment;
@@ -218,7 +219,7 @@ export const swapWithBlockAbove = (
   if (blockAbove) {
     swapSelectionFileBlocks(subjectBlock, blockAbove);
   } else {
-    const subjectGroup = getGroupByBlock(subjectBlock);
+    const subjectGroup = getBlockGroupById(subjectBlock.groupId);
 
     if (subjectGroup && getIsGroupRooted(subjectGroup)) {
       // apply pop velocity
@@ -276,42 +277,14 @@ export const swapSelectionFileBlocks = (
   const subjectGroupId = subjectBlock.groupId;
   const otherGroupId = otherBlock.groupId;
 
-  if (!subjectGroupId || !otherGroupId || subjectGroupId === otherGroupId) {
+  if (
+    subjectGroupId === null ||
+    otherGroupId === null ||
+    subjectGroupId === otherGroupId
+  ) {
     return;
   }
 
-  const subjectGroup = getGroupByBlock(subjectBlock);
-  const otherGroup = getGroupByBlock(otherBlock);
-
-  if (!subjectGroup || !otherGroup) {
-    return;
-  }
-
-  const subjectFragment = subjectGroup.fileFragments.find(
-    (fragment) => fragment.number === subjectBlock.file,
-  );
-  const otherFragment = otherGroup.fileFragments.find(
-    (fragment) => fragment.number === otherBlock.file,
-  );
-
-  if (!subjectFragment || !otherFragment) {
-    return;
-  }
-
-  const subjectIndex = subjectFragment.blocks.findIndex(
-    (block) => block.sprite.uid === subjectBlock.sprite.uid,
-  );
-  const otherIndex = otherFragment.blocks.findIndex(
-    (block) => block.sprite.uid === otherBlock.sprite.uid,
-  );
-
-  if (subjectIndex === -1 || otherIndex === -1) {
-    return;
-  }
-
-  subjectFragment.blocks.splice(subjectIndex, 1, otherBlock);
-  otherFragment.blocks.splice(otherIndex, 1, subjectBlock);
-
-  subjectBlock.groupId = otherGroupId;
-  otherBlock.groupId = subjectGroupId;
+  assignBlockToGroup(subjectBlock, otherGroupId);
+  assignBlockToGroup(otherBlock, subjectGroupId);
 };

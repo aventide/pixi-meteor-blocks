@@ -12,7 +12,7 @@ export type FileNumber = number;
 export type Block = {
   sprite: Sprite;
   file: FileNumber;
-  groupId?: BlockGroupId;
+  groupId: BlockGroupId | null;
 };
 
 export type VerticalBoundary = {

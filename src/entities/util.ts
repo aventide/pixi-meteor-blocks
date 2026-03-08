@@ -2,6 +2,7 @@ import type {
   BlockGroup,
   BlockGroupId,
   Block,
+  FileFragment,
   FilePlacement,
   FileNumber,
 } from "./types";
@@ -24,7 +25,7 @@ export const getIsSpawnPositionOpen = (file: FileNumber): boolean => {
 };
 
 // input must be a "file" aka blocks all with the same y coord
-export const getFileBoundaries = (blocks: Block[]) => {
+export const getFileFragmentBoundary = (blocks: Block[]) => {
   const blockSize = getBlockSize();
 
   let highestTop = blocks[0].sprite.y;
@@ -65,21 +66,117 @@ export const getFilePlacements = (blockGroup: BlockGroup): FilePlacement[] =>
     number: fileFragment.number,
   }));
 
+export const getGroupFileFragment = (
+  blockGroup: BlockGroup,
+  fileNumber: FileNumber,
+): FileFragment | undefined =>
+  blockGroup.fileFragments.find(
+    (fileFragment) => fileFragment.number === fileNumber,
+  );
+
+export const refreshFileFragmentBoundary = (
+  fileFragment: FileFragment,
+): FileFragment => {
+  fileFragment.boundary = getFileFragmentBoundary(fileFragment.blocks);
+  return fileFragment;
+};
+
 export const assignBlockGroupId = (blocks: Block[], groupId: BlockGroupId) => {
   blocks.forEach((block) => (block.groupId = groupId));
   return blocks;
 };
 
-export const getGroupByBlock = (block: Block): BlockGroup | undefined => {
+export const getBlockGroupById = (
+  blockGroupId: BlockGroupId | null,
+): BlockGroup | undefined => {
+  if (blockGroupId === null) {
+    return undefined;
+  }
+
   const { blockGroupsMap } = getWorld();
 
-  const associatedGroupId = block.groupId;
-  if (associatedGroupId) {
-    const associatedGroup = blockGroupsMap.get(associatedGroupId);
-    if (associatedGroup) {
-      return associatedGroup;
+  return blockGroupsMap.get(blockGroupId);
+};
+
+const removeBlockFromFragment = (
+  fileFragment: FileFragment,
+  block: Block,
+): boolean => {
+  const blockIndex = fileFragment.blocks.indexOf(block);
+  if (blockIndex === -1) return false;
+
+  fileFragment.blocks.splice(blockIndex, 1);
+  return true;
+};
+
+export const assignBlockToGroup = (
+  block: Block,
+  blockGroupId: BlockGroupId,
+): BlockGroup => {
+  const nextGroup = getBlockGroupById(blockGroupId);
+  if (!nextGroup) {
+    throw new Error("Cannot assign block to a BlockGroup that does not exist");
+  }
+
+  const previousGroup = getBlockGroupById(block.groupId);
+
+  if (previousGroup?.id === nextGroup.id) {
+    return nextGroup;
+  }
+
+  if (previousGroup) {
+    const previousFragment = getGroupFileFragment(previousGroup, block.file);
+
+    if (!previousFragment) {
+      throw new Error(
+        "Block references a previous BlockGroup, but no matching FileFragment was found",
+      );
+    }
+
+    const wasRemoved = removeBlockFromFragment(previousFragment, block);
+    if (!wasRemoved) {
+      throw new Error(
+        "Block references a previous BlockGroup, but is missing from its FileFragment",
+      );
+    }
+
+    if (previousFragment.blocks.length === 0) {
+      previousGroup.fileFragments = previousGroup.fileFragments.filter(
+        (fileFragment) => fileFragment !== previousFragment,
+      );
+
+      const { fileFragmentsMap, fileBlockGroupsMap } = getWorld();
+      fileFragmentsMap.set(
+        previousFragment.number,
+        (fileFragmentsMap.get(previousFragment.number) || []).filter(
+          (fileFragment) => fileFragment !== previousFragment,
+        ),
+      );
+      fileBlockGroupsMap.set(
+        previousFragment.number,
+        (fileBlockGroupsMap.get(previousFragment.number) || []).filter(
+          (group) => group.id !== previousGroup.id,
+        ),
+      );
+    } else {
+      refreshFileFragmentBoundary(previousFragment);
     }
   }
+
+  const nextFragment = getGroupFileFragment(nextGroup, block.file);
+
+  if (nextFragment) {
+    nextFragment.blocks.push(block);
+    refreshFileFragmentBoundary(nextFragment);
+  } else {
+    throw new Error(
+      "Cannot assign block to target BlockGroup without an existing FileFragment for that file",
+    );
+  }
+
+  block.groupId = nextGroup.id;
+
+  return nextGroup;
 };
 
 export const getCombinedFilePlacements = (

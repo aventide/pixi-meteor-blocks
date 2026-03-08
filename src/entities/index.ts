@@ -22,7 +22,7 @@ import { getRandomBlockTexture } from "../textures";
 import {
   assignBlockGroupId,
   getCombinedFilePlacements,
-  getFileBoundaries,
+  getFileFragmentBoundary,
   getFilePlacements,
   getMomentum,
 } from "./util";
@@ -50,6 +50,7 @@ const createBlock = ({
   return {
     sprite,
     file,
+    groupId: null,
   };
 };
 
@@ -85,11 +86,11 @@ const createFileFragment = (
 ): FileFragment => {
   const { fileFragmentsMap } = getWorld();
 
-  const fileBoundaries = getFileBoundaries(filePlacement.blocks);
+  const fileFragmentBoundaries = getFileFragmentBoundary(filePlacement.blocks);
 
   const dangerOverlay = createFileDangerOverlay(
     filePlacement.number,
-    fileBoundaries,
+    fileFragmentBoundaries,
   );
 
   // @todo consider making these assignment functions pure
@@ -99,7 +100,7 @@ const createFileFragment = (
   const fileFragment: FileFragment = {
     blocks: filePlacement.blocks,
     number: filePlacement.number,
-    boundary: fileBoundaries,
+    boundary: fileFragmentBoundaries,
     overlay: {
       danger: dangerOverlay,
     },
