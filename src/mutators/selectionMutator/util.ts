@@ -3,32 +3,32 @@ import {
   FileNumber,
   FileBoundary,
   Block,
-  SelectionFileFragment,
   FileFragment,
+  GroupFileFragment,
 } from "../../entities/types";
 import { getBlockSize, getWorld } from "../../world";
 import { isClose } from "../../util";
 import {
   assignBlockToGroup,
+  createFileFragment,
   getBlockGroupById,
-  getFileFragmentBoundary,
   getIsGroupRooted,
   sortBlocksAscending,
-} from "../../entities/util";
+} from "../../entities";
 import { DEFAULT_FILE_COUNT, DEFAULT_POP_VELOCITY } from "../../constants";
 import { decombineBlockGroup } from "../../entities";
 
 // get all contiguous selection fragments in a given file
 export const getSelectionFileFragments = (
   fileNumber: FileNumber,
-): SelectionFileFragment[] => {
+): FileFragment[] => {
   const { fileFragmentsMap } = getWorld();
 
-  const selectionFragments: SelectionFileFragment[] = [];
+  const selectionFragments: FileFragment[] = [];
 
   // track the ids of the groups that have already been absorbed into a selection fragment
   // so we don't track them twice
-  const fragmentsInFile: FileFragment[] =
+  const fragmentsInFile: GroupFileFragment[] =
     fileFragmentsMap.get(fileNumber) || [];
 
   // sort ascending by boundary top
@@ -36,7 +36,7 @@ export const getSelectionFileFragments = (
     (fragA, fragB) => fragA.boundary.top - fragB.boundary.top,
   );
 
-  let currentSelectionFragment: FileFragment | null = null;
+  let currentSelectionFragment: GroupFileFragment | null = null;
   let currentSelectionBlocks: Block[] = [];
   for (const fragmentInFile of sortedFragmentsInFile) {
     if (currentSelectionFragment === null) {
@@ -54,8 +54,10 @@ export const getSelectionFileFragments = (
         ...fragmentInFile.blocks,
       ];
     } else {
-      const selectionFragment: SelectionFileFragment =
-        createSelectionFileFragment(fileNumber, currentSelectionBlocks);
+      const selectionFragment: FileFragment = createFileFragment(
+        fileNumber,
+        currentSelectionBlocks,
+      );
       selectionFragments.push(selectionFragment);
       currentSelectionFragment = fragmentInFile;
       currentSelectionBlocks = [...fragmentInFile.blocks];
@@ -63,39 +65,26 @@ export const getSelectionFileFragments = (
   }
 
   if (currentSelectionBlocks.length > 0) {
-    const selectionFragment: SelectionFileFragment =
-      createSelectionFileFragment(fileNumber, currentSelectionBlocks);
+    const selectionFragment: FileFragment = createFileFragment(
+      fileNumber,
+      currentSelectionBlocks,
+    );
     selectionFragments.push(selectionFragment);
   }
 
   return selectionFragments;
 };
 
-const createSelectionFileFragment = (
-  fileNumber: FileNumber,
-  selectionBlocks: Block[],
-): SelectionFileFragment => {
-  const selectionFileFragment: SelectionFileFragment = {
-    blocks: [...selectionBlocks],
-    number: fileNumber,
-    boundary: getFileFragmentBoundary(selectionBlocks),
-  };
-
-  return selectionFileFragment;
-};
-
 // get all selection file fragments in every file
 export const getAllSelectionFileFragments = () => {
-  const allSelectionFileFragments: SelectionFileFragment[] = [];
+  const allSelectionFileFragments: FileFragment[] = [];
   for (let fileNumber = 1; fileNumber <= DEFAULT_FILE_COUNT; fileNumber++) {
     allSelectionFileFragments.push(...getSelectionFileFragments(fileNumber));
   }
   return allSelectionFileFragments;
 };
 
-export const getHoveredBlock = (
-  fileFragment: SelectionFileFragment,
-): Block | null => {
+export const getHoveredBlock = (fileFragment: FileFragment): Block | null => {
   const { globalPointer } = getWorld();
   const blockSize = getBlockSize();
 
@@ -200,7 +189,7 @@ const createFileSelectionOverlayBlock = (block: Block): Container => {
 
 export const swapWithBlockAbove = (
   subjectBlock: Block,
-  selectionFileFragment: SelectionFileFragment,
+  selectionFileFragment: FileFragment,
 ) => {
   const sortedBlocks = sortBlocksAscending(selectionFileFragment.blocks);
 
@@ -240,7 +229,7 @@ export const swapWithBlockAbove = (
 
 export const swapWithBlockBelow = (
   subjectBlock: Block,
-  selectionFileFragment: SelectionFileFragment,
+  selectionFileFragment: FileFragment,
 ) => {
   const sortedBlocks = sortBlocksAscending(selectionFileFragment.blocks);
 

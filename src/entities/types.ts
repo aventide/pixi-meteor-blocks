@@ -35,18 +35,19 @@ export type FilePlacement = {
 export type FileFragment = {
   blocks: Block[];
   boundary: FileFragmentBoundary;
-  overlay: FileOverlay;
   number: FileNumber;
-  groupId: BlockGroupId;
 };
 
-export type SelectionFileFragment = Omit<FileFragment, "groupId" | "overlay">;
+export type GroupFileFragment = FileFragment & {
+  overlay: FileOverlay;
+  groupId: BlockGroupId;
+};
 
 export type BlockGroupType = "default" | "launch" | "pop";
 
 export type BlockGroup = {
   id: BlockGroupId;
-  fileFragments: FileFragment[];
+  fileFragments: GroupFileFragment[];
   velocity: number;
   type: BlockGroupType;
 };

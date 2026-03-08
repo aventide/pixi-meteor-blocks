@@ -15,7 +15,7 @@ import {
   selectionMutator,
 } from "./mutators";
 import { getRandomFileNumber } from "./util";
-import { getIsSpawnPositionOpen } from "./entities/util";
+import { getIsSpawnPositionOpen } from "./entities";
 import {
   ACCELERATED_MAIN_TICKER_SPEED,
   DEFAULT_DROP_INTERVAL,

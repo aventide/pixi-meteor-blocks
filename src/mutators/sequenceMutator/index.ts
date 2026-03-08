@@ -1,8 +1,6 @@
-import { SelectionFileFragment } from "../../entities/types";
+import { FileFragment } from "../../entities/types";
 
-const sequenceMutator = (
-  allSelectionFileFragments: SelectionFileFragment[],
-) => {
+const sequenceMutator = (allSelectionFileFragments: FileFragment[]) => {
   void allSelectionFileFragments;
 };
 

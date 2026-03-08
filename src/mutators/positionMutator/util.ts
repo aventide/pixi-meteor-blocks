@@ -1,13 +1,13 @@
-import { BlockGroup, FileFragment } from "../../entities/types";
+import { BlockGroup, GroupFileFragment } from "../../entities/types";
 import { DEFAULT_FLOAT_TOLERANCE } from "../../constants";
 import { getWorld } from "../../world";
 
 export const getClosestFragmentBelow = (
-  subjectFragment: FileFragment,
-): FileFragment | null => {
+  subjectFragment: GroupFileFragment,
+): GroupFileFragment | null => {
   const fragmentsInFile = getFragmentsInFile(subjectFragment);
 
-  let closest: FileFragment | null = null;
+  let closest: GroupFileFragment | null = null;
   let closestDiff: number | null = null;
 
   for (const frag of fragmentsInFile) {
@@ -33,11 +33,11 @@ export const getClosestFragmentBelow = (
 };
 
 export const getClosestFragmentAbove = (
-  subjectFragment: FileFragment,
-): FileFragment | null => {
+  subjectFragment: GroupFileFragment,
+): GroupFileFragment | null => {
   const fragmentsInFile = getFragmentsInFile(subjectFragment);
 
-  let closest: FileFragment | null = null;
+  let closest: GroupFileFragment | null = null;
   let closestDiff: number | null = null;
 
   for (const frag of fragmentsInFile) {
@@ -63,8 +63,8 @@ export const getClosestFragmentAbove = (
 };
 
 export const getFragmentsInFile = (
-  subjectFragment: FileFragment,
-): FileFragment[] => {
+  subjectFragment: GroupFileFragment,
+): GroupFileFragment[] => {
   const { fileFragmentsMap } = getWorld();
   const fragmentsInFile = fileFragmentsMap.get(subjectFragment.number);
 

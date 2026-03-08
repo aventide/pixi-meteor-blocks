@@ -1,4 +1,4 @@
-import { Block, SelectionFileFragment } from "../../entities/types";
+import { Block, FileFragment } from "../../entities/types";
 import {
   getBlockSize,
   getWorld,
@@ -16,9 +16,7 @@ type Visibility = "hover" | "press";
 const visibility: Visibility = "hover";
 let selectedBlock: Block | null = null;
 
-const selectionMutator = (
-  allSelectionFileFragments: SelectionFileFragment[],
-) => {
+const selectionMutator = (allSelectionFileFragments: FileFragment[]) => {
   const { globalPointer, globalPointerDown } = getWorld();
   const blockSize = getBlockSize();
 

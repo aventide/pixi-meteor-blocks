@@ -1,0 +1,92 @@
+import type {
+  Block,
+  BlockGroup,
+  BlockGroupId,
+  GroupFileFragment,
+} from "./types";
+
+import { getWorld } from "../world";
+import { getBlockGroupById } from "./blockGroup/util";
+import { refreshFileFragmentBoundary } from "./fileFragment/operations";
+import { getFileFragmentInGroup } from "./fileFragment/util";
+
+const removeBlockFromFragment = (
+  fileFragment: GroupFileFragment,
+  block: Block,
+): boolean => {
+  const blockIndex = fileFragment.blocks.indexOf(block);
+  if (blockIndex === -1) return false;
+
+  fileFragment.blocks.splice(blockIndex, 1);
+  return true;
+};
+
+export const assignBlockToGroup = (
+  block: Block,
+  blockGroupId: BlockGroupId,
+): BlockGroup => {
+  const nextGroup = getBlockGroupById(blockGroupId);
+  if (!nextGroup) {
+    throw new Error("Cannot assign block to a BlockGroup that does not exist");
+  }
+
+  const previousGroup = getBlockGroupById(block.groupId);
+
+  if (previousGroup?.id === nextGroup.id) {
+    return nextGroup;
+  }
+
+  if (previousGroup) {
+    const previousFragment = getFileFragmentInGroup(previousGroup, block.file);
+
+    if (!previousFragment) {
+      throw new Error(
+        "Block references a previous BlockGroup, but no matching GroupFileFragment was found",
+      );
+    }
+
+    const wasRemoved = removeBlockFromFragment(previousFragment, block);
+    if (!wasRemoved) {
+      throw new Error(
+        "Block references a previous BlockGroup, but is missing from its GroupFileFragment",
+      );
+    }
+
+    if (previousFragment.blocks.length === 0) {
+      previousGroup.fileFragments = previousGroup.fileFragments.filter(
+        (fileFragment) => fileFragment !== previousFragment,
+      );
+
+      const { fileFragmentsMap, fileBlockGroupsMap } = getWorld();
+      fileFragmentsMap.set(
+        previousFragment.number,
+        (fileFragmentsMap.get(previousFragment.number) || []).filter(
+          (fileFragment) => fileFragment !== previousFragment,
+        ),
+      );
+      fileBlockGroupsMap.set(
+        previousFragment.number,
+        (fileBlockGroupsMap.get(previousFragment.number) || []).filter(
+          (group) => group.id !== previousGroup.id,
+        ),
+      );
+    } else {
+      refreshFileFragmentBoundary(previousFragment);
+    }
+  }
+
+  const nextFragment = getFileFragmentInGroup(nextGroup, block.file);
+
+  if (!nextFragment) {
+    throw new Error(
+      "Cannot assign block to target BlockGroup without an existing GroupFileFragment for that file",
+    );
+  }
+
+  nextFragment.blocks.push(block);
+  refreshFileFragmentBoundary(nextFragment);
+
+  block.groupId = nextGroup.id;
+
+  return nextGroup;
+};
