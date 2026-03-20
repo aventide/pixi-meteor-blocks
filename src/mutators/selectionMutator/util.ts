@@ -6,17 +6,47 @@ import {
   FileFragment,
   GroupFileFragment,
 } from "../../entities/types";
-import { getBlockSize, getWorld } from "../../world";
+import { getBlockSize, getWorld, setGlobalPointerDown } from "../../world";
 import { isClose } from "../../util";
 import {
   assignBlockToGroup,
   createFileFragment,
   getBlockGroupById,
+  getFileFragmentInGroup,
   getIsGroupRooted,
   sortBlocksAscending,
 } from "../../entities";
 import { DEFAULT_FILE_COUNT, DEFAULT_POP_VELOCITY } from "../../constants";
 import { decombineBlockGroup } from "../../entities";
+
+const ejectTopMostBlockOfFragment = (subjectBlock: Block) => {
+  const subjectGroup = getBlockGroupById(subjectBlock.groupId);
+
+  if (!subjectGroup || !getIsGroupRooted(subjectGroup)) {
+    return;
+  }
+
+  const subjectFragment = getFileFragmentInGroup(
+    subjectGroup,
+    subjectBlock.file,
+  );
+
+  if (!subjectFragment) {
+    return;
+  }
+
+  const { ejectedGroup } = decombineBlockGroup(
+    subjectGroup,
+    new Map([[subjectFragment.number, 1]]),
+  );
+
+  setGlobalPointerDown(false);
+
+  if (ejectedGroup) {
+    ejectedGroup.type = "pop";
+    ejectedGroup.velocity = DEFAULT_POP_VELOCITY;
+  }
+};
 
 // get all contiguous selection fragments in a given file
 export const getSelectionFileFragments = (
@@ -208,22 +238,7 @@ export const swapWithBlockAbove = (
   if (blockAbove) {
     swapSelectionFileBlocks(subjectBlock, blockAbove);
   } else {
-    const subjectGroup = getBlockGroupById(subjectBlock.groupId);
-
-    if (subjectGroup && getIsGroupRooted(subjectGroup)) {
-      // apply pop velocity
-      const { ejectedGroup } = decombineBlockGroup(
-        subjectGroup,
-        new Map([[subjectGroup.fileFragments[0].number, 1]]),
-      );
-      // @todo instead set the selectedBlock to null
-      // this will have to be done at global level
-      // setGlobalPointerDown(false);
-      if (ejectedGroup) {
-        ejectedGroup.type = "pop";
-        ejectedGroup.velocity = DEFAULT_POP_VELOCITY;
-      }
-    }
+    ejectTopMostBlockOfFragment(subjectBlock);
   }
 };
 
