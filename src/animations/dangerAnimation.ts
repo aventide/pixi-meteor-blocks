@@ -6,7 +6,7 @@ const DANGER_ANIMATION_MAX_OPACITY = 0.45;
 let dangerOscillationPhase = 0;
 
 export const dangerAnimation = (dt: number) => {
-  const { fileFragmentsMap } = getWorld();
+  const { fileFragmentsByFileNumber } = getWorld();
 
   dangerOscillationPhase =
     (dangerOscillationPhase + dt / DANGER_ANIMATION_DURATION) % 1;
@@ -14,7 +14,7 @@ export const dangerAnimation = (dt: number) => {
   const dangerOscillation =
     (1 + Math.cos(dangerOscillationPhase * Math.PI * 2)) / 2;
 
-  fileFragmentsMap.forEach((fileFragments) => {
+  fileFragmentsByFileNumber.forEach((fileFragments) => {
     fileFragments.forEach((fileFragment) => {
       fileFragment.overlay.danger.alpha =
         dangerOscillation * DANGER_ANIMATION_MAX_OPACITY;

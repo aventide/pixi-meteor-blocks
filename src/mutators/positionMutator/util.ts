@@ -65,8 +65,8 @@ export const getClosestFragmentAbove = (
 export const getFragmentsInFile = (
   subjectFragment: GroupFileFragment,
 ): GroupFileFragment[] => {
-  const { fileFragmentsMap } = getWorld();
-  const fragmentsInFile = fileFragmentsMap.get(subjectFragment.number);
+  const { fileFragmentsByFileNumber } = getWorld();
+  const fragmentsInFile = fileFragmentsByFileNumber.get(subjectFragment.number);
 
   return fragmentsInFile || [];
 };

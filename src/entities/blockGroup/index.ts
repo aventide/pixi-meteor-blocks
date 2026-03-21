@@ -24,7 +24,8 @@ export const createBlockGroup = (
     }
   });
 
-  const { nextBlockGroupId, blockGroupsMap, fileBlockGroupsMap } = getWorld();
+  const { nextBlockGroupId, blockGroupsById, blockGroupsByFileNumber } =
+    getWorld();
   const assignedId = nextBlockGroupId;
 
   setNextBlockGroupId(assignedId + 1);
@@ -41,9 +42,9 @@ export const createBlockGroup = (
     type,
   };
 
-  blockGroupsMap.set(assignedId, newBlockGroup);
+  blockGroupsById.set(assignedId, newBlockGroup);
   fileNumbers.forEach((fileNumber) =>
-    fileBlockGroupsMap.get(fileNumber)?.push(newBlockGroup),
+    blockGroupsByFileNumber.get(fileNumber)?.push(newBlockGroup),
   );
 
   newBlockGroup.fileFragments.forEach((fileFragment) => {

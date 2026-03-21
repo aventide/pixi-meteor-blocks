@@ -56,7 +56,7 @@ export const createGroupFileFragment = (
   filePlacement: FilePlacement,
   groupId: BlockGroupId,
 ): GroupFileFragment => {
-  const { fileFragmentsMap, fileFragmentsById, nextFileFragmentId } =
+  const { fileFragmentsByFileNumber, fileFragmentsById, nextFileFragmentId } =
     getWorld();
   const assignedFragmentId = nextFileFragmentId;
 
@@ -87,7 +87,7 @@ export const createGroupFileFragment = (
     groupId,
   };
 
-  fileFragmentsMap.get(filePlacement.number)?.push(groupFileFragment);
+  fileFragmentsByFileNumber.get(filePlacement.number)?.push(groupFileFragment);
   fileFragmentsById.set(groupFileFragment.id, groupFileFragment);
 
   return groupFileFragment;

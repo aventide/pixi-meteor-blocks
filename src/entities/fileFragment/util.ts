@@ -8,10 +8,10 @@ import type {
 import { getBlockSize, getCeiling, getWorld } from "../../world";
 
 export const getIsSpawnPositionOpen = (file: FileNumber): boolean => {
-  const { fileFragmentsMap } = getWorld();
+  const { fileFragmentsByFileNumber } = getWorld();
   const blockSize = getBlockSize();
 
-  const fragmentsInFile = fileFragmentsMap.get(file) || [];
+  const fragmentsInFile = fileFragmentsByFileNumber.get(file) || [];
   let isPositionOpen = true;
 
   fragmentsInFile.forEach((fragment) => {

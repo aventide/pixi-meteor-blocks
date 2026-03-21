@@ -14,7 +14,7 @@ export const combineBlockGroups = (
   subjectBlockGroup: BlockGroup,
   otherBlockGroup: BlockGroup,
 ) => {
-  const { blockGroupsMap } = getWorld();
+  const { blockGroupsById } = getWorld();
 
   const combinedVelocity = getCombinedVelocity(
     subjectBlockGroup,
@@ -42,7 +42,7 @@ export const combineBlockGroups = (
     combinedType,
   );
 
-  blockGroupsMap.set(combinedBlockGroup.id, combinedBlockGroup);
+  blockGroupsById.set(combinedBlockGroup.id, combinedBlockGroup);
 
   return combinedBlockGroup;
 };
@@ -125,27 +125,28 @@ export const decombineBlockGroup = (
 
 export const removeBlockGroup = (blockGroup: BlockGroup) => {
   const {
-    blockGroupsMap,
-    fileBlockGroupsMap,
-    fileFragmentsMap,
+    blockGroupsById,
+    blockGroupsByFileNumber,
+    fileFragmentsByFileNumber,
     fileFragmentsById,
   } = getWorld();
 
-  blockGroupsMap.delete(blockGroup.id);
+  blockGroupsById.delete(blockGroup.id);
 
   blockGroup.fileFragments.forEach((fileFragment) => {
     const blockGroupsToFilter =
-      fileBlockGroupsMap.get(fileFragment.number) || [];
+      blockGroupsByFileNumber.get(fileFragment.number) || [];
     if (blockGroupsToFilter.length > 0) {
-      fileBlockGroupsMap.set(
+      blockGroupsByFileNumber.set(
         fileFragment.number,
         blockGroupsToFilter.filter((group) => group.id !== blockGroup.id),
       );
     }
 
-    const fragmentsToFilter = fileFragmentsMap.get(fileFragment.number) || [];
+    const fragmentsToFilter =
+      fileFragmentsByFileNumber.get(fileFragment.number) || [];
     if (fragmentsToFilter.length > 0) {
-      fileFragmentsMap.set(
+      fileFragmentsByFileNumber.set(
         fileFragment.number,
         fragmentsToFilter.filter(
           (fragment) => fragment.groupId !== blockGroup.id,

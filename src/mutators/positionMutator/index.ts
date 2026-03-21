@@ -33,7 +33,7 @@ const positionMutator = (group: BlockGroup, dt: number) => {
 };
 
 const handleDownwardMotion = (group: BlockGroup, movementDiff: number) => {
-  const { blockGroupsMap } = getWorld();
+  const { blockGroupsById } = getWorld();
 
   const floor = getFloor();
 
@@ -57,7 +57,7 @@ const handleDownwardMotion = (group: BlockGroup, movementDiff: number) => {
 
       if (diffToClosestFragment < minDiff) {
         minDiff = diffToClosestFragment;
-        const closestGroupBelow = blockGroupsMap.get(
+        const closestGroupBelow = blockGroupsById.get(
           closestFragmentBelow.groupId,
         );
         const contactedGroups = closestGroupBelow ? [closestGroupBelow] : [];
@@ -85,7 +85,7 @@ const handleDownwardMotion = (group: BlockGroup, movementDiff: number) => {
 };
 
 const handleUpwardMotion = (group: BlockGroup, movementDiff: number) => {
-  const { blockGroupsMap } = getWorld();
+  const { blockGroupsById } = getWorld();
 
   const veil = getVeil();
 
@@ -110,7 +110,7 @@ const handleUpwardMotion = (group: BlockGroup, movementDiff: number) => {
 
       if (diffToClosestFragment > minDiff) {
         minDiff = diffToClosestFragment;
-        const closestGroupAbove = blockGroupsMap.get(
+        const closestGroupAbove = blockGroupsById.get(
           closestFragmentAbove.groupId,
         );
         const contactedGroups = closestGroupAbove ? [closestGroupAbove] : [];

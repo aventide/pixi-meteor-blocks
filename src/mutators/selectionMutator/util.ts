@@ -52,14 +52,14 @@ const ejectTopMostBlockOfFragment = (subjectBlock: Block) => {
 export const getSelectionFileFragments = (
   fileNumber: FileNumber,
 ): FileFragment[] => {
-  const { fileFragmentsMap } = getWorld();
+  const { fileFragmentsByFileNumber } = getWorld();
 
   const selectionFragments: FileFragment[] = [];
 
   // track the ids of the groups that have already been absorbed into a selection fragment
   // so we don't track them twice
   const fragmentsInFile: GroupFileFragment[] =
-    fileFragmentsMap.get(fileNumber) || [];
+    fileFragmentsByFileNumber.get(fileNumber) || [];
 
   // sort ascending by boundary top
   const sortedFragmentsInFile = fragmentsInFile.sort(

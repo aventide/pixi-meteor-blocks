@@ -30,10 +30,10 @@ type World = {
   width: number;
   stage: Container | null;
   stageLayers: StageLayers;
-  fileBlockGroupsMap: Map<FileNumber, BlockGroup[]>;
-  fileFragmentsMap: Map<FileNumber, GroupFileFragment[]>;
+  blockGroupsByFileNumber: Map<FileNumber, BlockGroup[]>;
+  fileFragmentsByFileNumber: Map<FileNumber, GroupFileFragment[]>;
   fileFragmentsById: Map<FileFragmentId, GroupFileFragment>;
-  blockGroupsMap: Map<BlockGroupId, BlockGroup>;
+  blockGroupsById: Map<BlockGroupId, BlockGroup>;
   nextBlockGroupId: BlockGroupId;
   nextFileFragmentId: FileFragmentId;
   globalPointer: Coord;
@@ -50,14 +50,14 @@ const world: World = {
     blocksLayer: new Container(),
     overlayLayer: new Container(),
   },
-  blockGroupsMap: new Map<BlockGroupId, BlockGroup>(),
-  fileBlockGroupsMap: new Map<FileNumber, BlockGroup[]>(
+  blockGroupsById: new Map<BlockGroupId, BlockGroup>(),
+  blockGroupsByFileNumber: new Map<FileNumber, BlockGroup[]>(
     Array.from({ length: DEFAULT_FILE_COUNT }, (_, i) => [
       i + 1,
       [] as BlockGroup[],
     ]),
   ),
-  fileFragmentsMap: new Map<FileNumber, GroupFileFragment[]>(
+  fileFragmentsByFileNumber: new Map<FileNumber, GroupFileFragment[]>(
     Array.from({ length: DEFAULT_FILE_COUNT }, (_, i) => [
       i + 1,
       [] as GroupFileFragment[],

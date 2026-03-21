@@ -114,7 +114,7 @@ export const getBlockGroupById = (
     return undefined;
   }
 
-  const { blockGroupsMap } = getWorld();
+  const { blockGroupsById } = getWorld();
 
-  return blockGroupsMap.get(blockGroupId);
+  return blockGroupsById.get(blockGroupId);
 };

@@ -101,13 +101,13 @@ import { loadTextures } from "./textures";
   });
 
   app.ticker.add((time) => {
-    const { blockGroupsMap } = getWorld();
+    const { blockGroupsById } = getWorld();
     const dt = time.deltaTime / 60;
 
     let iterations = 0;
 
     // apply once per group per tick mutations
-    blockGroupsMap.forEach((blockGroup) => {
+    blockGroupsById.forEach((blockGroup) => {
       if (iterations <= 300) {
         iterations++;
         descentMutator(blockGroup, dt);
@@ -131,7 +131,7 @@ import { loadTextures } from "./textures";
     // check for losing state
     // @todo consider adding a 1-2 sec "tolerance" once file limit is reached
     // before the file is considered for placement (and game loss)
-    blockGroupsMap.forEach((blockGroup) =>
+    blockGroupsById.forEach((blockGroup) =>
       blockGroup.fileFragments.forEach((fileFragment) => {
         if (fileFragment.blocks.length >= DEFAULT_FILE_BLOCKS_LIMIT + 2) {
           alert("You have lost the game.");

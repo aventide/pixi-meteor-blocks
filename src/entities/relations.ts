@@ -57,16 +57,16 @@ export const assignBlockToGroup = (
         (fileFragment) => fileFragment !== previousFragment,
       );
 
-      const { fileFragmentsMap, fileBlockGroupsMap } = getWorld();
-      fileFragmentsMap.set(
+      const { fileFragmentsByFileNumber, blockGroupsByFileNumber } = getWorld();
+      fileFragmentsByFileNumber.set(
         previousFragment.number,
-        (fileFragmentsMap.get(previousFragment.number) || []).filter(
+        (fileFragmentsByFileNumber.get(previousFragment.number) || []).filter(
           (fileFragment) => fileFragment !== previousFragment,
         ),
       );
-      fileBlockGroupsMap.set(
+      blockGroupsByFileNumber.set(
         previousFragment.number,
-        (fileBlockGroupsMap.get(previousFragment.number) || []).filter(
+        (blockGroupsByFileNumber.get(previousFragment.number) || []).filter(
           (group) => group.id !== previousGroup.id,
         ),
       );
