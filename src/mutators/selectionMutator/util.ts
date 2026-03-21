@@ -14,7 +14,6 @@ import {
   getBlockGroupById,
   getFileFragmentInGroup,
   getIsGroupRooted,
-  sortBlocksAscending,
 } from "../../entities";
 import { DEFAULT_FILE_COUNT, DEFAULT_POP_VELOCITY } from "../../constants";
 import { decombineBlockGroup } from "../../entities";
@@ -221,9 +220,7 @@ export const swapWithBlockAbove = (
   subjectBlock: Block,
   selectionFileFragment: FileFragment,
 ) => {
-  const sortedBlocks = sortBlocksAscending(selectionFileFragment.blocks);
-
-  const currentBlockIndex = sortedBlocks.findIndex(
+  const currentBlockIndex = selectionFileFragment.blocks.findIndex(
     (block) => block.sprite.uid === subjectBlock?.sprite.uid,
   );
 
@@ -233,7 +230,7 @@ export const swapWithBlockAbove = (
 
   const blockAboveIndex = currentBlockIndex - 1;
   const blockAbove =
-    blockAboveIndex >= 0 ? sortedBlocks[blockAboveIndex] : null;
+    blockAboveIndex >= 0 ? selectionFileFragment.blocks[blockAboveIndex] : null;
 
   if (blockAbove) {
     swapSelectionFileBlocks(subjectBlock, blockAbove);
@@ -246,9 +243,7 @@ export const swapWithBlockBelow = (
   subjectBlock: Block,
   selectionFileFragment: FileFragment,
 ) => {
-  const sortedBlocks = sortBlocksAscending(selectionFileFragment.blocks);
-
-  const currentBlockIndex = sortedBlocks.findIndex(
+  const currentBlockIndex = selectionFileFragment.blocks.findIndex(
     (block) => block.sprite.uid === subjectBlock?.sprite.uid,
   );
 
@@ -258,8 +253,8 @@ export const swapWithBlockBelow = (
 
   const blockBelowIndex = currentBlockIndex + 1;
   const blockBelow =
-    blockBelowIndex < sortedBlocks.length
-      ? sortedBlocks[blockBelowIndex]
+    blockBelowIndex < selectionFileFragment.blocks.length
+      ? selectionFileFragment.blocks[blockBelowIndex]
       : null;
 
   if (blockBelow) {

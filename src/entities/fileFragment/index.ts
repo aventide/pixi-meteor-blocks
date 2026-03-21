@@ -10,17 +10,21 @@ import type {
 
 import { Container, Graphics } from "pixi.js";
 import { getBlockSize, getWorld } from "../../world";
-import { assignBlockGroupId } from "../block/util";
+import { assignBlockGroupId, sortBlocksAscending } from "../block/util";
 import { getFileFragmentBoundary } from "./util";
 
 export const createFileFragment = (
   fileNumber: FileNumber,
   blocks: Block[],
-): FileFragment => ({
-  blocks: [...blocks],
-  number: fileNumber,
-  boundary: getFileFragmentBoundary(blocks),
-});
+): FileFragment => {
+  const sortedBlocks = sortBlocksAscending([...blocks]);
+
+  return {
+    blocks: sortedBlocks,
+    number: fileNumber,
+    boundary: getFileFragmentBoundary(sortedBlocks),
+  };
+};
 
 export const createFileDangerOverlay = (
   fileNumber: number,
