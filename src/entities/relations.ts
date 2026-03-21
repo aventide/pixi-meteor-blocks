@@ -7,7 +7,7 @@ import type {
 
 import { getWorld } from "../world";
 import { getBlockGroupById } from "./blockGroup/util";
-import { refreshFileFragmentBoundary } from "./fileFragment/operations";
+import { normalizeFileFragment } from "./fileFragment/operations";
 import { getFileFragmentInGroup } from "./fileFragment/util";
 
 const removeBlockFromFragment = (
@@ -71,7 +71,7 @@ export const assignBlockToGroup = (
         ),
       );
     } else {
-      refreshFileFragmentBoundary(previousFragment);
+      normalizeFileFragment(previousFragment);
     }
   }
 
@@ -84,7 +84,7 @@ export const assignBlockToGroup = (
   }
 
   nextFragment.blocks.push(block);
-  refreshFileFragmentBoundary(nextFragment);
+  normalizeFileFragment(nextFragment);
 
   block.groupId = nextGroup.id;
 
