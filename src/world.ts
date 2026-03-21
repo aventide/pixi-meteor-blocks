@@ -32,7 +32,7 @@ type World = {
   fileBlockGroupsMap: Map<FileNumber, BlockGroup[]>;
   fileFragmentsMap: Map<FileNumber, GroupFileFragment[]>;
   blockGroupsMap: Map<BlockGroupId, BlockGroup>;
-  blockGroupIdPool: BlockGroupId[];
+  nextBlockGroupId: BlockGroupId;
   globalPointer: Coord;
   globalPointerDown: boolean;
   selectedFragmentOverlay: Container | null;
@@ -60,7 +60,7 @@ const world: World = {
       [] as GroupFileFragment[],
     ]),
   ),
-  blockGroupIdPool: Array.from({ length: 300 }, (_, i) => 300 - i),
+  nextBlockGroupId: 1,
   globalPointer: DEFAULT_POINTER_POSITION,
   globalPointerDown: false,
   selectedFragmentOverlay: null,
@@ -82,6 +82,10 @@ export const setWorldDimensions = (height: number, width: number) => {
 
 export const setWorldGravity = (gravity: number) => {
   world.gravity = gravity;
+};
+
+export const setNextBlockGroupId = (nextBlockGroupId: BlockGroupId) => {
+  world.nextBlockGroupId = nextBlockGroupId;
 };
 
 export const setGlobalPointer = (newCoord: Coord) => {

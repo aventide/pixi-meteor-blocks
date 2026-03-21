@@ -124,12 +124,7 @@ export const decombineBlockGroup = (
 };
 
 export const removeBlockGroup = (blockGroup: BlockGroup) => {
-  const {
-    blockGroupIdPool,
-    blockGroupsMap,
-    fileBlockGroupsMap,
-    fileFragmentsMap,
-  } = getWorld();
+  const { blockGroupsMap, fileBlockGroupsMap, fileFragmentsMap } = getWorld();
 
   blockGroupsMap.delete(blockGroup.id);
 
@@ -153,8 +148,6 @@ export const removeBlockGroup = (blockGroup: BlockGroup) => {
       );
     }
   });
-
-  blockGroupIdPool.push(blockGroup.id);
 
   blockGroup.fileFragments.forEach((fileFragment) => {
     fileFragment.blocks.forEach((block) => block.sprite.removeFromParent());

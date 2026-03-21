@@ -5,7 +5,12 @@ import type {
   GroupFileFragment,
 } from "../types";
 
-import { addToBlocksLayer, addToOverlayLayer, getWorld } from "../../world";
+import {
+  addToBlocksLayer,
+  addToOverlayLayer,
+  getWorld,
+  setNextBlockGroupId,
+} from "../../world";
 import { createGroupFileFragment } from "../fileFragment/index";
 
 export const createBlockGroup = (
@@ -19,12 +24,10 @@ export const createBlockGroup = (
     }
   });
 
-  const { blockGroupIdPool, blockGroupsMap, fileBlockGroupsMap } = getWorld();
-  const assignedId = blockGroupIdPool.pop();
+  const { nextBlockGroupId, blockGroupsMap, fileBlockGroupsMap } = getWorld();
+  const assignedId = nextBlockGroupId;
 
-  if (!assignedId) {
-    throw new Error("No IDs available to assign to newly-requested BlockGroup");
-  }
+  setNextBlockGroupId(assignedId + 1);
 
   const fragments: GroupFileFragment[] = filePlacements.map((fp) =>
     createGroupFileFragment(fp, assignedId),
