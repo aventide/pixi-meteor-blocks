@@ -112,21 +112,20 @@ import { loadTextures } from "./textures";
         iterations++;
         descentMutator(blockGroup, dt);
         positionMutator(blockGroup, dt);
+        // an optional (via arg) mutator which applies a debug overlay to each group
+        // debugMutator(blockGroup, true)
       } else {
         throw new Error("Iteration pressure level exceeded threshold");
       }
     });
 
     // apply once per tick mutations
-    // @todo sequenceMutator will be moved here and possibly others
 
     // get all selectionFragments for file
     const allSelectionFileFragments = getAllSelectionFileFragments();
 
     selectionMutator(allSelectionFileFragments);
     sequenceMutator(allSelectionFileFragments);
-
-    // apply animation progress once per tick
     dangerAnimation(dt);
 
     // check for losing state
