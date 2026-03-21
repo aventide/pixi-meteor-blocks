@@ -24,11 +24,25 @@ export const getGroupBlockCount = (blockGroup: BlockGroup): number =>
 export const getMomentum = (blockGroup: BlockGroup): number =>
   blockGroup.velocity * getGroupBlockCount(blockGroup);
 
-export const getFilePlacements = (blockGroup: BlockGroup): FilePlacement[] =>
-  blockGroup.fileFragments.map((fileFragment) => ({
-    blocks: fileFragment.blocks,
-    number: fileFragment.number,
-  }));
+export const getFilePlacements = (blockGroup: BlockGroup): FilePlacement[] => {
+  const filePlacementsMap: Map<FileNumber, FilePlacement> = new Map();
+
+  blockGroup.fileFragments.forEach((fileFragment) => {
+    const existingPlacement = filePlacementsMap.get(fileFragment.number);
+
+    if (existingPlacement) {
+      existingPlacement.blocks.push(...fileFragment.blocks);
+      return;
+    }
+
+    filePlacementsMap.set(fileFragment.number, {
+      blocks: [...fileFragment.blocks],
+      number: fileFragment.number,
+    });
+  });
+
+  return [...filePlacementsMap.values()];
+};
 
 export const getCombinedFilePlacements = (
   subjectFilePlacements: FilePlacement[],
@@ -41,15 +55,13 @@ export const getCombinedFilePlacements = (
 
   const mergedFilePlacements: FilePlacement[] = [];
   combinedFileNumbers.forEach((fileNumber) => {
-    const subjectFilePlacementBlocks =
-      subjectFilePlacements.find(
-        (filePlacement) => filePlacement.number === fileNumber,
-      )?.blocks || [];
+    const subjectFilePlacementBlocks = subjectFilePlacements
+      .filter((filePlacement) => filePlacement.number === fileNumber)
+      .flatMap((filePlacement) => filePlacement.blocks);
 
-    const otherFilePlacementBlocks =
-      otherFilePlacements.find(
-        (filePlacement) => filePlacement.number === fileNumber,
-      )?.blocks || [];
+    const otherFilePlacementBlocks = otherFilePlacements
+      .filter((filePlacement) => filePlacement.number === fileNumber)
+      .flatMap((filePlacement) => filePlacement.blocks);
 
     mergedFilePlacements.push({
       number: fileNumber,

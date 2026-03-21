@@ -8,7 +8,7 @@ import type {
 import { getWorld } from "../world";
 import { getBlockGroupById } from "./blockGroup/util";
 import { normalizeFileFragment } from "./fileFragment/operations";
-import { getFileFragmentInGroup } from "./fileFragment/util";
+import { getFileFragmentsInGroupByFileNumber } from "./fileFragment/util";
 
 const removeBlockFromFragment = (
   fileFragment: GroupFileFragment,
@@ -37,7 +37,13 @@ export const assignBlockToGroup = (
   }
 
   if (previousGroup) {
-    const previousFragment = getFileFragmentInGroup(previousGroup, block.file);
+    const previousFragments = getFileFragmentsInGroupByFileNumber(
+      previousGroup,
+      block.file,
+    );
+    const previousFragment = previousFragments.find((fileFragment) =>
+      fileFragment.blocks.includes(block),
+    );
 
     if (!previousFragment) {
       throw new Error(
@@ -75,13 +81,24 @@ export const assignBlockToGroup = (
     }
   }
 
-  const nextFragment = getFileFragmentInGroup(nextGroup, block.file);
+  const nextFragments = getFileFragmentsInGroupByFileNumber(
+    nextGroup,
+    block.file,
+  );
 
-  if (!nextFragment) {
+  if (nextFragments.length === 0) {
     throw new Error(
       "Cannot assign block to target BlockGroup without an existing GroupFileFragment for that file",
     );
   }
+
+  if (nextFragments.length > 1) {
+    throw new Error(
+      "Cannot assign block to target BlockGroup when multiple GroupFileFragments exist for that file",
+    );
+  }
+
+  const nextFragment = nextFragments[0];
 
   nextFragment.blocks.push(block);
   normalizeFileFragment(nextFragment);

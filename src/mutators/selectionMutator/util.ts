@@ -12,7 +12,7 @@ import {
   assignBlockToGroup,
   createFileFragment,
   getBlockGroupById,
-  getFileFragmentInGroup,
+  getFileFragmentsInGroupByFileNumber,
   getIsGroupRooted,
 } from "../../entities";
 import { DEFAULT_FILE_COUNT, DEFAULT_POP_VELOCITY } from "../../constants";
@@ -25,9 +25,12 @@ const ejectTopMostBlockOfFragment = (subjectBlock: Block) => {
     return;
   }
 
-  const subjectFragment = getFileFragmentInGroup(
+  const subjectFragments = getFileFragmentsInGroupByFileNumber(
     subjectGroup,
     subjectBlock.file,
+  );
+  const subjectFragment = subjectFragments.find((fileFragment) =>
+    fileFragment.blocks.includes(subjectBlock),
   );
 
   if (!subjectFragment) {

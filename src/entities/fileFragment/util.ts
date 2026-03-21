@@ -43,10 +43,10 @@ export const getFileFragmentBoundary = (blocks: FileFragment["blocks"]) => {
   };
 };
 
-export const getFileFragmentInGroup = (
+export const getFileFragmentsInGroupByFileNumber = (
   blockGroup: BlockGroup,
   fileNumber: FileNumber,
-): GroupFileFragment | undefined =>
-  blockGroup.fileFragments.find(
+): GroupFileFragment[] =>
+  blockGroup.fileFragments.filter(
     (fileFragment) => fileFragment.number === fileNumber,
   );
