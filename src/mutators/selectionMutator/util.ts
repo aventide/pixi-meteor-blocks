@@ -6,13 +6,17 @@ import {
   FileFragment,
   GroupFileFragment,
 } from "../../entities/types";
-import { getBlockSize, getWorld, setGlobalPointerDown } from "../../world";
+import {
+  getBlockSize,
+  getFileFragmentById,
+  getWorld,
+  setGlobalPointerDown,
+} from "../../world";
 import { isClose } from "../../util";
 import {
   assignBlockToGroup,
   createFileFragment,
   getBlockGroupById,
-  getFileFragmentsInGroupByFileNumber,
   getIsGroupRooted,
 } from "../../entities";
 import { DEFAULT_FILE_COUNT, DEFAULT_POP_VELOCITY } from "../../constants";
@@ -25,15 +29,9 @@ const ejectTopMostBlockOfFragment = (subjectBlock: Block) => {
     return;
   }
 
-  const subjectFragments = getFileFragmentsInGroupByFileNumber(
-    subjectGroup,
-    subjectBlock.file,
-  );
-  const subjectFragment = subjectFragments.find((fileFragment) =>
-    fileFragment.blocks.includes(subjectBlock),
-  );
+  const subjectFragment = getFileFragmentById(subjectBlock.fragmentId);
 
-  if (!subjectFragment) {
+  if (!subjectFragment || subjectFragment.groupId !== subjectGroup.id) {
     return;
   }
 

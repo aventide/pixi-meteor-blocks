@@ -27,5 +27,6 @@ export const createBlock = ({
     sprite,
     file,
     groupId: null,
+    fragmentId: null,
   };
 };

@@ -6,6 +6,7 @@ export type Coord = {
 };
 
 export type BlockGroupId = number;
+export type FileFragmentId = number;
 
 export type FileNumber = number;
 
@@ -13,6 +14,7 @@ export type Block = {
   sprite: Sprite;
   file: FileNumber;
   groupId: BlockGroupId | null;
+  fragmentId: FileFragmentId | null;
 };
 
 export type VerticalBoundary = {
@@ -39,6 +41,7 @@ export type FileFragment = {
 };
 
 export type GroupFileFragment = FileFragment & {
+  id: FileFragmentId;
   overlay: FileOverlay;
   groupId: BlockGroupId;
 };

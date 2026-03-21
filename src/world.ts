@@ -2,6 +2,7 @@ import type {
   BlockGroup,
   BlockGroupId,
   Coord,
+  FileFragmentId,
   GroupFileFragment,
   FileNumber,
 } from "./entities/types";
@@ -31,8 +32,10 @@ type World = {
   stageLayers: StageLayers;
   fileBlockGroupsMap: Map<FileNumber, BlockGroup[]>;
   fileFragmentsMap: Map<FileNumber, GroupFileFragment[]>;
+  fileFragmentsById: Map<FileFragmentId, GroupFileFragment>;
   blockGroupsMap: Map<BlockGroupId, BlockGroup>;
   nextBlockGroupId: BlockGroupId;
+  nextFileFragmentId: FileFragmentId;
   globalPointer: Coord;
   globalPointerDown: boolean;
   selectedFragmentOverlay: Container | null;
@@ -60,7 +63,9 @@ const world: World = {
       [] as GroupFileFragment[],
     ]),
   ),
+  fileFragmentsById: new Map<FileFragmentId, GroupFileFragment>(),
   nextBlockGroupId: 1,
+  nextFileFragmentId: 1,
   globalPointer: DEFAULT_POINTER_POSITION,
   globalPointerDown: false,
   selectedFragmentOverlay: null,
@@ -86,6 +91,20 @@ export const setWorldGravity = (gravity: number) => {
 
 export const setNextBlockGroupId = (nextBlockGroupId: BlockGroupId) => {
   world.nextBlockGroupId = nextBlockGroupId;
+};
+
+export const setNextFileFragmentId = (nextFileFragmentId: FileFragmentId) => {
+  world.nextFileFragmentId = nextFileFragmentId;
+};
+
+export const getFileFragmentById = (
+  fileFragmentId: FileFragmentId | null,
+): GroupFileFragment | undefined => {
+  if (fileFragmentId === null) {
+    return undefined;
+  }
+
+  return world.fileFragmentsById.get(fileFragmentId);
 };
 
 export const setGlobalPointer = (newCoord: Coord) => {

@@ -5,7 +5,7 @@ import type {
   GroupFileFragment,
 } from "./types";
 
-import { getWorld } from "../world";
+import { getFileFragmentById, getWorld } from "../world";
 import { getBlockGroupById } from "./blockGroup/util";
 import { normalizeFileFragment } from "./fileFragment/operations";
 import { getFileFragmentsInGroupByFileNumber } from "./fileFragment/util";
@@ -37,15 +37,9 @@ export const assignBlockToGroup = (
   }
 
   if (previousGroup) {
-    const previousFragments = getFileFragmentsInGroupByFileNumber(
-      previousGroup,
-      block.file,
-    );
-    const previousFragment = previousFragments.find((fileFragment) =>
-      fileFragment.blocks.includes(block),
-    );
+    const previousFragment = getFileFragmentById(block.fragmentId);
 
-    if (!previousFragment) {
+    if (!previousFragment || previousFragment.groupId !== previousGroup.id) {
       throw new Error(
         "Block references a previous BlockGroup, but no matching GroupFileFragment was found",
       );

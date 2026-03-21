@@ -9,7 +9,7 @@ import type {
 } from "../types";
 
 import { Container, Graphics } from "pixi.js";
-import { getBlockSize, getWorld } from "../../world";
+import { getBlockSize, getWorld, setNextFileFragmentId } from "../../world";
 import { assignBlockGroupId, sortBlocksAscending } from "../block/util";
 import { getFileFragmentBoundary } from "./util";
 
@@ -56,7 +56,11 @@ export const createGroupFileFragment = (
   filePlacement: FilePlacement,
   groupId: BlockGroupId,
 ): GroupFileFragment => {
-  const { fileFragmentsMap } = getWorld();
+  const { fileFragmentsMap, fileFragmentsById, nextFileFragmentId } =
+    getWorld();
+  const assignedFragmentId = nextFileFragmentId;
+
+  setNextFileFragmentId(assignedFragmentId + 1);
 
   const fileFragment = createFileFragment(
     filePlacement.number,
@@ -70,9 +74,13 @@ export const createGroupFileFragment = (
   );
 
   assignBlockGroupId(filePlacement.blocks, groupId);
+  filePlacement.blocks.forEach((block) => {
+    block.fragmentId = assignedFragmentId;
+  });
 
   const groupFileFragment: GroupFileFragment = {
     ...fileFragment,
+    id: assignedFragmentId,
     overlay: {
       danger: dangerOverlay,
     },
@@ -80,6 +88,7 @@ export const createGroupFileFragment = (
   };
 
   fileFragmentsMap.get(filePlacement.number)?.push(groupFileFragment);
+  fileFragmentsById.set(groupFileFragment.id, groupFileFragment);
 
   return groupFileFragment;
 };

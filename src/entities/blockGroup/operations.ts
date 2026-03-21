@@ -124,7 +124,12 @@ export const decombineBlockGroup = (
 };
 
 export const removeBlockGroup = (blockGroup: BlockGroup) => {
-  const { blockGroupsMap, fileBlockGroupsMap, fileFragmentsMap } = getWorld();
+  const {
+    blockGroupsMap,
+    fileBlockGroupsMap,
+    fileFragmentsMap,
+    fileFragmentsById,
+  } = getWorld();
 
   blockGroupsMap.delete(blockGroup.id);
 
@@ -147,6 +152,8 @@ export const removeBlockGroup = (blockGroup: BlockGroup) => {
         ),
       );
     }
+
+    fileFragmentsById.delete(fileFragment.id);
   });
 
   blockGroup.fileFragments.forEach((fileFragment) => {
