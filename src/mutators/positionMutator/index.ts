@@ -1,5 +1,8 @@
 import { DEFAULT_REFERENCE_HEIGHT } from "../../constants";
-import { mergeBlockGroups } from "../../entities";
+import {
+  mergeBlockGroups,
+  vanishVeilExceedingBlocksInGroup,
+} from "../../entities";
 
 import { BlockGroup } from "../../entities/types";
 
@@ -10,7 +13,11 @@ import {
   translatePosition,
 } from "./util";
 
-type ContactType = "contacted-floor" | "contacted-group" | "contacted-veil";
+type ContactType =
+  | "contacted-floor"
+  | "contacted-group"
+  | "contacted-veil"
+  | "exceeded-veil";
 type Contact = {
   type: ContactType;
   contactedGroups?: BlockGroup[];
@@ -102,6 +109,11 @@ const handleUpwardMotion = (group: BlockGroup, movementDiff: number) => {
       contact = { type: "contacted-veil" };
     }
 
+    // if launched group is exceeding veil, we will start to vanish the blocks
+    if (diffToVeil < 0 && group.type === "launch") {
+      contact = { type: "exceeded-veil" };
+    }
+
     // then calculate and track diffs to any fragments above in this file
     const closestFragmentAbove = getClosestFragmentAbove(frag);
     if (closestFragmentAbove) {
@@ -127,6 +139,8 @@ const handleUpwardMotion = (group: BlockGroup, movementDiff: number) => {
   if (contact) {
     if (contact.type === "contacted-veil") {
       group.velocity = 0;
+    } else if (contact.type === "exceeded-veil") {
+      vanishVeilExceedingBlocksInGroup(group);
     } else if (
       contact.type === "contacted-group" &&
       contact.contactedGroups &&

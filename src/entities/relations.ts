@@ -5,7 +5,7 @@ import type {
   GroupFileFragment,
 } from "./types";
 
-import { getBlockSize, getWorld } from "../world";
+import { getBlockSize, getVeil, getWorld } from "../world";
 import { getBlockGroupById } from "./blockGroup/util";
 import { normalizeFileFragment } from "./fileFragment/operations";
 import { createGroupFileFragment } from "./fileFragment/index";
@@ -14,6 +14,10 @@ import {
   getFileFragmentsInGroupByFileNumber,
 } from "./fileFragment/util";
 import { isClose } from "../util";
+import {
+  ejectSubgroupFromBlockGroup,
+  removeBlockGroup,
+} from "./blockGroup/operations";
 
 const detachBlockFromFileFragment = (
   fileFragment: GroupFileFragment,
@@ -258,4 +262,26 @@ export const assignBlockToGroup = (
   block.groupId = targetBlockGroup.id;
 
   return targetBlockGroup;
+};
+
+export const vanishVeilExceedingBlocksInGroup = (group: BlockGroup) => {
+  const veil = getVeil();
+  const blocksToEject: Block[] = [];
+
+  for (const frag of group.fileFragments) {
+    if (frag.boundary.top < veil) {
+      for (const block of frag.blocks) {
+        if (block.sprite.y < veil) {
+          blocksToEject.push(block);
+        }
+      }
+    }
+  }
+
+  if (blocksToEject.length > 0) {
+    const { targetGroup } = ejectSubgroupFromBlockGroup(group, blocksToEject);
+    if (targetGroup) {
+      removeBlockGroup(targetGroup);
+    }
+  }
 };
