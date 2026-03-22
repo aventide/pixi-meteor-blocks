@@ -1,11 +1,11 @@
-import type { Block, BlockGroup, FileNumber, FilePlacement } from "../types";
+import type { Block, BlockGroup, FilePlacement } from "../types";
 
-import { getBlockSize, getWorld } from "../../world";
-import { sortBlocksAscending } from "../block/util";
+import { getWorld } from "../../world";
 import {
   createBlockGroupFromBlocks,
   getCombinedBlockGroupType,
   getCombinedVelocity,
+  getContiguousFilePlacements,
   getFilePlacements,
 } from "./util";
 
@@ -44,42 +44,6 @@ export const mergeBlockGroups = (
   blockGroupsById.set(mergedBlockGroup.id, mergedBlockGroup);
 
   return mergedBlockGroup;
-};
-
-const getContiguousFilePlacements = (
-  blocks: Block[],
-  fileNumber: FileNumber,
-): FilePlacement[] => {
-  if (blocks.length === 0) {
-    return [];
-  }
-
-  const sortedBlocks = sortBlocksAscending([...blocks]);
-  const blockSize = getBlockSize();
-  const placements: FilePlacement[] = [];
-  let currentPlacementBlocks: Block[] = [sortedBlocks[0]];
-
-  for (let i = 1; i < sortedBlocks.length; i++) {
-    const currentBlock = sortedBlocks[i];
-    const previousBlock = sortedBlocks[i - 1];
-
-    if (currentBlock.sprite.y - previousBlock.sprite.y === blockSize) {
-      currentPlacementBlocks.push(currentBlock);
-    } else {
-      placements.push({
-        blocks: currentPlacementBlocks,
-        number: fileNumber,
-      });
-      currentPlacementBlocks = [currentBlock];
-    }
-  }
-
-  placements.push({
-    blocks: currentPlacementBlocks,
-    number: fileNumber,
-  });
-
-  return placements;
 };
 
 export const ejectSubgroupFromBlockGroup = (
