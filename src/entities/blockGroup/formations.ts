@@ -3,7 +3,7 @@ import type { BlockGroup, FileNumber } from "../types";
 import { getBlockSize, getCeiling } from "../../world";
 import { getRandomBlockTexture } from "../../textures";
 import { createBlock } from "../block/index";
-import { createBlockGroup } from "./index";
+import { createBlockGroupFromBlocks } from "./util";
 
 export const createSingleBlock = (fileNumber: FileNumber): BlockGroup => {
   const initialBlock = createBlock({
@@ -15,12 +15,7 @@ export const createSingleBlock = (fileNumber: FileNumber): BlockGroup => {
     file: fileNumber,
   });
 
-  return createBlockGroup([
-    {
-      blocks: [initialBlock],
-      number: fileNumber,
-    },
-  ]);
+  return createBlockGroupFromBlocks([initialBlock]);
 };
 
 export const createVerticalTestGroup = (
@@ -38,10 +33,5 @@ export const createVerticalTestGroup = (
     initialBlocks.push(newBlock);
   }
 
-  return createBlockGroup([
-    {
-      blocks: initialBlocks,
-      number: file,
-    },
-  ]);
+  return createBlockGroupFromBlocks(initialBlocks);
 };

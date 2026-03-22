@@ -1,4 +1,5 @@
 import type {
+  Block,
   BlockGroup,
   BlockGroupId,
   BlockGroupType,
@@ -6,7 +7,8 @@ import type {
   FilePlacement,
 } from "../types";
 
-import { getWorld } from "../../world";
+import { getBlockSize, getWorld } from "../../world";
+import { createBlockGroup } from "./index";
 
 export const getIsGroupRooted = (blockGroup: BlockGroup): boolean => {
   const { height: worldHeight } = getWorld();
@@ -24,48 +26,93 @@ export const getGroupBlockCount = (blockGroup: BlockGroup): number =>
 export const getMomentum = (blockGroup: BlockGroup): number =>
   blockGroup.velocity * getGroupBlockCount(blockGroup);
 
-export const getFilePlacements = (blockGroup: BlockGroup): FilePlacement[] => {
-  const filePlacementsMap: Map<FileNumber, FilePlacement> = new Map();
+export const getContiguousFilePlacementsFromBlocks = (
+  blocks: Block[],
+): FilePlacement[] => {
+  const blocksByFileNumber: Map<FileNumber, Block[]> = new Map();
+  const blockSize = getBlockSize();
 
-  blockGroup.fileFragments.forEach((fileFragment) => {
-    const existingPlacement = filePlacementsMap.get(fileFragment.number);
+  blocks.forEach((block) => {
+    const fileBlocks = blocksByFileNumber.get(block.file);
 
-    if (existingPlacement) {
-      existingPlacement.blocks.push(...fileFragment.blocks);
+    if (fileBlocks) {
+      fileBlocks.push(block);
       return;
     }
 
-    filePlacementsMap.set(fileFragment.number, {
-      blocks: [...fileFragment.blocks],
-      number: fileFragment.number,
+    blocksByFileNumber.set(block.file, [block]);
+  });
+
+  const placements: FilePlacement[] = [];
+
+  blocksByFileNumber.forEach((fileBlocks, fileNumber) => {
+    const sortedBlocks = [...fileBlocks].sort(
+      (blockA, blockB) => blockA.sprite.y - blockB.sprite.y,
+    );
+
+    let currentPlacementBlocks: Block[] = [sortedBlocks[0]];
+
+    for (let i = 1; i < sortedBlocks.length; i++) {
+      const currentBlock = sortedBlocks[i];
+      const previousBlock = sortedBlocks[i - 1];
+
+      if (currentBlock.sprite.y - previousBlock.sprite.y === blockSize) {
+        currentPlacementBlocks.push(currentBlock);
+      } else {
+        placements.push({
+          blocks: currentPlacementBlocks,
+          number: fileNumber,
+        });
+        currentPlacementBlocks = [currentBlock];
+      }
+    }
+
+    placements.push({
+      blocks: currentPlacementBlocks,
+      number: fileNumber,
     });
   });
 
-  return [...filePlacementsMap.values()];
+  return placements;
+};
+
+export const getFilePlacements = (blockGroup: BlockGroup): FilePlacement[] =>
+  getContiguousFilePlacementsFromBlocks(
+    blockGroup.fileFragments.flatMap((fileFragment) => fileFragment.blocks),
+  );
+
+export const createBlockGroupFromBlocks = (
+  blocks: Block[],
+  velocity: number = 0,
+  type: BlockGroupType = "default",
+): BlockGroup => {
+  const filePlacements = getContiguousFilePlacementsFromBlocks(blocks);
+
+  return createBlockGroup(filePlacements, velocity, type);
 };
 
 export const getCombinedFilePlacements = (
-  subjectFilePlacements: FilePlacement[],
-  otherFilePlacements: FilePlacement[],
+  sourceFilePlacements: FilePlacement[],
+  targetFilePlacements: FilePlacement[],
 ): FilePlacement[] => {
   const combinedFileNumbers: Set<FileNumber> = new Set([
-    ...subjectFilePlacements.map((fp) => fp.number),
-    ...otherFilePlacements.map((fp) => fp.number),
+    ...sourceFilePlacements.map((fp) => fp.number),
+    ...targetFilePlacements.map((fp) => fp.number),
   ]);
 
   const mergedFilePlacements: FilePlacement[] = [];
   combinedFileNumbers.forEach((fileNumber) => {
-    const subjectFilePlacementBlocks = subjectFilePlacements
+    const sourceFilePlacementBlocks = sourceFilePlacements
       .filter((filePlacement) => filePlacement.number === fileNumber)
       .flatMap((filePlacement) => filePlacement.blocks);
 
-    const otherFilePlacementBlocks = otherFilePlacements
+    const targetFilePlacementBlocks = targetFilePlacements
       .filter((filePlacement) => filePlacement.number === fileNumber)
       .flatMap((filePlacement) => filePlacement.blocks);
 
     mergedFilePlacements.push({
       number: fileNumber,
-      blocks: [...subjectFilePlacementBlocks, ...otherFilePlacementBlocks],
+      blocks: [...sourceFilePlacementBlocks, ...targetFilePlacementBlocks],
     });
   });
 
@@ -73,17 +120,17 @@ export const getCombinedFilePlacements = (
 };
 
 export const getCombinedBlockGroupType = (
-  subjectBlockGroup: BlockGroup,
-  otherBlockGroup: BlockGroup,
+  sourceBlockGroup: BlockGroup,
+  targetBlockGroup: BlockGroup,
 ): BlockGroupType => {
   if (
-    subjectBlockGroup.type === "launch" ||
-    otherBlockGroup.type === "launch"
+    sourceBlockGroup.type === "launch" ||
+    targetBlockGroup.type === "launch"
   ) {
     return "launch";
   } else if (
-    subjectBlockGroup.type === "pop" ||
-    otherBlockGroup.type === "pop"
+    sourceBlockGroup.type === "pop" ||
+    targetBlockGroup.type === "pop"
   ) {
     return "pop";
   }
@@ -92,14 +139,14 @@ export const getCombinedBlockGroupType = (
 };
 
 export const getCombinedVelocity = (
-  subjectBlockGroup: BlockGroup,
-  otherBlockGroup: BlockGroup,
+  sourceBlockGroup: BlockGroup,
+  targetBlockGroup: BlockGroup,
 ): number => {
   return (
-    (getMomentum(subjectBlockGroup) + getMomentum(otherBlockGroup)) /
+    (getMomentum(sourceBlockGroup) + getMomentum(targetBlockGroup)) /
     [
-      ...subjectBlockGroup.fileFragments,
-      ...otherBlockGroup.fileFragments,
+      ...sourceBlockGroup.fileFragments,
+      ...targetBlockGroup.fileFragments,
     ].reduce(
       (totalBlocks, fileFragment) => totalBlocks + fileFragment.blocks.length,
       0,
