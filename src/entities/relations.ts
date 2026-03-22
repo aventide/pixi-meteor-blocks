@@ -15,7 +15,7 @@ import {
 } from "./fileFragment/util";
 import { isClose } from "../util";
 
-const removeBlockFromFragment = (
+const detachBlockFromFileFragment = (
   fileFragment: GroupFileFragment,
   block: Block,
 ): boolean => {
@@ -52,15 +52,15 @@ const getContiguousBlockSegmentsInFile = (blocks: Block[]): Block[][] => {
   return segments;
 };
 
-const getAdjacentTargetFragments = (
+const getAdjacentFileFragmentsForBlock = (
   block: Block,
-  targetFragments: GroupFileFragment[],
+  fileFragments: GroupFileFragment[],
 ): GroupFileFragment[] => {
   const blockSize = getBlockSize();
   const blockTop = block.sprite.y;
   const blockBottom = block.sprite.y + blockSize;
 
-  return targetFragments.filter(
+  return fileFragments.filter(
     (fragment) =>
       isClose(blockBottom, fragment.boundary.top) ||
       isClose(blockTop, fragment.boundary.bottom),
@@ -87,56 +87,59 @@ const syncBlockGroupInFile = (
   );
 };
 
-const attachBlockToTargetGroup = (
+const attachBlockToTargetBlockGroup = (
   block: Block,
-  targetGroup: BlockGroup,
+  targetBlockGroup: BlockGroup,
 ): void => {
-  const targetFragments = getFileFragmentsInGroupByFileNumber(
-    targetGroup,
+  const targetFileFragments = getFileFragmentsInGroupByFileNumber(
+    targetBlockGroup,
     block.file,
   );
-  const adjacentFragments = getAdjacentTargetFragments(block, targetFragments);
+  const adjacentFileFragments = getAdjacentFileFragmentsForBlock(
+    block,
+    targetFileFragments,
+  );
 
-  if (adjacentFragments.length === 0) {
+  if (adjacentFileFragments.length === 0) {
     createGroupFileFragment(
       {
         number: block.file,
         blocks: [block],
       },
-      targetGroup.id,
+      targetBlockGroup.id,
     );
 
-    syncBlockGroupInFile(targetGroup, block.file);
+    syncBlockGroupInFile(targetBlockGroup, block.file);
 
     return;
   }
 
-  if (adjacentFragments.length === 1) {
-    const targetFragment = adjacentFragments[0];
-    targetFragment.blocks.push(block);
-    normalizeFileFragment(targetFragment);
+  if (adjacentFileFragments.length === 1) {
+    const targetFileFragment = adjacentFileFragments[0];
+    targetFileFragment.blocks.push(block);
+    normalizeFileFragment(targetFileFragment);
     return;
   }
 
-  if (adjacentFragments.length === 2) {
+  if (adjacentFileFragments.length === 2) {
     const mergedBlocks = [
-      ...adjacentFragments[0].blocks,
-      ...adjacentFragments[1].blocks,
+      ...adjacentFileFragments[0].blocks,
+      ...adjacentFileFragments[1].blocks,
       block,
     ];
 
-    removeGroupFileFragment(targetGroup, adjacentFragments[0]);
-    removeGroupFileFragment(targetGroup, adjacentFragments[1]);
+    removeGroupFileFragment(targetBlockGroup, adjacentFileFragments[0]);
+    removeGroupFileFragment(targetBlockGroup, adjacentFileFragments[1]);
 
     createGroupFileFragment(
       {
         number: block.file,
         blocks: mergedBlocks,
       },
-      targetGroup.id,
+      targetBlockGroup.id,
     );
 
-    syncBlockGroupInFile(targetGroup, block.file);
+    syncBlockGroupInFile(targetBlockGroup, block.file);
 
     return;
   }
@@ -146,40 +149,40 @@ const attachBlockToTargetGroup = (
   );
 };
 
-const rebuildSourceFragmentAfterRemoval = (
-  blockGroup: BlockGroup,
-  fileFragment: GroupFileFragment,
+const rebuildSourceFileFragmentAfterBlockRemoval = (
+  sourceBlockGroup: BlockGroup,
+  sourceFileFragment: GroupFileFragment,
 ): void => {
   const remainingSegments = getContiguousBlockSegmentsInFile(
-    fileFragment.blocks,
+    sourceFileFragment.blocks,
   );
 
   if (remainingSegments.length === 0) {
-    removeGroupFileFragment(blockGroup, fileFragment);
-    syncBlockGroupInFile(blockGroup, fileFragment.number);
+    removeGroupFileFragment(sourceBlockGroup, sourceFileFragment);
+    syncBlockGroupInFile(sourceBlockGroup, sourceFileFragment.number);
 
     return;
   }
 
   if (remainingSegments.length === 1) {
-    fileFragment.blocks = remainingSegments[0];
-    normalizeFileFragment(fileFragment);
+    sourceFileFragment.blocks = remainingSegments[0];
+    normalizeFileFragment(sourceFileFragment);
     return;
   }
 
-  removeGroupFileFragment(blockGroup, fileFragment);
+  removeGroupFileFragment(sourceBlockGroup, sourceFileFragment);
 
   remainingSegments.forEach((segmentBlocks) => {
     createGroupFileFragment(
       {
-        number: fileFragment.number,
+        number: sourceFileFragment.number,
         blocks: segmentBlocks,
       },
-      blockGroup.id,
+      sourceBlockGroup.id,
     );
   });
 
-  syncBlockGroupInFile(blockGroup, fileFragment.number);
+  syncBlockGroupInFile(sourceBlockGroup, sourceFileFragment.number);
 };
 
 export const removeGroupFileFragment = (
@@ -214,39 +217,45 @@ export const assignBlockToGroup = (
   block: Block,
   blockGroupId: BlockGroupId,
 ): BlockGroup => {
-  const nextGroup = getBlockGroupById(blockGroupId);
-  if (!nextGroup) {
+  const targetBlockGroup = getBlockGroupById(blockGroupId);
+  if (!targetBlockGroup) {
     throw new Error("Cannot assign block to a BlockGroup that does not exist");
   }
 
-  const previousGroup = getBlockGroupById(block.groupId);
+  const sourceBlockGroup = getBlockGroupById(block.groupId);
 
-  if (previousGroup?.id === nextGroup.id) {
-    return nextGroup;
+  if (sourceBlockGroup?.id === targetBlockGroup.id) {
+    return targetBlockGroup;
   }
 
-  if (previousGroup) {
-    const previousFragment = getFileFragmentById(block.fragmentId);
+  if (sourceBlockGroup) {
+    const sourceFileFragment = getFileFragmentById(block.fragmentId);
 
-    if (!previousFragment || previousFragment.groupId !== previousGroup.id) {
+    if (
+      !sourceFileFragment ||
+      sourceFileFragment.groupId !== sourceBlockGroup.id
+    ) {
       throw new Error(
         "Block references a previous BlockGroup, but no matching GroupFileFragment was found",
       );
     }
 
-    const wasRemoved = removeBlockFromFragment(previousFragment, block);
+    const wasRemoved = detachBlockFromFileFragment(sourceFileFragment, block);
     if (!wasRemoved) {
       throw new Error(
         "Block references a previous BlockGroup, but is missing from its GroupFileFragment",
       );
     }
 
-    rebuildSourceFragmentAfterRemoval(previousGroup, previousFragment);
+    rebuildSourceFileFragmentAfterBlockRemoval(
+      sourceBlockGroup,
+      sourceFileFragment,
+    );
   }
 
-  attachBlockToTargetGroup(block, nextGroup);
+  attachBlockToTargetBlockGroup(block, targetBlockGroup);
 
-  block.groupId = nextGroup.id;
+  block.groupId = targetBlockGroup.id;
 
-  return nextGroup;
+  return targetBlockGroup;
 };
