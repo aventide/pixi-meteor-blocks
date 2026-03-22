@@ -97,16 +97,6 @@ export const setNextFileFragmentId = (nextFileFragmentId: FileFragmentId) => {
   world.nextFileFragmentId = nextFileFragmentId;
 };
 
-export const getFileFragmentById = (
-  fileFragmentId: FileFragmentId | null,
-): GroupFileFragment | undefined => {
-  if (fileFragmentId === null) {
-    return undefined;
-  }
-
-  return world.fileFragmentsById.get(fileFragmentId);
-};
-
 export const setGlobalPointer = (newCoord: Coord) => {
   world.globalPointer = newCoord;
 };

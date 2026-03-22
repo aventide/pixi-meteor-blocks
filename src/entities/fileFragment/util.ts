@@ -1,6 +1,7 @@
 import type {
   BlockGroup,
   FileFragment,
+  FileFragmentId,
   FileNumber,
   GroupFileFragment,
 } from "../types";
@@ -50,3 +51,15 @@ export const getFileFragmentsInGroupByFileNumber = (
   blockGroup.fileFragments.filter(
     (fileFragment) => fileFragment.number === fileNumber,
   );
+
+export const getFileFragmentById = (
+  fileFragmentId: FileFragmentId | null,
+): GroupFileFragment | undefined => {
+  if (fileFragmentId === null) {
+    return undefined;
+  }
+
+  const { fileFragmentsById } = getWorld();
+
+  return fileFragmentsById.get(fileFragmentId);
+};

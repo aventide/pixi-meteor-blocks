@@ -6,45 +6,45 @@ import {
   FileFragment,
   GroupFileFragment,
 } from "../../entities/types";
-import {
-  getBlockSize,
-  getFileFragmentById,
-  getWorld,
-  setGlobalPointerDown,
-} from "../../world";
+import { getBlockSize, getWorld, setGlobalPointerDown } from "../../world";
 import { isClose } from "../../util";
 import {
   assignBlockToGroup,
   createFileFragment,
   getBlockGroupById,
+  getFileFragmentById,
   getIsGroupRooted,
 } from "../../entities";
 import { DEFAULT_FILE_COUNT, DEFAULT_POP_VELOCITY } from "../../constants";
-import { decombineBlockGroup } from "../../entities";
+import { ejectSubgroupFromBlockGroup } from "../../entities";
 
-const ejectTopMostBlockOfFragment = (subjectBlock: Block) => {
-  const subjectGroup = getBlockGroupById(subjectBlock.groupId);
+const ejectTopMostBlockOfFragment = (sourceBlock: Block) => {
+  const sourceGroup = getBlockGroupById(sourceBlock.groupId);
 
-  if (!subjectGroup || !getIsGroupRooted(subjectGroup)) {
+  if (!sourceGroup || !getIsGroupRooted(sourceGroup)) {
     return;
   }
 
-  const subjectFragment = getFileFragmentById(subjectBlock.fragmentId);
+  const sourceFragment = getFileFragmentById(sourceBlock.fragmentId);
 
-  if (!subjectFragment || subjectFragment.groupId !== subjectGroup.id) {
+  if (!sourceFragment || sourceFragment.groupId !== sourceGroup.id) {
     return;
   }
 
-  const { ejectedGroup } = decombineBlockGroup(
-    subjectGroup,
-    new Map([[subjectFragment.number, 1]]),
-  );
+  const topMostBlock = sourceFragment.blocks[0];
+  if (!topMostBlock) {
+    return;
+  }
+
+  const { targetGroup } = ejectSubgroupFromBlockGroup(sourceGroup, [
+    topMostBlock,
+  ]);
 
   setGlobalPointerDown(false);
 
-  if (ejectedGroup) {
-    ejectedGroup.type = "pop";
-    ejectedGroup.velocity = DEFAULT_POP_VELOCITY;
+  if (targetGroup) {
+    targetGroup.type = "pop";
+    targetGroup.velocity = DEFAULT_POP_VELOCITY;
   }
 };
 
@@ -218,73 +218,75 @@ const createFileSelectionOverlayBlock = (block: Block): Container => {
 };
 
 export const swapWithBlockAbove = (
-  subjectBlock: Block,
+  sourceBlock: Block,
   selectionFileFragment: FileFragment,
 ) => {
   const currentBlockIndex = selectionFileFragment.blocks.findIndex(
-    (block) => block.sprite.uid === subjectBlock?.sprite.uid,
+    (block) => block.sprite.uid === sourceBlock?.sprite.uid,
   );
 
   if (currentBlockIndex === -1) {
     return;
   }
 
-  const blockAboveIndex = currentBlockIndex - 1;
-  const blockAbove =
-    blockAboveIndex >= 0 ? selectionFileFragment.blocks[blockAboveIndex] : null;
+  const targetBlockIndex = currentBlockIndex - 1;
+  const targetBlock =
+    targetBlockIndex >= 0
+      ? selectionFileFragment.blocks[targetBlockIndex]
+      : null;
 
-  if (blockAbove) {
-    swapSelectionFileBlocks(subjectBlock, blockAbove);
+  if (targetBlock) {
+    swapSelectionFileBlocks(sourceBlock, targetBlock);
   } else {
-    ejectTopMostBlockOfFragment(subjectBlock);
+    ejectTopMostBlockOfFragment(sourceBlock);
   }
 };
 
 export const swapWithBlockBelow = (
-  subjectBlock: Block,
+  sourceBlock: Block,
   selectionFileFragment: FileFragment,
 ) => {
   const currentBlockIndex = selectionFileFragment.blocks.findIndex(
-    (block) => block.sprite.uid === subjectBlock?.sprite.uid,
+    (block) => block.sprite.uid === sourceBlock?.sprite.uid,
   );
 
   if (currentBlockIndex === -1) {
     return;
   }
 
-  const blockBelowIndex = currentBlockIndex + 1;
-  const blockBelow =
-    blockBelowIndex < selectionFileFragment.blocks.length
-      ? selectionFileFragment.blocks[blockBelowIndex]
+  const targetBlockIndex = currentBlockIndex + 1;
+  const targetBlock =
+    targetBlockIndex < selectionFileFragment.blocks.length
+      ? selectionFileFragment.blocks[targetBlockIndex]
       : null;
 
-  if (blockBelow) {
-    swapSelectionFileBlocks(subjectBlock, blockBelow);
+  if (targetBlock) {
+    swapSelectionFileBlocks(sourceBlock, targetBlock);
   }
 };
 
 export const swapSelectionFileBlocks = (
-  subjectBlock: Block,
-  otherBlock: Block,
+  sourceBlock: Block,
+  targetBlock: Block,
 ) => {
-  const swapYPosition = subjectBlock.sprite.y;
+  const swapYPosition = sourceBlock.sprite.y;
 
-  subjectBlock.sprite.y = otherBlock.sprite.y;
-  otherBlock.sprite.y = swapYPosition;
+  sourceBlock.sprite.y = targetBlock.sprite.y;
+  targetBlock.sprite.y = swapYPosition;
 
   // @todo consider simpler implementation such as swapping
   // texture only, and then updating selectedBlock to the one above/below
-  const subjectGroupId = subjectBlock.groupId;
-  const otherGroupId = otherBlock.groupId;
+  const sourceGroupId = sourceBlock.groupId;
+  const targetGroupId = targetBlock.groupId;
 
   if (
-    subjectGroupId === null ||
-    otherGroupId === null ||
-    subjectGroupId === otherGroupId
+    sourceGroupId === null ||
+    targetGroupId === null ||
+    sourceGroupId === targetGroupId
   ) {
     return;
   }
 
-  assignBlockToGroup(subjectBlock, otherGroupId);
-  assignBlockToGroup(otherBlock, subjectGroupId);
+  assignBlockToGroup(sourceBlock, targetGroupId);
+  assignBlockToGroup(targetBlock, sourceGroupId);
 };
