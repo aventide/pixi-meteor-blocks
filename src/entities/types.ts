@@ -17,6 +17,8 @@ export type Block = {
   fragmentId: FileFragmentId | null;
 };
 
+export type BlockSequence = Block[];
+
 export type VerticalBoundary = {
   bottom: number;
   top: number;

@@ -7,6 +7,14 @@ import type {
 } from "../types";
 
 import { getBlockSize, getCeiling, getWorld } from "../../world";
+import { isClose } from "../../util";
+
+export const getIsFileFragmentRooted = (fileFragment: {
+  boundary: { bottom: number };
+}): boolean => {
+  const { height: worldHeight } = getWorld();
+  return isClose(fileFragment.boundary.bottom, worldHeight);
+};
 
 export const getIsSpawnPositionOpen = (file: FileNumber): boolean => {
   const { fileFragmentsByFileNumber } = getWorld();

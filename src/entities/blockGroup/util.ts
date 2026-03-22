@@ -8,15 +8,9 @@ import type {
 } from "../types";
 
 import { getBlockSize, getWorld } from "../../world";
+import { isClose } from "../../util";
 import { createBlockGroup } from "./index";
 import { sortBlocksAscending } from "../block/util";
-
-export const getIsGroupRooted = (blockGroup: BlockGroup): boolean => {
-  const { height: worldHeight } = getWorld();
-  return blockGroup.fileFragments.some(
-    (fileFragment) => fileFragment.boundary.bottom === worldHeight,
-  );
-};
 
 export const getGroupBlockCount = (blockGroup: BlockGroup): number =>
   blockGroup.fileFragments.reduce(
@@ -57,7 +51,7 @@ export const getFilePlacementsFromBlocks = (
       const currentBlock = sortedBlocks[i];
       const previousBlock = sortedBlocks[i - 1];
 
-      if (currentBlock.sprite.y - previousBlock.sprite.y === blockSize) {
+      if (isClose(currentBlock.sprite.y - previousBlock.sprite.y, blockSize)) {
         currentPlacementBlocks.push(currentBlock);
       } else {
         placements.push({
@@ -99,7 +93,7 @@ export const getContiguousFilePlacements = (
     const currentBlock = sortedBlocks[i];
     const previousBlock = sortedBlocks[i - 1];
 
-    if (currentBlock.sprite.y - previousBlock.sprite.y === blockSize) {
+    if (isClose(currentBlock.sprite.y - previousBlock.sprite.y, blockSize)) {
       currentPlacementBlocks.push(currentBlock);
     } else {
       placements.push({

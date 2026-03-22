@@ -1,59 +1,111 @@
-import { Block, FileFragment } from "../../entities/types";
-import { getBurnedTexture } from "../../textures";
-
-type BlockSequence = Block[];
+import { DEFAULT_LAUNCH_VELOCITY } from "../../constants";
+import {
+  ejectSubgroupFromBlockGroup,
+  getBlockGroupById,
+  mergeBlockGroups,
+} from "../../entities";
+import {
+  Block,
+  BlockGroup,
+  BlockGroupId,
+  BlockSequence,
+  FileFragment,
+} from "../../entities/types";
+import { applyBurnToBlocks, getVerticalSequencesInFileFragment } from "./util";
 
 const sequenceMutator = (allSelectionFileFragments: FileFragment[]) => {
   for (const frag of allSelectionFileFragments) {
     const verticalSequences: BlockSequence[] =
       getVerticalSequencesInFileFragment(frag);
 
-    verticalSequences.forEach((sequence) => applyBurnToBlocks(sequence));
+    verticalSequences.forEach((sequence) =>
+      launchVerticalSequence(frag, sequence),
+    );
   }
 };
 
-const getVerticalSequencesInFileFragment = (frag: FileFragment) => {
-  const sequences: BlockSequence[] = [];
-  let matchBuffer: BlockSequence = [];
+const launchVerticalSequence = (
+  frag: FileFragment,
+  sequence: BlockSequence,
+) => {
+  applyBurnToBlocks(sequence);
 
-  for (const currentBlock of frag.blocks) {
-    if (!getIsBlockMatchable(currentBlock)) {
-      if (matchBuffer.length >= 3) sequences.push(matchBuffer);
-      matchBuffer = [];
-      continue;
-    }
+  const bottomBlock = sequence[sequence.length - 1];
+  const blocksAbove = getBlocksAboveInFileFragment(bottomBlock, frag);
 
-    const currentBlockColor = getBlockColor(currentBlock);
-    const previousBlockColor = getBlockColor(
-      matchBuffer[matchBuffer.length - 1],
+  const blocksByGroupId = getBlocksByGroupId(blocksAbove);
+
+  const ejectedGroups: BlockGroup[] = [];
+
+  for (const [groupId, groupBlocks] of blocksByGroupId.entries()) {
+    const sourceGroup = getBlockGroupById(groupId);
+    if (!sourceGroup) continue;
+
+    const { targetGroup } = ejectSubgroupFromBlockGroup(
+      sourceGroup,
+      groupBlocks,
     );
 
-    if (matchBuffer.length === 0 || currentBlockColor === previousBlockColor) {
-      matchBuffer.push(currentBlock);
-    } else {
-      if (matchBuffer.length >= 3) sequences.push(matchBuffer);
-      matchBuffer = [currentBlock];
+    if (targetGroup) {
+      ejectedGroups.push(targetGroup);
     }
   }
 
-  if (matchBuffer.length >= 3) sequences.push(matchBuffer);
-
-  return sequences;
+  const launchedGroup = mergeAllBlockGroups(ejectedGroups);
+  if (launchedGroup) {
+    launchedGroup.type = "launch";
+    launchedGroup.velocity = DEFAULT_LAUNCH_VELOCITY;
+  }
 };
 
-const getIsBlockMatchable = (block: Block): boolean => {
-  // block is not matchable if it is burned or an item type
-  return getBlockColor(block) !== "burned";
+export const mergeAllBlockGroups = (
+  blockGroups: BlockGroup[],
+): BlockGroup | null => {
+  if (blockGroups.length === 0) {
+    return null;
+  }
+
+  let mergedGroup = blockGroups[0];
+
+  for (let i = 1; i < blockGroups.length; i++) {
+    mergedGroup = mergeBlockGroups(mergedGroup, blockGroups[i]);
+  }
+
+  return mergedGroup;
 };
 
-// @todo perhaps add this to the texture module
-// and have a block color type
-const getBlockColor = (block: Block, fallbackColor = "neutral"): string => {
-  return block?.sprite?.texture?.label || fallbackColor;
+export const getBlocksAboveInFileFragment = (
+  block: Block,
+  fileFragment: FileFragment,
+): Block[] => {
+  const blockIndex = fileFragment.blocks.findIndex(
+    (fragmentBlock) => fragmentBlock.sprite.uid === block.sprite.uid,
+  );
+
+  if (blockIndex === -1) {
+    return [];
+  }
+
+  return fileFragment.blocks.slice(0, blockIndex + 1);
 };
 
-const applyBurnToBlocks = (blocks: Block[]) => {
-  blocks.forEach((block) => (block.sprite.texture = getBurnedTexture()));
+export const getBlocksByGroupId = (
+  blocks: Block[],
+): Map<BlockGroupId, Block[]> => {
+  const blocksByGroupId = new Map<BlockGroupId, Block[]>();
+
+  blocks.forEach((block) => {
+    if (block.groupId === null) return;
+
+    const existingBlocks = blocksByGroupId.get(block.groupId);
+    if (existingBlocks) {
+      existingBlocks.push(block);
+    } else {
+      blocksByGroupId.set(block.groupId, [block]);
+    }
+  });
+
+  return blocksByGroupId;
 };
 
 export default sequenceMutator;

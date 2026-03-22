@@ -9,30 +9,28 @@ import {
 import { getBlockSize, getWorld, setGlobalPointerDown } from "../../world";
 import { isClose } from "../../util";
 import {
-  assignBlockToGroup,
+  createBlockGroupFromBlocks,
   createFileFragment,
   getBlockGroupById,
-  getFileFragmentById,
-  getIsGroupRooted,
+  getIsFileFragmentRooted,
+  removeBlockGroup,
 } from "../../entities";
 import { DEFAULT_FILE_COUNT, DEFAULT_POP_VELOCITY } from "../../constants";
 import { ejectSubgroupFromBlockGroup } from "../../entities";
 
-const ejectTopMostBlockOfFragment = (sourceBlock: Block) => {
-  const sourceGroup = getBlockGroupById(sourceBlock.groupId);
-
-  if (!sourceGroup || !getIsGroupRooted(sourceGroup)) {
+const ejectTopMostBlockOfFragment = (selectionFileFragment: FileFragment) => {
+  if (!getIsFileFragmentRooted(selectionFileFragment)) {
     return;
   }
 
-  const sourceFragment = getFileFragmentById(sourceBlock.fragmentId);
-
-  if (!sourceFragment || sourceFragment.groupId !== sourceGroup.id) {
-    return;
-  }
-
-  const topMostBlock = sourceFragment.blocks[0];
+  const topMostBlock = selectionFileFragment.blocks[0];
   if (!topMostBlock) {
+    return;
+  }
+
+  const sourceGroup = getBlockGroupById(topMostBlock.groupId);
+
+  if (!sourceGroup) {
     return;
   }
 
@@ -238,7 +236,7 @@ export const swapWithBlockAbove = (
   if (targetBlock) {
     swapSelectionFileBlocks(sourceBlock, targetBlock);
   } else {
-    ejectTopMostBlockOfFragment(sourceBlock);
+    ejectTopMostBlockOfFragment(selectionFileFragment);
   }
 };
 
@@ -269,24 +267,43 @@ export const swapSelectionFileBlocks = (
   sourceBlock: Block,
   targetBlock: Block,
 ) => {
+  const sourceGroupId = sourceBlock.groupId;
+  const targetGroupId = targetBlock.groupId;
+
+  if (sourceGroupId === null || targetGroupId === null) {
+    return;
+  }
+
   const swapYPosition = sourceBlock.sprite.y;
 
   sourceBlock.sprite.y = targetBlock.sprite.y;
   targetBlock.sprite.y = swapYPosition;
 
-  // @todo consider simpler implementation such as swapping
-  // texture only, and then updating selectedBlock to the one above/below
-  const sourceGroupId = sourceBlock.groupId;
-  const targetGroupId = targetBlock.groupId;
-
-  if (
-    sourceGroupId === null ||
-    targetGroupId === null ||
-    sourceGroupId === targetGroupId
-  ) {
+  if (sourceGroupId === targetGroupId) {
     return;
   }
 
-  assignBlockToGroup(sourceBlock, targetGroupId);
-  assignBlockToGroup(targetBlock, sourceGroupId);
+  const sourceGroup = getBlockGroupById(sourceGroupId);
+  const targetGroup = getBlockGroupById(targetGroupId);
+
+  if (!sourceGroup || !targetGroup) {
+    return;
+  }
+
+  const mergedBlocks = [
+    ...sourceGroup.fileFragments.flatMap((fileFragment) => fileFragment.blocks),
+    ...targetGroup.fileFragments.flatMap((fileFragment) => fileFragment.blocks),
+  ];
+  const mergedVelocity = (sourceGroup.velocity + targetGroup.velocity) / 2;
+  const mergedType =
+    sourceGroup.type === "launch" || targetGroup.type === "launch"
+      ? "launch"
+      : sourceGroup.type === "pop" || targetGroup.type === "pop"
+        ? "pop"
+        : "default";
+
+  removeBlockGroup(sourceGroup);
+  removeBlockGroup(targetGroup);
+
+  createBlockGroupFromBlocks(mergedBlocks, mergedVelocity, mergedType);
 };
