@@ -26,7 +26,7 @@ export const getGroupBlockCount = (blockGroup: BlockGroup): number =>
 export const getMomentum = (blockGroup: BlockGroup): number =>
   blockGroup.velocity * getGroupBlockCount(blockGroup);
 
-export const getContiguousFilePlacementsFromBlocks = (
+export const getFilePlacementsFromBlocks = (
   blocks: Block[],
 ): FilePlacement[] => {
   const blocksByFileNumber: Map<FileNumber, Block[]> = new Map();
@@ -77,7 +77,7 @@ export const getContiguousFilePlacementsFromBlocks = (
 };
 
 export const getFilePlacements = (blockGroup: BlockGroup): FilePlacement[] =>
-  getContiguousFilePlacementsFromBlocks(
+  getFilePlacementsFromBlocks(
     blockGroup.fileFragments.flatMap((fileFragment) => fileFragment.blocks),
   );
 
@@ -86,37 +86,9 @@ export const createBlockGroupFromBlocks = (
   velocity: number = 0,
   type: BlockGroupType = "default",
 ): BlockGroup => {
-  const filePlacements = getContiguousFilePlacementsFromBlocks(blocks);
+  const filePlacements = getFilePlacementsFromBlocks(blocks);
 
   return createBlockGroup(filePlacements, velocity, type);
-};
-
-export const getCombinedFilePlacements = (
-  sourceFilePlacements: FilePlacement[],
-  targetFilePlacements: FilePlacement[],
-): FilePlacement[] => {
-  const combinedFileNumbers: Set<FileNumber> = new Set([
-    ...sourceFilePlacements.map((fp) => fp.number),
-    ...targetFilePlacements.map((fp) => fp.number),
-  ]);
-
-  const mergedFilePlacements: FilePlacement[] = [];
-  combinedFileNumbers.forEach((fileNumber) => {
-    const sourceFilePlacementBlocks = sourceFilePlacements
-      .filter((filePlacement) => filePlacement.number === fileNumber)
-      .flatMap((filePlacement) => filePlacement.blocks);
-
-    const targetFilePlacementBlocks = targetFilePlacements
-      .filter((filePlacement) => filePlacement.number === fileNumber)
-      .flatMap((filePlacement) => filePlacement.blocks);
-
-    mergedFilePlacements.push({
-      number: fileNumber,
-      blocks: [...sourceFilePlacementBlocks, ...targetFilePlacementBlocks],
-    });
-  });
-
-  return mergedFilePlacements;
 };
 
 export const getCombinedBlockGroupType = (
