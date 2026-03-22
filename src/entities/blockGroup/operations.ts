@@ -1,125 +1,148 @@
 import type { Block, BlockGroup, FileNumber, FilePlacement } from "../types";
 
-import { getWorld } from "../../world";
+import { getBlockSize, getWorld } from "../../world";
 import { sortBlocksAscending } from "../block/util";
-import { createBlockGroup } from "./index";
 import {
+  createBlockGroupFromBlocks,
   getCombinedBlockGroupType,
-  getCombinedFilePlacements,
   getCombinedVelocity,
   getFilePlacements,
 } from "./util";
 
-export const combineBlockGroups = (
-  subjectBlockGroup: BlockGroup,
-  otherBlockGroup: BlockGroup,
+export const mergeBlockGroups = (
+  sourceBlockGroup: BlockGroup,
+  targetBlockGroup: BlockGroup,
 ) => {
   const { blockGroupsById } = getWorld();
 
-  const combinedVelocity = getCombinedVelocity(
-    subjectBlockGroup,
-    otherBlockGroup,
+  const mergedVelocity = getCombinedVelocity(
+    sourceBlockGroup,
+    targetBlockGroup,
+  );
+  const mergedBlocks = [
+    ...sourceBlockGroup.fileFragments.flatMap(
+      (fileFragment) => fileFragment.blocks,
+    ),
+    ...targetBlockGroup.fileFragments.flatMap(
+      (fileFragment) => fileFragment.blocks,
+    ),
+  ];
+  const mergedType = getCombinedBlockGroupType(
+    sourceBlockGroup,
+    targetBlockGroup,
   );
 
-  const subjectFilePlacements = getFilePlacements(subjectBlockGroup);
-  const otherFilePlacements = getFilePlacements(otherBlockGroup);
-  const combinedFilePlacements = getCombinedFilePlacements(
-    subjectFilePlacements,
-    otherFilePlacements,
+  removeBlockGroup(sourceBlockGroup);
+  removeBlockGroup(targetBlockGroup);
+
+  const mergedBlockGroup = createBlockGroupFromBlocks(
+    mergedBlocks,
+    mergedVelocity,
+    mergedType,
   );
 
-  const combinedType = getCombinedBlockGroupType(
-    subjectBlockGroup,
-    otherBlockGroup,
-  );
+  blockGroupsById.set(mergedBlockGroup.id, mergedBlockGroup);
 
-  removeBlockGroup(subjectBlockGroup);
-  removeBlockGroup(otherBlockGroup);
-
-  const combinedBlockGroup = createBlockGroup(
-    combinedFilePlacements,
-    combinedVelocity,
-    combinedType,
-  );
-
-  blockGroupsById.set(combinedBlockGroup.id, combinedBlockGroup);
-
-  return combinedBlockGroup;
+  return mergedBlockGroup;
 };
 
-export const decombineBlockGroup = (
-  originalBlockGroup: BlockGroup,
-  fracturePointMap: Map<FileNumber, number>,
-): { basisGroup: BlockGroup | null; ejectedGroup: BlockGroup | null } => {
-  const originalBlockGroupPlacements = getFilePlacements(originalBlockGroup);
+const getContiguousFilePlacements = (
+  blocks: Block[],
+  fileNumber: FileNumber,
+): FilePlacement[] => {
+  if (blocks.length === 0) {
+    return [];
+  }
 
-  const basisGroupPlacements: FilePlacement[] = [];
-  const ejectedGroupPlacements: FilePlacement[] = [];
+  const sortedBlocks = sortBlocksAscending([...blocks]);
+  const blockSize = getBlockSize();
+  const placements: FilePlacement[] = [];
+  let currentPlacementBlocks: Block[] = [sortedBlocks[0]];
 
-  originalBlockGroupPlacements.forEach((originalPlacement) => {
-    if (!fracturePointMap.has(originalPlacement.number)) {
-      basisGroupPlacements.push({
-        blocks: originalPlacement.blocks,
-        number: originalPlacement.number,
+  for (let i = 1; i < sortedBlocks.length; i++) {
+    const currentBlock = sortedBlocks[i];
+    const previousBlock = sortedBlocks[i - 1];
+
+    if (currentBlock.sprite.y - previousBlock.sprite.y === blockSize) {
+      currentPlacementBlocks.push(currentBlock);
+    } else {
+      placements.push({
+        blocks: currentPlacementBlocks,
+        number: fileNumber,
       });
-      return;
+      currentPlacementBlocks = [currentBlock];
     }
+  }
 
-    const individualFracturePoint = fracturePointMap.get(
-      originalPlacement.number,
-    )!;
+  placements.push({
+    blocks: currentPlacementBlocks,
+    number: fileNumber,
+  });
 
-    const basisBlocks: Block[] = [];
-    const ejectedBlocks: Block[] = [];
-    const sortedBlocks = sortBlocksAscending([...originalPlacement.blocks]);
+  return placements;
+};
 
-    sortedBlocks.forEach((block, index) => {
-      const blockRank = index + 1;
-      if (blockRank <= individualFracturePoint) {
-        ejectedBlocks.push(block);
+export const ejectSubgroupFromBlockGroup = (
+  sourceBlockGroup: BlockGroup,
+  ejectedBlocks: Block[],
+): { targetGroup: BlockGroup | null; sourceGroup: BlockGroup | null } => {
+  const sourceBlockGroupPlacements = getFilePlacements(sourceBlockGroup);
+  const ejectedBlockSet = new Set(ejectedBlocks);
+
+  const sourceGroupPlacements: FilePlacement[] = [];
+  const targetGroupPlacements: FilePlacement[] = [];
+
+  sourceBlockGroupPlacements.forEach((sourcePlacement) => {
+    const sourceBlocks: Block[] = [];
+    const placementTargetBlocks: Block[] = [];
+
+    sourcePlacement.blocks.forEach((block) => {
+      if (ejectedBlockSet.has(block)) {
+        placementTargetBlocks.push(block);
       } else {
-        basisBlocks.push(block);
+        sourceBlocks.push(block);
       }
     });
 
-    if (basisBlocks.length > 0) {
-      basisGroupPlacements.push({
-        blocks: basisBlocks,
-        number: originalPlacement.number,
-      });
-    }
+    sourceGroupPlacements.push(
+      ...getContiguousFilePlacements(sourceBlocks, sourcePlacement.number),
+    );
 
-    if (ejectedBlocks.length > 0) {
-      ejectedGroupPlacements.push({
-        blocks: ejectedBlocks,
-        number: originalPlacement.number,
-      });
-    }
+    targetGroupPlacements.push(
+      ...getContiguousFilePlacements(
+        placementTargetBlocks,
+        sourcePlacement.number,
+      ),
+    );
   });
 
-  removeBlockGroup(originalBlockGroup);
+  removeBlockGroup(sourceBlockGroup);
 
-  const basisGroup =
-    basisGroupPlacements.length > 0
-      ? createBlockGroup(
-          basisGroupPlacements,
-          originalBlockGroup.velocity,
-          originalBlockGroup.type,
+  const sourceGroup =
+    sourceGroupPlacements.length > 0
+      ? createBlockGroupFromBlocks(
+          sourceGroupPlacements.flatMap(
+            (filePlacement) => filePlacement.blocks,
+          ),
+          sourceBlockGroup.velocity,
+          sourceBlockGroup.type,
         )
       : null;
 
-  const ejectedGroup =
-    ejectedGroupPlacements.length > 0
-      ? createBlockGroup(
-          ejectedGroupPlacements,
-          originalBlockGroup.velocity,
-          originalBlockGroup.type,
+  const targetGroup =
+    targetGroupPlacements.length > 0
+      ? createBlockGroupFromBlocks(
+          targetGroupPlacements.flatMap(
+            (filePlacement) => filePlacement.blocks,
+          ),
+          sourceBlockGroup.velocity,
+          sourceBlockGroup.type,
         )
       : null;
 
   return {
-    basisGroup,
-    ejectedGroup,
+    targetGroup,
+    sourceGroup,
   };
 };
 

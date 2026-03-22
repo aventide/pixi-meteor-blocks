@@ -1,5 +1,5 @@
 import { DEFAULT_REFERENCE_HEIGHT } from "../../constants";
-import { combineBlockGroups } from "../../entities";
+import { mergeBlockGroups } from "../../entities";
 
 import { BlockGroup } from "../../entities/types";
 
@@ -79,7 +79,7 @@ const handleDownwardMotion = (group: BlockGroup, movementDiff: number) => {
       contact.contactedGroups &&
       group.type !== "launch"
     ) {
-      combineBlockGroups(group, contact.contactedGroups[0]);
+      mergeBlockGroups(group, contact.contactedGroups[0]);
     }
   }
 };
@@ -132,7 +132,7 @@ const handleUpwardMotion = (group: BlockGroup, movementDiff: number) => {
       contact.contactedGroups &&
       group.type !== "launch"
     ) {
-      combineBlockGroups(group, contact.contactedGroups[0]);
+      mergeBlockGroups(group, contact.contactedGroups[0]);
     }
   }
 };
