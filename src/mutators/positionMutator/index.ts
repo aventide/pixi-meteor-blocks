@@ -13,11 +13,7 @@ import {
   translatePosition,
 } from "./util";
 
-type ContactType =
-  | "contacted-floor"
-  | "contacted-group"
-  | "contacted-veil"
-  | "exceeded-veil";
+type ContactType = "contacted-floor" | "contacted-group" | "contacted-veil";
 type Contact = {
   type: ContactType;
   contactedGroups?: BlockGroup[];
@@ -98,6 +94,7 @@ const handleUpwardMotion = (group: BlockGroup, movementDiff: number) => {
 
   let minDiff = movementDiff;
   let contact: Contact | null = null;
+  let hasExceededVeil = false;
 
   // diffs to obstacles above - check each fragment
   for (const frag of group.fileFragments) {
@@ -110,8 +107,9 @@ const handleUpwardMotion = (group: BlockGroup, movementDiff: number) => {
     }
 
     // if launched group is exceeding veil, we will start to vanish the blocks
-    if (diffToVeil < 0 && group.type === "launch") {
-      contact = { type: "exceeded-veil" };
+    if (frag.boundary.top < veil && group.type === "launch") {
+      // do not combine with contact or overriding may occur
+      hasExceededVeil = true;
     }
 
     // then calculate and track diffs to any fragments above in this file
@@ -139,8 +137,6 @@ const handleUpwardMotion = (group: BlockGroup, movementDiff: number) => {
   if (contact) {
     if (contact.type === "contacted-veil") {
       group.velocity = 0;
-    } else if (contact.type === "exceeded-veil") {
-      vanishVeilExceedingBlocksInGroup(group);
     } else if (
       contact.type === "contacted-group" &&
       contact.contactedGroups &&
@@ -148,6 +144,10 @@ const handleUpwardMotion = (group: BlockGroup, movementDiff: number) => {
     ) {
       mergeBlockGroups(group, contact.contactedGroups[0]);
     }
+  }
+
+  if (hasExceededVeil) {
+    vanishVeilExceedingBlocksInGroup(group);
   }
 };
 
