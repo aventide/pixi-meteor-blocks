@@ -1,4 +1,11 @@
-import { Block, BlockSequence, FileFragment } from "../../entities";
+import {
+  Block,
+  BlockGroup,
+  BlockGroupId,
+  BlockSequence,
+  FileFragment,
+  mergeBlockGroups,
+} from "../../entities";
 import { getBurnedTexture } from "../../textures";
 
 export const getVerticalSequencesInFileFragment = (frag: FileFragment) => {
@@ -46,4 +53,54 @@ export const getBlockColor = (
 
 export const applyBurnToBlocks = (blocks: Block[]) => {
   blocks.forEach((block) => (block.sprite.texture = getBurnedTexture()));
+};
+
+export const mergeAllBlockGroups = (
+  blockGroups: BlockGroup[],
+): BlockGroup | null => {
+  if (blockGroups.length === 0) {
+    return null;
+  }
+
+  let mergedGroup = blockGroups[0];
+
+  for (let i = 1; i < blockGroups.length; i++) {
+    mergedGroup = mergeBlockGroups(mergedGroup, blockGroups[i]);
+  }
+
+  return mergedGroup;
+};
+
+export const getBlocksAboveInFileFragment = (
+  block: Block,
+  fileFragment: FileFragment,
+): Block[] => {
+  const blockIndex = fileFragment.blocks.findIndex(
+    (fragmentBlock) => fragmentBlock.sprite.uid === block.sprite.uid,
+  );
+
+  if (blockIndex === -1) {
+    return [];
+  }
+
+  return fileFragment.blocks.slice(0, blockIndex + 1);
+};
+
+export const getBlocksByGroupId = (
+  blocks: Block[],
+): Map<BlockGroupId, Block[]> => {
+  const blocksByGroupId = new Map<BlockGroupId, Block[]>();
+
+  blocks.forEach((block) => {
+    if (block.groupId === null) return;
+
+    const existingBlocks = blocksByGroupId.get(block.groupId);
+    if (existingBlocks) {
+      existingBlocks.push(block);
+    } else {
+      blocksByGroupId.set(block.groupId, [block]);
+    }
+  });
+
+  return blocksByGroupId;
 };

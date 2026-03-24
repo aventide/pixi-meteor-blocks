@@ -1,17 +1,13 @@
 import { DEFAULT_LAUNCH_VELOCITY } from "../../constants";
+import { ejectSubgroupFromBlockGroup, getBlockGroupById } from "../../entities";
+import { BlockGroup, BlockSequence, FileFragment } from "../../entities/types";
 import {
-  ejectSubgroupFromBlockGroup,
-  getBlockGroupById,
-  mergeBlockGroups,
-} from "../../entities";
-import {
-  Block,
-  BlockGroup,
-  BlockGroupId,
-  BlockSequence,
-  FileFragment,
-} from "../../entities/types";
-import { applyBurnToBlocks, getVerticalSequencesInFileFragment } from "./util";
+  applyBurnToBlocks,
+  getBlocksAboveInFileFragment,
+  getBlocksByGroupId,
+  getVerticalSequencesInFileFragment,
+  mergeAllBlockGroups,
+} from "./util";
 
 const sequenceMutator = (allSelectionFileFragments: FileFragment[]) => {
   for (const frag of allSelectionFileFragments) {
@@ -56,56 +52,6 @@ const launchVerticalSequence = (
     launchedGroup.type = "launch";
     launchedGroup.velocity = DEFAULT_LAUNCH_VELOCITY;
   }
-};
-
-export const mergeAllBlockGroups = (
-  blockGroups: BlockGroup[],
-): BlockGroup | null => {
-  if (blockGroups.length === 0) {
-    return null;
-  }
-
-  let mergedGroup = blockGroups[0];
-
-  for (let i = 1; i < blockGroups.length; i++) {
-    mergedGroup = mergeBlockGroups(mergedGroup, blockGroups[i]);
-  }
-
-  return mergedGroup;
-};
-
-export const getBlocksAboveInFileFragment = (
-  block: Block,
-  fileFragment: FileFragment,
-): Block[] => {
-  const blockIndex = fileFragment.blocks.findIndex(
-    (fragmentBlock) => fragmentBlock.sprite.uid === block.sprite.uid,
-  );
-
-  if (blockIndex === -1) {
-    return [];
-  }
-
-  return fileFragment.blocks.slice(0, blockIndex + 1);
-};
-
-export const getBlocksByGroupId = (
-  blocks: Block[],
-): Map<BlockGroupId, Block[]> => {
-  const blocksByGroupId = new Map<BlockGroupId, Block[]>();
-
-  blocks.forEach((block) => {
-    if (block.groupId === null) return;
-
-    const existingBlocks = blocksByGroupId.get(block.groupId);
-    if (existingBlocks) {
-      existingBlocks.push(block);
-    } else {
-      blocksByGroupId.set(block.groupId, [block]);
-    }
-  });
-
-  return blocksByGroupId;
 };
 
 export default sequenceMutator;
