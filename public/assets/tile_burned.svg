@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" version="1.1">
+  <title>Minimalist Grey Tile</title>
+  <desc>Square, flat-colored grey tile with a full-block white crack pattern. Few colors, hard edges, no gradients.</desc>
+
+  <!-- Palette:
+       Base Grey:  #7B8088
+       Dark Grey:  #2F333A (border)
+       White:      #FFFFFF (cracks)
+  -->
+
+  <!-- Base tile -->
+  <rect x="0" y="0" width="128" height="128" fill="#7B8088"/>
+
+  <!-- 1px hard border for crisp edges -->
+  <rect x="0" y="0" width="128" height="1" fill="#2F333A"/>
+  <rect x="0" y="127" width="128" height="1" fill="#2F333A"/>
+  <rect x="0" y="0" width="1" height="128" fill="#2F333A"/>
+  <rect x="127" y="0" width="1" height="128" fill="#2F333A"/>
+
+  <!-- Crack pattern (white), clipped to inner area so it doesn't overwrite the border -->
+  <g clip-path="url(#innerClip)" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="square" stroke-linejoin="miter">
+    <!-- Main branching crack running roughly top-left to bottom-right -->
+    <path d="M 18 18 L 34 28 L 44 40 L 58 52 L 72 66 L 88 82 L 104 98 L 112 112"/>
+
+    <!-- Branches off the main crack -->
+    <path d="M 44 40 L 38 52 L 30 64"/>
+    <path d="M 58 52 L 52 44 L 46 34"/>
+    <path d="M 72 66 L 78 56 L 86 46"/>
+    <path d="M 88 82 L 80 92 L 72 104"/>
+    <path d="M 104 98 L 110 86 L 114 74"/>
+
+    <!-- Secondary cracks for a boulder-like fractured look -->
+    <path d="M 24 92 L 38 86 L 52 82 L 66 78 L 82 70"/>
+    <path d="M 30 30 L 26 44 L 22 58 L 20 72"/>
+    <path d="M 96 28 L 86 34 L 76 44 L 66 56"/>
+    <path d="M 98 116 L 92 104 L 88 96"/>
+    <path d="M 56 112 L 54 98 L 50 90 L 44 82"/>
+
+    <!-- Small fissures -->
+    <path d="M 64 18 L 60 28 L 62 38"/>
+    <path d="M 18 64 L 30 66 L 40 70"/>
+    <path d="M 110 60 L 98 62 L 88 66"/>
+  </g>
+
+  <defs>
+    <!-- Clip to the inside of the 1px border -->
+    <clipPath id="innerClip">
+      <rect x="1" y="1" width="126" height="126"/>
+    </clipPath>
+  </defs>
+</svg>

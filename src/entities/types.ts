@@ -6,14 +6,18 @@ export type Coord = {
 };
 
 export type BlockGroupId = number;
+export type FileFragmentId = number;
 
 export type FileNumber = number;
 
 export type Block = {
   sprite: Sprite;
   file: FileNumber;
-  groupFileRank: number;
+  groupId: BlockGroupId | null;
+  fragmentId: FileFragmentId | null;
 };
+
+export type BlockSequence = Block[];
 
 export type VerticalBoundary = {
   bottom: number;
@@ -21,11 +25,10 @@ export type VerticalBoundary = {
 };
 
 export type FileBoundary = VerticalBoundary;
-export type GroupBoundary = VerticalBoundary;
+export type FileFragmentBoundary = VerticalBoundary;
 
 export type FileOverlay = {
   danger: Container;
-  selection: Container;
 };
 
 export type FilePlacement = {
@@ -33,18 +36,23 @@ export type FilePlacement = {
   number: FileNumber;
 };
 
-export type BlockGroupFile = {
+export type FileFragment = {
   blocks: Block[];
-  boundary: FileBoundary;
-  overlay: FileOverlay;
+  boundary: FileFragmentBoundary;
   number: FileNumber;
+};
+
+export type GroupFileFragment = FileFragment & {
+  id: FileFragmentId;
+  overlay: FileOverlay;
+  groupId: BlockGroupId;
 };
 
 export type BlockGroupType = "default" | "launch" | "pop";
 
 export type BlockGroup = {
   id: BlockGroupId;
-  files: BlockGroupFile[];
+  fileFragments: GroupFileFragment[];
   velocity: number;
   type: BlockGroupType;
 };

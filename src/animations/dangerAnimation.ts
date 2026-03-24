@@ -1,3 +1,4 @@
+import { DEFAULT_FILE_BLOCKS_LIMIT } from "../constants";
 import { getWorld } from "../world";
 
 const DANGER_ANIMATION_DURATION = 1;
@@ -5,7 +6,7 @@ const DANGER_ANIMATION_MAX_OPACITY = 0.45;
 let dangerOscillationPhase = 0;
 
 export const dangerAnimation = (dt: number) => {
-  const { blockGroupsMap } = getWorld();
+  const { fileFragmentsByFileNumber } = getWorld();
 
   dangerOscillationPhase =
     (dangerOscillationPhase + dt / DANGER_ANIMATION_DURATION) % 1;
@@ -13,10 +14,17 @@ export const dangerAnimation = (dt: number) => {
   const dangerOscillation =
     (1 + Math.cos(dangerOscillationPhase * Math.PI * 2)) / 2;
 
-  blockGroupsMap.forEach((blockGroup) => {
-    blockGroup.files.forEach((file) => {
-      file.overlay.danger.alpha =
+  fileFragmentsByFileNumber.forEach((fileFragments) => {
+    fileFragments.forEach((fileFragment) => {
+      fileFragment.overlay.danger.alpha =
         dangerOscillation * DANGER_ANIMATION_MAX_OPACITY;
+
+      // check for danger condition on group file fragment
+      if (fileFragment.blocks.length > DEFAULT_FILE_BLOCKS_LIMIT) {
+        fileFragment.overlay.danger.visible = true;
+      } else {
+        fileFragment.overlay.danger.visible = false;
+      }
     });
   });
 };

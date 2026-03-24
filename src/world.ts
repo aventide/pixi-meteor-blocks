@@ -2,6 +2,8 @@ import type {
   BlockGroup,
   BlockGroupId,
   Coord,
+  FileFragmentId,
+  GroupFileFragment,
   FileNumber,
 } from "./entities/types";
 
@@ -17,17 +19,26 @@ export type WorldStage = Container & {
   overlayLayer: Container;
 };
 
+export type StageLayers = {
+  blocksLayer: Container;
+  overlayLayer: Container;
+};
+
 type World = {
   gravity: number;
   height: number;
   width: number;
-  stage: WorldStage | null;
-  fileBlockGroupsMap: Map<FileNumber, BlockGroup[]>;
-  blockGroupsMap: Map<BlockGroupId, BlockGroup>;
-  blockGroupIdPool: BlockGroupId[];
+  stage: Container | null;
+  stageLayers: StageLayers;
+  blockGroupsByFileNumber: Map<FileNumber, BlockGroup[]>;
+  fileFragmentsByFileNumber: Map<FileNumber, GroupFileFragment[]>;
+  fileFragmentsById: Map<FileFragmentId, GroupFileFragment>;
+  blockGroupsById: Map<BlockGroupId, BlockGroup>;
+  nextBlockGroupId: BlockGroupId;
+  nextFileFragmentId: FileFragmentId;
   globalPointer: Coord;
   globalPointerDown: boolean;
-  selectedBlockGroup: BlockGroup | null;
+  selectedFragmentOverlay: Container | null;
 };
 
 const world: World = {
@@ -35,17 +46,29 @@ const world: World = {
   height: 0,
   width: 0,
   stage: null,
-  blockGroupsMap: new Map<BlockGroupId, BlockGroup>(),
-  fileBlockGroupsMap: new Map<FileNumber, BlockGroup[]>(
+  stageLayers: {
+    blocksLayer: new Container(),
+    overlayLayer: new Container(),
+  },
+  blockGroupsById: new Map<BlockGroupId, BlockGroup>(),
+  blockGroupsByFileNumber: new Map<FileNumber, BlockGroup[]>(
     Array.from({ length: DEFAULT_FILE_COUNT }, (_, i) => [
       i + 1,
       [] as BlockGroup[],
     ]),
   ),
-  blockGroupIdPool: Array.from({ length: 300 }, (_, i) => 300 - i),
+  fileFragmentsByFileNumber: new Map<FileNumber, GroupFileFragment[]>(
+    Array.from({ length: DEFAULT_FILE_COUNT }, (_, i) => [
+      i + 1,
+      [] as GroupFileFragment[],
+    ]),
+  ),
+  fileFragmentsById: new Map<FileFragmentId, GroupFileFragment>(),
+  nextBlockGroupId: 1,
+  nextFileFragmentId: 1,
   globalPointer: DEFAULT_POINTER_POSITION,
   globalPointerDown: false,
-  selectedBlockGroup: null,
+  selectedFragmentOverlay: null,
 };
 
 export const getWorld = () => world;
@@ -58,7 +81,7 @@ export const setWorldDimensions = (height: number, width: number) => {
   world.height = height;
   world.width = width;
   // const blockSize = width / DEFAULT_FILE_COUNT;
-  // world.height = blockSize * DEFAULT_FILE_LIMIT;
+  // world.height = blockSize * DEFAULT_FILE_BLOCKS_LIMIT;
   // world.width = width;
 };
 
@@ -66,8 +89,12 @@ export const setWorldGravity = (gravity: number) => {
   world.gravity = gravity;
 };
 
-export const setStage = (newStage: WorldStage) => {
-  world.stage = newStage;
+export const setNextBlockGroupId = (nextBlockGroupId: BlockGroupId) => {
+  world.nextBlockGroupId = nextBlockGroupId;
+};
+
+export const setNextFileFragmentId = (nextFileFragmentId: FileFragmentId) => {
+  world.nextFileFragmentId = nextFileFragmentId;
 };
 
 export const setGlobalPointer = (newCoord: Coord) => {
@@ -78,10 +105,18 @@ export const setGlobalPointerDown = (isPointerDown: boolean) => {
   world.globalPointerDown = isPointerDown;
 };
 
-export const setSelectedBlockGroup = (
-  newSelectedBlockGroup: BlockGroup | null,
+export const setSelectedFragmentOverlay = (
+  newSelectedFragmentOverlay: Container | null,
 ) => {
-  world.selectedBlockGroup = newSelectedBlockGroup;
+  if (world.selectedFragmentOverlay) {
+    world.stageLayers.overlayLayer.removeChild(world.selectedFragmentOverlay);
+  }
+
+  world.selectedFragmentOverlay = newSelectedFragmentOverlay;
+
+  if (newSelectedFragmentOverlay) {
+    world.stageLayers.overlayLayer.addChild(newSelectedFragmentOverlay);
+  }
 };
 
 export const addToStage = (sprite: Sprite | Container) => {
@@ -94,7 +129,7 @@ export const addToStage = (sprite: Sprite | Container) => {
 
 export const addToBlocksLayer = (sprite: Sprite | Container) => {
   if (world.stage) {
-    world.stage.blocksLayer.addChild(sprite);
+    world.stageLayers.blocksLayer.addChild(sprite);
   } else {
     throw "There is no blocks layer to add this sprite to";
   }
@@ -102,8 +137,23 @@ export const addToBlocksLayer = (sprite: Sprite | Container) => {
 
 export const addToOverlayLayer = (sprite: Sprite | Container) => {
   if (world.stage) {
-    world.stage.overlayLayer.addChild(sprite);
+    world.stageLayers.overlayLayer.addChild(sprite);
   } else {
     throw "There is no overlay layer to add this sprite to";
   }
+};
+
+export const initializeStage = (stage: Container) => {
+  world.stage = stage;
+
+  const selectedFragmentOverlay = new Container();
+  world.selectedFragmentOverlay = selectedFragmentOverlay;
+  world.stageLayers.overlayLayer.addChild(selectedFragmentOverlay);
+
+  // add our currently-empty layers to the stage
+  // ORDER MATTERS HERE
+  world.stage.addChild(
+    world.stageLayers.blocksLayer,
+    world.stageLayers.overlayLayer,
+  );
 };

@@ -1,32 +1,31 @@
-import { Application, Container } from "pixi.js";
+import { Application } from "pixi.js";
 
 import {
   getWorld,
   setGlobalPointer,
   setGlobalPointerDown,
-  setStage,
-  setSelectedBlockGroup,
   setWorldDimensions,
+  initializeStage,
 } from "./world";
-import type { WorldStage } from "./world";
 import { createSingleBlock } from "./entities";
 import {
   descentMutator,
-  selectionMutator,
-  positionMutator,
   sequenceMutator,
+  positionMutator,
+  selectionMutator,
 } from "./mutators";
 import { getRandomFileNumber } from "./util";
-import { getIsSpawnPositionOpen } from "./entities/util";
+import { getIsSpawnPositionOpen } from "./entities";
 import {
   ACCELERATED_MAIN_TICKER_SPEED,
   DEFAULT_DROP_INTERVAL,
   DEFAULT_FILE_COUNT,
-  DEFAULT_FILE_LIMIT,
+  DEFAULT_FILE_BLOCKS_LIMIT,
   DEFAULT_MAIN_TICKER_SPEED,
-  DEFAULT_POINTER_POSITION,
 } from "./constants";
 import { dangerAnimation } from "./animations";
+import { getAllSelectionFileFragments } from "./mutators/selectionMutator/util";
+import { loadTextures } from "./textures";
 
 (async () => {
   const app = new Application();
@@ -37,12 +36,9 @@ import { dangerAnimation } from "./animations";
     resizeTo: document.getElementById("pixi-container") || window,
   });
 
-  const blocksLayer = new Container();
-  const overlayLayer = new Container();
-  app.stage.addChild(blocksLayer);
-  app.stage.addChild(overlayLayer);
-  Object.assign(app.stage, { blocksLayer, overlayLayer });
-  setStage(app.stage as WorldStage);
+  await loadTextures();
+
+  initializeStage(app.stage);
 
   document.getElementById("pixi-container")!.appendChild(app.canvas);
   document.addEventListener("visibilitychange", () => {
@@ -59,18 +55,14 @@ import { dangerAnimation } from "./animations";
   app.stage.addEventListener("pointerdown", () => {
     setGlobalPointerDown(true);
   });
-  app.stage.addEventListener("pointerup", () => {
+  window.addEventListener("pointerup", () => {
     setGlobalPointerDown(false);
-    setSelectedBlockGroup(null);
   });
-  app.stage.addEventListener("pointermove", (e) => {
-    const { x, y } = e.global;
+  window.addEventListener("pointermove", (e) => {
+    const rect = app.canvas.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * app.screen.width;
+    const y = ((e.clientY - rect.top) / rect.height) * app.screen.height;
     setGlobalPointer({ x, y });
-  });
-  app.stage.addEventListener("pointerleave", () => {
-    setGlobalPointer(DEFAULT_POINTER_POSITION);
-    setGlobalPointerDown(false);
-    setSelectedBlockGroup(null);
   });
 
   // keyboard events
@@ -109,36 +101,39 @@ import { dangerAnimation } from "./animations";
   });
 
   app.ticker.add((time) => {
-    const { blockGroupsMap } = getWorld();
+    const { blockGroupsById } = getWorld();
     const dt = time.deltaTime / 60;
 
     let iterations = 0;
 
     // apply once per group per tick mutations
-    blockGroupsMap.forEach((blockGroup) => {
-      if (iterations < 200) {
+    blockGroupsById.forEach((blockGroup) => {
+      if (iterations <= 300) {
         iterations++;
         descentMutator(blockGroup, dt);
-        selectionMutator(blockGroup);
         positionMutator(blockGroup, dt);
-        sequenceMutator(blockGroup);
+        // an optional (via arg) mutator which applies a debug overlay to each group
+        // debugMutator(blockGroup, true)
       } else {
         throw new Error("Iteration pressure level exceeded threshold");
       }
     });
 
     // apply once per tick mutations
-    // @todo sequenceMutator will be moved here and possibly others
 
-    // apply animation progress once per tick
+    // get all selectionFragments for file
+    const allSelectionFileFragments = getAllSelectionFileFragments();
+
+    selectionMutator(allSelectionFileFragments);
+    sequenceMutator(allSelectionFileFragments);
     dangerAnimation(dt);
 
     // check for losing state
     // @todo consider adding a 1-2 sec "tolerance" once file limit is reached
     // before the file is considered for placement (and game loss)
-    blockGroupsMap.forEach((blockGroup) =>
-      blockGroup.files.forEach((file) => {
-        if (file.blocks.length >= DEFAULT_FILE_LIMIT + 2) {
+    blockGroupsById.forEach((blockGroup) =>
+      blockGroup.fileFragments.forEach((fileFragment) => {
+        if (fileFragment.blocks.length >= DEFAULT_FILE_BLOCKS_LIMIT + 2) {
           alert("You have lost the game.");
           app.stop();
         }
