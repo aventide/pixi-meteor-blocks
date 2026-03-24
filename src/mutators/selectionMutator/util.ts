@@ -274,10 +274,10 @@ export const swapSelectionFileBlocks = (
     return;
   }
 
-  const swapYPosition = sourceBlock.sprite.y;
-
-  sourceBlock.sprite.y = targetBlock.sprite.y;
-  targetBlock.sprite.y = swapYPosition;
+  [sourceBlock.sprite.y, targetBlock.sprite.y] = [
+    targetBlock.sprite.y,
+    sourceBlock.sprite.y,
+  ];
 
   if (sourceGroupId === targetGroupId) {
     return;
@@ -290,20 +290,28 @@ export const swapSelectionFileBlocks = (
     return;
   }
 
-  const mergedBlocks = [
-    ...sourceGroup.fileFragments.flatMap((fileFragment) => fileFragment.blocks),
-    ...targetGroup.fileFragments.flatMap((fileFragment) => fileFragment.blocks),
-  ];
-  const mergedVelocity = (sourceGroup.velocity + targetGroup.velocity) / 2;
-  const mergedType =
-    sourceGroup.type === "launch" || targetGroup.type === "launch"
-      ? "launch"
-      : sourceGroup.type === "pop" || targetGroup.type === "pop"
-        ? "pop"
-        : "default";
+  const sourceGroupBlocks = sourceGroup.fileFragments.flatMap(
+    (fileFragment) => fileFragment.blocks,
+  );
+  const targetGroupBlocks = targetGroup.fileFragments.flatMap(
+    (fileFragment) => fileFragment.blocks,
+  );
 
   removeBlockGroup(sourceGroup);
   removeBlockGroup(targetGroup);
 
-  createBlockGroupFromBlocks(mergedBlocks, mergedVelocity, mergedType);
+  createBlockGroupFromBlocks(
+    sourceGroupBlocks.map((block) =>
+      block === sourceBlock ? targetBlock : block,
+    ),
+    sourceGroup.velocity,
+    sourceGroup.type,
+  );
+  createBlockGroupFromBlocks(
+    targetGroupBlocks.map((block) =>
+      block === targetBlock ? sourceBlock : block,
+    ),
+    targetGroup.velocity,
+    targetGroup.type,
+  );
 };
