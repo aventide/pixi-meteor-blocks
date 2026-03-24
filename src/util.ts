@@ -1,5 +1,8 @@
 import { DEFAULT_FILE_COUNT, DEFAULT_FLOAT_TOLERANCE } from "./constants";
 
+const getIsTouchDevice = () =>
+  "ontouchstart" in window || navigator.maxTouchPoints > 0;
+
 const getRandomIntUpTo = (upToNumber: number) =>
   Math.floor(Math.random() * upToNumber);
 
@@ -17,4 +20,10 @@ const isClose = (
   Math.abs(a - b) <=
   Math.max(relTol * Math.max(Math.abs(a), Math.abs(b)), absTol);
 
-export { clamp, getRandomFileNumber, getRandomIntUpTo, isClose };
+export {
+  clamp,
+  getIsTouchDevice,
+  getRandomFileNumber,
+  getRandomIntUpTo,
+  isClose,
+};
