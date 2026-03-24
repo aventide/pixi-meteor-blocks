@@ -7,6 +7,9 @@ import {
   mergeBlockGroups,
 } from "../../entities";
 import { getBurnedTexture } from "../../textures";
+import { getBlockSize } from "../../world";
+import { isClose } from "../../util";
+import { DEFAULT_FILE_COUNT } from "../../constants";
 
 export const getVerticalSequencesInFileFragment = (frag: FileFragment) => {
   const sequences: BlockSequence[] = [];
@@ -33,6 +36,80 @@ export const getVerticalSequencesInFileFragment = (frag: FileFragment) => {
   }
 
   if (matchBuffer.length >= 3) sequences.push(matchBuffer);
+
+  return sequences;
+};
+
+export const getHorizontalSequencesInSelectionFragments = (
+  frags: FileFragment[],
+) => {
+  const sequences: BlockSequence[] = [];
+  const blocksByRow = new Map<number, Block[]>();
+  const blockSize = getBlockSize();
+
+  for (const frag of frags) {
+    for (const block of frag.blocks) {
+      const rowKey = Math.round(block.sprite.y);
+      const existingRowBlocks = blocksByRow.get(rowKey);
+
+      if (existingRowBlocks) {
+        existingRowBlocks.push(block);
+      } else {
+        blocksByRow.set(rowKey, [block]);
+      }
+    }
+  }
+
+  for (const rowBlocks of blocksByRow.values()) {
+    const blocksByFileNumber = new Map<number, Block>();
+
+    rowBlocks.forEach((block) => {
+      blocksByFileNumber.set(block.file, block);
+    });
+
+    let matchBuffer: BlockSequence = [];
+
+    for (let fileNumber = 1; fileNumber <= DEFAULT_FILE_COUNT; fileNumber++) {
+      const currentBlock = blocksByFileNumber.get(fileNumber);
+
+      if (!currentBlock || !getIsBlockMatchable(currentBlock)) {
+        if (matchBuffer.length >= 3) sequences.push(matchBuffer);
+        matchBuffer = [];
+        continue;
+      }
+
+      const previousBlock = matchBuffer[matchBuffer.length - 1];
+
+      if (!previousBlock) {
+        matchBuffer = [currentBlock];
+        continue;
+      }
+
+      const currentBlockColor = getBlockColor(currentBlock);
+      const previousBlockColor = getBlockColor(previousBlock);
+      const isAdjacentToPreviousBlock = isClose(
+        currentBlock.sprite.x - previousBlock.sprite.x,
+        blockSize,
+      );
+      const isExactlyAlignedWithPreviousBlock = isClose(
+        currentBlock.sprite.y,
+        previousBlock.sprite.y,
+      );
+
+      if (
+        currentBlockColor === previousBlockColor &&
+        isAdjacentToPreviousBlock &&
+        isExactlyAlignedWithPreviousBlock
+      ) {
+        matchBuffer.push(currentBlock);
+      } else {
+        if (matchBuffer.length >= 3) sequences.push(matchBuffer);
+        matchBuffer = [currentBlock];
+      }
+    }
+
+    if (matchBuffer.length >= 3) sequences.push(matchBuffer);
+  }
 
   return sequences;
 };
