@@ -35,6 +35,38 @@ const positionMutator = (group: BlockGroup, dt: number) => {
   }
 };
 
+// @todo evaluate this again
+const mergeWithContactedGroups = (
+  group: BlockGroup,
+  contactedGroups: BlockGroup[],
+) => {
+  let mergedGroup = group;
+
+  contactedGroups.forEach((contactedGroup) => {
+    if (mergedGroup.id === contactedGroup.id) return;
+
+    mergedGroup = mergeBlockGroups(mergedGroup, contactedGroup);
+  });
+};
+
+const appendUniqueContactedGroup = (
+  contact: Contact,
+  contactedGroup: BlockGroup | undefined,
+) => {
+  if (
+    contactedGroup &&
+    !contact.contactedGroups?.some(
+      (existingContactedGroup) =>
+        existingContactedGroup.id === contactedGroup.id,
+    )
+  ) {
+    contact.contactedGroups = [
+      ...(contact.contactedGroups || []),
+      contactedGroup,
+    ];
+  }
+};
+
 const handleDownwardMotion = (group: BlockGroup, movementDiff: number) => {
   const { blockGroupsById } = getWorld();
 
@@ -58,16 +90,20 @@ const handleDownwardMotion = (group: BlockGroup, movementDiff: number) => {
       const diffToClosestFragment =
         closestFragmentBelow.boundary.top - frag.boundary.bottom;
 
-      if (diffToClosestFragment < minDiff) {
-        minDiff = diffToClosestFragment;
-        const closestGroupBelow = blockGroupsById.get(
-          closestFragmentBelow.groupId,
-        );
-        const contactedGroups = closestGroupBelow ? [closestGroupBelow] : [];
-        contact = {
-          type: "contacted-group",
-          contactedGroups,
-        };
+      const closestGroupBelow = blockGroupsById.get(
+        closestFragmentBelow.groupId,
+      );
+
+      if (diffToClosestFragment <= minDiff) {
+        if (diffToClosestFragment < minDiff) {
+          minDiff = diffToClosestFragment;
+          contact = {
+            type: "contacted-group",
+            contactedGroups: closestGroupBelow ? [closestGroupBelow] : [],
+          };
+        } else if (contact?.type === "contacted-group") {
+          appendUniqueContactedGroup(contact, closestGroupBelow);
+        }
       }
     }
   }
@@ -82,7 +118,7 @@ const handleDownwardMotion = (group: BlockGroup, movementDiff: number) => {
       contact.contactedGroups &&
       group.type !== "launch"
     ) {
-      mergeBlockGroups(group, contact.contactedGroups[0]);
+      mergeWithContactedGroups(group, contact.contactedGroups);
     }
   }
 };
@@ -118,36 +154,39 @@ const handleUpwardMotion = (group: BlockGroup, movementDiff: number) => {
       const diffToClosestFragment =
         closestFragmentAbove.boundary.bottom - frag.boundary.top;
 
-      if (diffToClosestFragment > minDiff) {
-        minDiff = diffToClosestFragment;
-        const closestGroupAbove = blockGroupsById.get(
-          closestFragmentAbove.groupId,
-        );
-        const contactedGroups = closestGroupAbove ? [closestGroupAbove] : [];
-        contact = {
-          type: "contacted-group",
-          contactedGroups,
-        };
+      const closestGroupAbove = blockGroupsById.get(
+        closestFragmentAbove.groupId,
+      );
+
+      if (diffToClosestFragment >= minDiff) {
+        if (diffToClosestFragment > minDiff) {
+          minDiff = diffToClosestFragment;
+          contact = {
+            type: "contacted-group",
+            contactedGroups: closestGroupAbove ? [closestGroupAbove] : [],
+          };
+        } else if (contact?.type === "contacted-group") {
+          appendUniqueContactedGroup(contact, closestGroupAbove);
+        }
       }
     }
   }
 
   translatePosition(group, minDiff);
 
+  if (hasExceededVeil) {
+    vanishVeilExceedingBlocksInGroup(group);
+    // @todo this solves an order of operations issue
+    // see if there's a more robust way
+    return;
+  }
+
   if (contact) {
     if (contact.type === "contacted-veil") {
       group.velocity = 0;
-    } else if (
-      contact.type === "contacted-group" &&
-      contact.contactedGroups &&
-      group.type !== "launch"
-    ) {
-      mergeBlockGroups(group, contact.contactedGroups[0]);
+    } else if (contact.type === "contacted-group" && contact.contactedGroups) {
+      mergeWithContactedGroups(group, contact.contactedGroups);
     }
-  }
-
-  if (hasExceededVeil) {
-    vanishVeilExceedingBlocksInGroup(group);
   }
 };
 

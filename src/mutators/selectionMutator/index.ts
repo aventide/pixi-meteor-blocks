@@ -4,6 +4,7 @@ import {
   getWorld,
   setSelectedFragmentOverlay,
 } from "../../world";
+import { getIsTouchDevice } from "../../util";
 import {
   createFileSelectionOverlay,
   getHoveredBlock,
@@ -13,7 +14,7 @@ import {
 
 type Visibility = "hover" | "press";
 
-const visibility: Visibility = "hover";
+const visibility: Visibility = getIsTouchDevice() ? "press" : "hover";
 let selectedBlock: Block | null = null;
 
 const selectionMutator = (allSelectionFileFragments: FileFragment[]) => {
@@ -67,7 +68,7 @@ const selectionMutator = (allSelectionFileFragments: FileFragment[]) => {
         );
       }
 
-      if (globalPointerDown) {
+      if (globalPointerDown && !selectedBlock) {
         selectedBlock = hoveredBlock;
       }
     }

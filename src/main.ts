@@ -41,8 +41,13 @@ import { loadTextures } from "./textures";
   initializeStage(app.stage);
 
   document.getElementById("pixi-container")!.appendChild(app.canvas);
+  const clearGlobalPointerDown = () => {
+    setGlobalPointerDown(false);
+  };
+
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
+      clearGlobalPointerDown();
       app.stop();
     } else {
       app.start();
@@ -52,12 +57,17 @@ import { loadTextures } from "./textures";
   // pointer events
   app.stage.eventMode = "static";
   app.stage.hitArea = app.screen;
-  app.stage.addEventListener("pointerdown", () => {
+  app.stage.addEventListener("pointerdown", (e) => {
+    // needed for mobile/touch
+    const rect = app.canvas.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * app.screen.width;
+    const y = ((e.clientY - rect.top) / rect.height) * app.screen.height;
+    setGlobalPointer({ x, y });
     setGlobalPointerDown(true);
   });
-  window.addEventListener("pointerup", () => {
-    setGlobalPointerDown(false);
-  });
+  window.addEventListener("pointerup", clearGlobalPointerDown);
+  window.addEventListener("pointercancel", clearGlobalPointerDown);
+  window.addEventListener("blur", clearGlobalPointerDown);
   window.addEventListener("pointermove", (e) => {
     const rect = app.canvas.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * app.screen.width;
