@@ -54,6 +54,10 @@ import { loadTextures } from "./textures";
     }
   });
 
+  app.canvas.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+  });
+
   // pointer events
   app.stage.eventMode = "static";
   app.stage.hitArea = app.screen;
