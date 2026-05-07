@@ -5,6 +5,7 @@ import {
   BlockSequence,
   FileFragment,
   mergeBlockGroups,
+  sortBlocksAscending,
 } from "../../entities";
 import { getBurnedTexture } from "../../textures";
 import { getBlockSize } from "../../world";
@@ -152,7 +153,9 @@ export const getBlocksAboveInFileFragment = (
   block: Block,
   fileFragment: FileFragment,
 ): Block[] => {
-  const blockIndex = fileFragment.blocks.findIndex(
+  // use current sprite positions - fragment order can be stale after swaps.
+  const sortedBlocks = sortBlocksAscending([...fileFragment.blocks]);
+  const blockIndex = sortedBlocks.findIndex(
     (fragmentBlock) => fragmentBlock.sprite.uid === block.sprite.uid,
   );
 
@@ -160,7 +163,7 @@ export const getBlocksAboveInFileFragment = (
     return [];
   }
 
-  return fileFragment.blocks.slice(0, blockIndex + 1);
+  return sortedBlocks.slice(0, blockIndex + 1);
 };
 
 export const getBlocksByGroupId = (
