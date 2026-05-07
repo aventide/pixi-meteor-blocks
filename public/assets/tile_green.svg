@@ -1,23 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" version="1.1">
-  <title>Minimalist Green Tile</title>
-  <desc>Square, flat-colored green tile with a geometric diamond emblem. Few colors, hard edges, no gradients.</desc>
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" shape-rendering="geometricPrecision">
+  <title>Grass Element Tile</title>
+  <desc>Green elemental block with grass blades and a clear white sprout symbol.</desc>
 
-  <!-- Palette:
-       Base Green: #2FAF60
-       Dark Green: #165A35 (border)
-       Ivory:      #F2E9E4 (emblem)
-  -->
+  <rect width="128" height="128" rx="10" fill="#37A85E"/>
+  <path d="M10 10 H118 V118 H10 Z" fill="none" stroke="#165A35" stroke-width="4"/>
+  <path d="M10 10 H118 V28 H10 Z" fill="#67D57B" opacity="0.38"/>
+  <path d="M10 102 H118 V118 H10 Z" fill="#227542" opacity="0.5"/>
 
-  <!-- Base tile -->
-  <rect x="0" y="0" width="128" height="128" fill="#2FAF60"/>
+  <g stroke-linecap="round" stroke-width="4" opacity="0.42">
+    <path d="M17 110 C20 96 27 86 37 79" stroke="#B8F283"/>
+    <path d="M34 112 C36 94 43 79 56 68" stroke="#1F6E3D"/>
+    <path d="M92 113 C89 95 80 83 68 75" stroke="#B8F283"/>
+    <path d="M111 110 C107 96 101 87 91 80" stroke="#1F6E3D"/>
+    <path d="M10 79 C19 71 29 67 42 67" stroke="#B8F283" opacity="0.55"/>
+    <path d="M85 35 C97 26 108 24 119 29" stroke="#1F6E3D" opacity="0.55"/>
+  </g>
 
-  <!-- 1px hard border for crisp edges -->
-  <rect x="0" y="0" width="128" height="1" fill="#165A35"/>
-  <rect x="0" y="127" width="128" height="1" fill="#165A35"/>
-  <rect x="0" y="0" width="1" height="128" fill="#165A35"/>
-  <rect x="127" y="0" width="1" height="128" fill="#165A35"/>
-
-  <!-- Central emblem: solid white dot replacing previous diamond -->
-  <circle cx="64" cy="64" r="19" fill="#FFFFFF"/>
+  <g transform="translate(64 66)">
+    <path d="M-6 42 V1" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round"/>
+    <path d="M-4 -1 C-30 -4 -43 -22 -42 -43 C-18 -42 -2 -27 -4 -1 Z" fill="#FFFFFF"/>
+    <path d="M1 1 C27 -3 43 -20 45 -42 C19 -44 2 -27 1 1 Z" fill="#FFFFFF"/>
+    <path d="M-25 -31 C-14 -26 -8 -17 -5 -4" fill="none" stroke="#B8F283" stroke-width="5" stroke-linecap="round" opacity="0.9"/>
+    <path d="M27 -31 C16 -25 8 -16 2 -3" fill="none" stroke="#B8F283" stroke-width="5" stroke-linecap="round" opacity="0.9"/>
+  </g>
 </svg>

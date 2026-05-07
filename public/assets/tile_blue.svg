@@ -1,23 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" version="1.1">
-  <title>Minimalist Blue Tile</title>
-  <desc>Square, flat-colored blue tile with a geometric emblem. Few colors, hard edges, no gradients.</desc>
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" shape-rendering="geometricPrecision">
+  <title>Water Element Tile</title>
+  <desc>Blue elemental block with wave texture and a clear white water drop symbol.</desc>
 
-  <!-- Palette:
-       Base Blue:  #2F6DF6
-       Dark Blue:  #1C3A7A (border)
-       Ivory:      #F2E9E4 (emblem)
-  -->
+  <rect width="128" height="128" rx="10" fill="#2674D9"/>
+  <path d="M10 10 H118 V118 H10 Z" fill="none" stroke="#143B79" stroke-width="4"/>
+  <path d="M10 10 H118 V28 H10 Z" fill="#4DA5FF" opacity="0.45"/>
+  <path d="M10 102 H118 V118 H10 Z" fill="#164D9B" opacity="0.5"/>
 
-  <!-- Base tile -->
-  <rect x="0" y="0" width="128" height="128" fill="#2F6DF6"/>
+  <g fill="none" stroke-linecap="round" stroke-width="4" opacity="0.38">
+    <path d="M12 35 C24 25 36 25 48 35 C60 45 72 45 84 35 C96 25 108 25 120 35" stroke="#8ED7FF"/>
+    <path d="M8 89 C21 78 34 78 47 89 C60 100 73 100 86 89 C99 78 112 78 125 89" stroke="#0D326E"/>
+    <path d="M20 108 C32 99 44 99 56 108 C68 117 80 117 92 108 C104 99 116 99 128 108" stroke="#8ED7FF" opacity="0.55"/>
+  </g>
 
-  <!-- 1px hard border for crisp edges -->
-  <rect x="0" y="0" width="128" height="1" fill="#1C3A7A"/>
-  <rect x="0" y="127" width="128" height="1" fill="#1C3A7A"/>
-  <rect x="0" y="0" width="1" height="128" fill="#1C3A7A"/>
-  <rect x="127" y="0" width="1" height="128" fill="#1C3A7A"/>
-
-  <!-- Central emblem: solid white dot replacing previous diamond -->
-  <circle cx="64" cy="64" r="19" fill="#FFFFFF"/>
+  <g transform="translate(64 65)">
+    <path d="M0 -45 C19 -21 32 -4 32 17 C32 37 18 50 0 50 C-18 50 -32 37 -32 17 C-32 -4 -19 -21 0 -45 Z" fill="#FFFFFF"/>
+    <path d="M-10 -10 C-3 -20 8 -27 16 -30 C8 -14 13 -7 20 4" fill="none" stroke="#8ED7FF" stroke-width="8" stroke-linecap="round" opacity="0.85"/>
+    <path d="M-14 23 C-7 31 7 34 17 24" fill="none" stroke="#8ED7FF" stroke-width="6" stroke-linecap="round" opacity="0.8"/>
+  </g>
 </svg>

@@ -1,52 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" version="1.1">
-  <title>Minimalist Grey Tile</title>
-  <desc>Square, flat-colored grey tile with a full-block white crack pattern. Few colors, hard edges, no gradients.</desc>
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" shape-rendering="geometricPrecision">
+  <title>Burned Tile</title>
+  <desc>Charred block with ash, ember glow, and jagged white cracks.</desc>
 
-  <!-- Palette:
-       Base Grey:  #7B8088
-       Dark Grey:  #2F333A (border)
-       White:      #FFFFFF (cracks)
-  -->
+  <rect width="128" height="128" rx="10" fill="#4E5358"/>
+  <path d="M10 10 H118 V118 H10 Z" fill="none" stroke="#202328" stroke-width="4"/>
+  <path d="M10 10 H118 V30 H10 Z" fill="#777D83" opacity="0.32"/>
+  <path d="M10 98 H118 V118 H10 Z" fill="#2C3035" opacity="0.55"/>
 
-  <!-- Base tile -->
-  <rect x="0" y="0" width="128" height="128" fill="#7B8088"/>
+  <g opacity="0.3">
+    <path d="M17 25 L34 18 L48 31 L66 18 L82 29 L103 20 L116 32 V118 H10 V40 Z" fill="#2E3236"/>
+    <path d="M12 84 C28 72 44 72 60 84 C76 96 94 94 116 77" fill="none" stroke="#6B7076" stroke-width="8" stroke-linecap="round"/>
+  </g>
 
-  <!-- 1px hard border for crisp edges -->
-  <rect x="0" y="0" width="128" height="1" fill="#2F333A"/>
-  <rect x="0" y="127" width="128" height="1" fill="#2F333A"/>
-  <rect x="0" y="0" width="1" height="128" fill="#2F333A"/>
-  <rect x="127" y="0" width="1" height="128" fill="#2F333A"/>
+  <g fill="#F0782A" opacity="0.65">
+    <circle cx="29" cy="96" r="4"/>
+    <circle cx="85" cy="100" r="3"/>
+    <circle cx="103" cy="54" r="3"/>
+    <circle cx="45" cy="43" r="2.5"/>
+  </g>
 
-  <!-- Crack pattern (white), clipped to inner area so it doesn't overwrite the border -->
-  <g clip-path="url(#innerClip)" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="square" stroke-linejoin="miter">
-    <!-- Main branching crack running roughly top-left to bottom-right -->
-    <path d="M 18 18 L 34 28 L 44 40 L 58 52 L 72 66 L 88 82 L 104 98 L 112 112"/>
+  <g clip-path="url(#innerClip)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M16 20 L35 36 L49 54 L64 67 L82 84 L108 105" stroke="#FFFFFF" stroke-width="4"/>
+    <path d="M49 54 L36 60 L22 76" stroke="#FFFFFF" stroke-width="3.5"/>
+    <path d="M64 67 L56 49 L54 31" stroke="#FFFFFF" stroke-width="3.5"/>
+    <path d="M82 84 L70 101 L60 117" stroke="#FFFFFF" stroke-width="3.5"/>
+    <path d="M88 34 L75 46 L64 67" stroke="#FFFFFF" stroke-width="3.5"/>
+    <path d="M102 55 L88 64 L74 71" stroke="#FFFFFF" stroke-width="3" opacity="0.9"/>
+    <path d="M24 104 L42 96 L58 91 L77 82" stroke="#FFFFFF" stroke-width="3" opacity="0.9"/>
+    <path d="M34 14 L30 30 L28 45" stroke="#FFFFFF" stroke-width="3" opacity="0.85"/>
+    <path d="M112 80 L101 87 L91 94" stroke="#FFFFFF" stroke-width="3" opacity="0.85"/>
+  </g>
 
-    <!-- Branches off the main crack -->
-    <path d="M 44 40 L 38 52 L 30 64"/>
-    <path d="M 58 52 L 52 44 L 46 34"/>
-    <path d="M 72 66 L 78 56 L 86 46"/>
-    <path d="M 88 82 L 80 92 L 72 104"/>
-    <path d="M 104 98 L 110 86 L 114 74"/>
-
-    <!-- Secondary cracks for a boulder-like fractured look -->
-    <path d="M 24 92 L 38 86 L 52 82 L 66 78 L 82 70"/>
-    <path d="M 30 30 L 26 44 L 22 58 L 20 72"/>
-    <path d="M 96 28 L 86 34 L 76 44 L 66 56"/>
-    <path d="M 98 116 L 92 104 L 88 96"/>
-    <path d="M 56 112 L 54 98 L 50 90 L 44 82"/>
-
-    <!-- Small fissures -->
-    <path d="M 64 18 L 60 28 L 62 38"/>
-    <path d="M 18 64 L 30 66 L 40 70"/>
-    <path d="M 110 60 L 98 62 L 88 66"/>
+  <g stroke="#101215" stroke-width="2" stroke-linecap="round" opacity="0.35">
+    <path d="M18 21 L35 36 L49 54 L64 67 L82 84 L108 105"/>
+    <path d="M49 54 L36 60 L22 76"/>
+    <path d="M64 67 L56 49 L54 31"/>
   </g>
 
   <defs>
-    <!-- Clip to the inside of the 1px border -->
     <clipPath id="innerClip">
-      <rect x="1" y="1" width="126" height="126"/>
+      <rect x="10" y="10" width="108" height="108" rx="6"/>
     </clipPath>
   </defs>
 </svg>

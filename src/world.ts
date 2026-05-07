@@ -15,11 +15,15 @@ import {
 import { Container, Sprite } from "pixi.js";
 
 export type WorldStage = Container & {
+  backgroundLayer: Container;
+  particlesLayer: Container;
   blocksLayer: Container;
   overlayLayer: Container;
 };
 
 export type StageLayers = {
+  backgroundLayer: Container;
+  particlesLayer: Container;
   blocksLayer: Container;
   overlayLayer: Container;
 };
@@ -47,6 +51,8 @@ const world: World = {
   width: 0,
   stage: null,
   stageLayers: {
+    backgroundLayer: new Container(),
+    particlesLayer: new Container(),
     blocksLayer: new Container(),
     overlayLayer: new Container(),
   },
@@ -127,6 +133,22 @@ export const addToStage = (sprite: Sprite | Container) => {
   }
 };
 
+export const addToBackgroundLayer = (sprite: Sprite | Container) => {
+  if (world.stage) {
+    world.stageLayers.backgroundLayer.addChild(sprite);
+  } else {
+    throw "There is no background layer to add this sprite to";
+  }
+};
+
+export const addToParticlesLayer = (sprite: Sprite | Container) => {
+  if (world.stage) {
+    world.stageLayers.particlesLayer.addChild(sprite);
+  } else {
+    throw "There is no particles layer to add this sprite to";
+  }
+};
+
 export const addToBlocksLayer = (sprite: Sprite | Container) => {
   if (world.stage) {
     world.stageLayers.blocksLayer.addChild(sprite);
@@ -153,6 +175,8 @@ export const initializeStage = (stage: Container) => {
   // add our currently-empty layers to the stage
   // ORDER MATTERS HERE
   world.stage.addChild(
+    world.stageLayers.backgroundLayer,
+    world.stageLayers.particlesLayer,
     world.stageLayers.blocksLayer,
     world.stageLayers.overlayLayer,
   );

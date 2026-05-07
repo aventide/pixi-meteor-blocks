@@ -23,14 +23,18 @@ import {
   DEFAULT_FILE_BLOCKS_LIMIT,
   DEFAULT_MAIN_TICKER_SPEED,
 } from "./constants";
-import { dangerAnimation } from "./animations";
+import {
+  backgroundAnimation,
+  dangerAnimation,
+  rocketTrailAnimation,
+} from "./animations";
 import { getAllSelectionFileFragments } from "./mutators/selectionMutator/util";
 import { loadTextures } from "./textures";
 
 (async () => {
   const app = new Application();
   await app.init({
-    background: "#1099bb",
+    backgroundAlpha: 0,
     autoDensity: true,
     resolution: Math.max(1, window.devicePixelRatio),
     resizeTo: document.getElementById("pixi-container") || window,
@@ -140,7 +144,9 @@ import { loadTextures } from "./textures";
 
     selectionMutator(allSelectionFileFragments);
     sequenceMutator(allSelectionFileFragments);
+    backgroundAnimation(dt);
     dangerAnimation(dt);
+    rocketTrailAnimation(dt);
 
     // check for losing state
     // @todo consider adding a 1-2 sec "tolerance" once file limit is reached
