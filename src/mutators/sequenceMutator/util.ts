@@ -10,13 +10,23 @@ import {
 import { getBurnedTexture } from "../../textures";
 import { getBlockSize } from "../../world";
 import { isClose } from "../../util";
-import { DEFAULT_FILE_COUNT } from "../../constants";
+import { DEFAULT_FILE_COUNT, DEFAULT_FLOAT_TOLERANCE } from "../../constants";
+
+const ROW_ALIGNMENT_TOLERANCE = 0.5;
+
+const getAreBlocksRowAligned = (blockA: Block, blockB: Block): boolean =>
+  isClose(
+    blockA.sprite.y,
+    blockB.sprite.y,
+    DEFAULT_FLOAT_TOLERANCE,
+    ROW_ALIGNMENT_TOLERANCE,
+  );
 
 export const getVerticalSequencesInFileFragment = (frag: FileFragment) => {
   const sequences: BlockSequence[] = [];
   let matchBuffer: BlockSequence = [];
 
-  for (const currentBlock of frag.blocks) {
+  for (const currentBlock of sortBlocksAscending([...frag.blocks])) {
     if (!getIsBlockMatchable(currentBlock)) {
       if (matchBuffer.length >= 3) sequences.push(matchBuffer);
       matchBuffer = [];
@@ -45,23 +55,24 @@ export const getHorizontalSequencesInSelectionFragments = (
   frags: FileFragment[],
 ) => {
   const sequences: BlockSequence[] = [];
-  const blocksByRow = new Map<number, Block[]>();
+  const blocksByRow: Block[][] = [];
   const blockSize = getBlockSize();
 
   for (const frag of frags) {
     for (const block of frag.blocks) {
-      const rowKey = Math.round(block.sprite.y);
-      const existingRowBlocks = blocksByRow.get(rowKey);
+      const existingRowBlocks = blocksByRow.find(([rowBlock]) =>
+        getAreBlocksRowAligned(block, rowBlock),
+      );
 
       if (existingRowBlocks) {
         existingRowBlocks.push(block);
       } else {
-        blocksByRow.set(rowKey, [block]);
+        blocksByRow.push([block]);
       }
     }
   }
 
-  for (const rowBlocks of blocksByRow.values()) {
+  for (const rowBlocks of blocksByRow) {
     const blocksByFileNumber = new Map<number, Block>();
 
     rowBlocks.forEach((block) => {
@@ -92,15 +103,15 @@ export const getHorizontalSequencesInSelectionFragments = (
         currentBlock.sprite.x - previousBlock.sprite.x,
         blockSize,
       );
-      const isExactlyAlignedWithPreviousBlock = isClose(
-        currentBlock.sprite.y,
-        previousBlock.sprite.y,
+      const isAlignedWithPreviousBlock = getAreBlocksRowAligned(
+        currentBlock,
+        previousBlock,
       );
 
       if (
         currentBlockColor === previousBlockColor &&
         isAdjacentToPreviousBlock &&
-        isExactlyAlignedWithPreviousBlock
+        isAlignedWithPreviousBlock
       ) {
         matchBuffer.push(currentBlock);
       } else {
