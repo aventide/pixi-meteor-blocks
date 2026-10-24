@@ -1,6 +1,6 @@
 import { Container, Graphics } from "pixi.js";
 import { getScreenSize, uiRoot } from "../app";
-import { fade } from "../../ui/tween";
+import { tween, easeInOutSine } from "../../ui/tween";
 import { uiTheme } from "../../ui/theme";
 
 export interface Scene {
@@ -11,35 +11,38 @@ export interface Scene {
   resize(width: number, height: number): void;
 }
 
-// Owns the active scene and the curtain used to transition between scenes.
-// The curtain sits above everything (including the board) and blocks input
-// while a transition runs.
+// Owns the active scene and the shutter used to transition between scenes:
+// two blast-door panels close from the top and bottom, the scene swaps, and
+// they open again. The shutter sits above everything and blocks input.
 class SceneManager {
   private current: Scene | null = null;
   private readonly sceneLayer = new Container();
-  private readonly curtain = new Graphics();
+  private readonly shutter = new Container();
+  private readonly top = new Graphics();
+  private readonly bottom = new Graphics();
   private transitioning = false;
+  private height = 0;
 
   init() {
-    this.curtain.eventMode = "static";
-    this.curtain.alpha = 0;
-    this.curtain.visible = false;
-    uiRoot.addChild(this.sceneLayer, this.curtain);
+    this.shutter.eventMode = "static";
+    this.shutter.visible = false;
+    this.shutter.addChild(this.top, this.bottom);
+    uiRoot.addChild(this.sceneLayer, this.shutter);
     const { width, height } = getScreenSize();
-    this.drawCurtain(width, height);
+    this.drawShutter(width, height);
   }
 
   async goTo(next: Scene) {
     if (this.transitioning) return;
     this.transitioning = true;
-    this.curtain.visible = true;
+    this.shutter.visible = true;
 
     if (this.current) {
-      await fade(this.curtain, 1, uiTheme.durations.normal);
+      await this.animateShutter(0, 1, uiTheme.durations.normal + 60);
       this.current.exit();
       this.current.view.destroy({ children: true });
     } else {
-      this.curtain.alpha = 1;
+      this.setShutter(1);
     }
 
     this.current = next;
@@ -48,8 +51,8 @@ class SceneManager {
     next.resize(width, height);
     await next.enter();
 
-    await fade(this.curtain, 0, uiTheme.durations.slow);
-    this.curtain.visible = false;
+    await this.animateShutter(1, 0, uiTheme.durations.slow);
+    this.shutter.visible = false;
     this.transitioning = false;
   }
 
@@ -58,12 +61,83 @@ class SceneManager {
   }
 
   resize(width: number, height: number) {
-    this.drawCurtain(width, height);
+    this.drawShutter(width, height);
     this.current?.resize(width, height);
   }
 
-  private drawCurtain(width: number, height: number) {
-    this.curtain.clear().rect(0, 0, width, height).fill(0x000000);
+  // closed = 0 (open) .. 1 (fully closed)
+  private setShutter(closed: number) {
+    const half = this.height / 2;
+    this.top.y = -half * (1 - closed);
+    this.bottom.y = half * (1 - closed);
+  }
+
+  private animateShutter(from: number, to: number, duration: number) {
+    return new Promise<void>((resolve) => {
+      tween({
+        duration,
+        ease: easeInOutSine,
+        onUpdate: (t) => this.setShutter(from + (to - from) * t),
+        onComplete: resolve,
+      });
+    });
+  }
+
+  private drawShutter(width: number, height: number) {
+    this.height = height;
+    const half = height / 2;
+    const accent = uiTheme.colors.accent;
+    const notch = Math.min(width * 0.18, 70);
+    // Each door has a chamfered notch at the seam and a glowing edge line.
+    this.top
+      .clear()
+      .poly([
+        0,
+        0,
+        width,
+        0,
+        width,
+        half,
+        width / 2 + notch,
+        half,
+        width / 2 + notch - 12,
+        half - 10,
+        width / 2 - notch + 12,
+        half - 10,
+        width / 2 - notch,
+        half,
+        0,
+        half,
+      ])
+      .fill(0x050a1c)
+      .rect(0, half - 3, width / 2 - notch, 2)
+      .rect(width / 2 + notch, half - 3, width / 2 - notch, 2)
+      .fill({ color: accent, alpha: 0.9 });
+    this.bottom
+      .clear()
+      .poly([
+        0,
+        half,
+        width / 2 - notch,
+        half,
+        width / 2 - notch + 12,
+        half + 10,
+        width / 2 + notch - 12,
+        half + 10,
+        width / 2 + notch,
+        half,
+        width,
+        half,
+        width,
+        height,
+        0,
+        height,
+      ])
+      .fill(0x050a1c)
+      .rect(0, half + 1, width / 2 - notch, 2)
+      .rect(width / 2 + notch, half + 1, width / 2 - notch, 2)
+      .fill({ color: accent, alpha: 0.9 });
+    this.setShutter(this.shutter.visible ? 1 : 0);
   }
 }
 

@@ -56,7 +56,7 @@ export class Modal extends Container {
       actions.length * buttonHeight +
       (actions.length - 1) * buttonGap +
       uiTheme.space.xl * s;
-    const panelWidth = Math.min(width - uiTheme.space.lg * 2, 320 * s);
+    const panelWidth = Math.min(width - uiTheme.space.lg * 2, 330 * s);
 
     const panel = new Panel({
       width: panelWidth,
@@ -68,6 +68,7 @@ export class Modal extends Container {
     const heading = new Label(title, {
       variant: "heading",
       color: titleColor ?? uiTheme.colors.text,
+      glow: titleColor ?? accent ?? uiTheme.colors.accent,
       scale: s,
     });
     heading.y = -panelHeight / 2 + uiTheme.space.xl * s;
@@ -90,8 +91,9 @@ export class Modal extends Container {
         label: action.label,
         onPress: action.onPress,
         variant: action.variant ?? "primary",
-        width: Math.min(240, (panelWidth - uiTheme.space.lg * 2 * s) / s),
+        width: Math.min(250, (panelWidth - uiTheme.space.lg * 2 * s) / s),
         scale: s,
+        accent,
       });
       button.y = y;
       panel.content.addChild(button);

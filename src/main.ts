@@ -20,6 +20,7 @@ import {
 import { sceneManager } from "./game/scenes/SceneManager";
 import { TitleScene } from "./game/scenes/TitleScene";
 import { planets } from "./config/planets";
+import { loadFonts } from "./ui/fonts";
 
 (async () => {
   const app = new Application();
@@ -103,6 +104,7 @@ import { planets } from "./config/planets";
     Object.assign(globalThis, { __PIXI_APP__: app, __DEMO__: { planets } });
   }
 
+  await loadFonts();
   sceneManager.init();
   app.ticker.add((time) => sceneManager.update(time.deltaMS / 1000));
   app.renderer.on("resize", (width: number, height: number) =>

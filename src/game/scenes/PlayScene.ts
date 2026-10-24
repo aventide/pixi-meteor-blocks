@@ -228,7 +228,12 @@ export class PlayScene implements Scene {
   private openModal(options: ConstructorParameters<typeof Modal>[0]) {
     this.closeModal();
     const { width, height } = getScreenSize();
-    this.modal = new Modal(options, width, height);
+    const { palette } = getActivePlanet().theme;
+    this.modal = new Modal(
+      { accent: palette.accent, panelColor: palette.uiPanel, ...options },
+      width,
+      height,
+    );
     this.view.addChild(this.modal);
     this.modal.show();
   }
@@ -290,6 +295,7 @@ export class PlayScene implements Scene {
       width: 48,
       height: 44,
       scale: s * 0.85,
+      accent: planet.theme.palette.accent,
       onPress: () => this.pause(),
     });
     pause.position.set(

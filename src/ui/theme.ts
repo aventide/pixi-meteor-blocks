@@ -1,28 +1,29 @@
-// Central interface styling. D06 restyles the game by editing this file.
+// Central interface styling (Meteos-inspired "space tech" look).
+// Restyle the game by editing this file.
 
 export const uiTheme = {
-  fontFamily: ["Trebuchet MS", "Segoe UI", "system-ui", "sans-serif"],
-  displayFontFamily: ["Trebuchet MS", "Segoe UI", "system-ui", "sans-serif"],
+  fontFamily: ["Exo 2", "Trebuchet MS", "system-ui", "sans-serif"],
+  displayFontFamily: ["Orbitron", "Exo 2", "Trebuchet MS", "sans-serif"],
   colors: {
     text: 0xffffff,
-    textMuted: 0xb9c6e4,
-    panel: 0x141c33,
-    panelStroke: 0x3d4f80,
-    scrim: 0x050814,
-    button: 0x3b6cff,
-    buttonHover: 0x5784ff,
-    buttonPressed: 0x2c55d6,
-    buttonSecondary: 0x2a3556,
-    buttonSecondaryHover: 0x36446d,
-    buttonSecondaryPressed: 0x222b47,
+    textMuted: 0xa9c4ec,
+    accent: 0x46d2ff, // default accent when no planet is active
+    panel: 0x081233,
+    scrim: 0x02050f,
+    buttonTop: 0x7fe6ff,
+    buttonBottom: 0x1d63e8,
+    buttonPressedTop: 0x4cbfe8,
+    buttonPressedBottom: 0x1548b8,
+    buttonSecondary: 0x0d1a3d,
     buttonText: 0xffffff,
-    win: 0x7fe3a0,
-    lose: 0xff7a7a,
-    progressTrack: 0x0c1226,
+    buttonTextShadow: 0x061538,
+    win: 0x7dffb0,
+    lose: 0xff6f7d,
+    progressTrack: 0x050b1f,
   },
-  radius: { small: 8, medium: 14, large: 22 },
+  chamfer: { small: 8, medium: 14, large: 22 },
   space: { xs: 4, sm: 8, md: 16, lg: 24, xl: 40 },
-  type: { title: 44, heading: 28, body: 18, small: 14, button: 20 },
+  type: { title: 44, heading: 24, body: 17, small: 13, button: 17 },
   minTouchTarget: 44,
   durations: { fast: 120, normal: 220, slow: 400 },
 };
