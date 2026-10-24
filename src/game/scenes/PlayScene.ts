@@ -65,6 +65,7 @@ export class PlayScene implements Scene {
   private shakeAmplitude = 0;
   private launched = 0;
   private hud: Hud | null = null;
+  private boardSize: { width: number; height: number } | null = null;
   private fastDrop: FastDropBar | null = null;
   private intro: IntroCard | null = null;
   private modal: Modal | null = null;
@@ -90,14 +91,13 @@ export class PlayScene implements Scene {
     const boardHeight =
       height - hudHeight - getFastDropBarHeight(width, height);
     const boardWidth = width;
-    const boardX = 0;
-    worldRoot.position.set(boardX, hudHeight);
+    this.boardSize = { width: boardWidth, height: boardHeight };
     setWorldDimensions(boardHeight, boardWidth);
     worldRoot.visible = true;
 
     this.background = getActivePlanet().theme.createBackground(width, height);
-    this.background.view.position.set(-boardX, -hudHeight);
     addToBackgroundLayer(this.background.view);
+    this.layoutBoard(width, height);
     addToBackgroundLayer(
       createBoardFrame(
         boardWidth,
@@ -137,6 +137,8 @@ export class PlayScene implements Scene {
     resetWorld();
     worldRoot.visible = false;
     worldRoot.position.set(0, 0);
+    worldRoot.scale.set(1);
+    this.boardSize = null;
     worldRoot.pivot.set(0, 0);
   }
 
@@ -172,12 +174,37 @@ export class PlayScene implements Scene {
   }
 
   resize(width: number, height: number) {
-    // The board keeps the size it started the run with (the engine positions
-    // blocks in absolute pixels); only the interface reflows.
-    this.background?.resize(width, height);
+    this.layoutBoard(width, height);
     this.layoutHud(width, height);
     if (this.intro) this.showIntro(width, height, false);
     this.modal?.layout(width, height);
+  }
+
+  // The engine positions blocks in absolute pixels and derives the stack
+  // limit from the board size, so the board keeps its run-start (logical)
+  // size. On resize it is scaled uniformly to fit between the HUD and the
+  // fast-drop bar and centered; the planet background fills the gutters.
+  private layoutBoard(width: number, height: number) {
+    if (!this.boardSize) return;
+    const top = getHudHeight(width, height);
+    const availableWidth = width;
+    const availableHeight = height - top - getFastDropBarHeight(width, height);
+    const scale = Math.min(
+      availableWidth / this.boardSize.width,
+      availableHeight / this.boardSize.height,
+    );
+    const x = (availableWidth - this.boardSize.width * scale) / 2;
+    const y = top + (availableHeight - this.boardSize.height * scale) / 2;
+    worldRoot.scale.set(scale);
+    worldRoot.position.set(x, y);
+
+    // The background lives inside the board's layers; undo the board's
+    // transform so it still covers the whole canvas.
+    if (this.background) {
+      this.background.resize(width, height);
+      this.background.view.scale.set(1 / scale);
+      this.background.view.position.set(-x / scale, -y / scale);
+    }
   }
 
   private showIntro(width: number, height: number, animate = true) {

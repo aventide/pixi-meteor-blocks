@@ -1,6 +1,7 @@
 import { Application } from "pixi.js";
 
 import {
+  getWorld,
   setGlobalPointer,
   setGlobalPointerDown,
   setWorldDimensions,
@@ -11,7 +12,7 @@ import {
   DEFAULT_MAIN_TICKER_SPEED,
 } from "./constants";
 import {
-  getBoardOffset,
+  toBoardPoint,
   isBoardInputEnabled,
   setApp,
   uiRoot,
@@ -76,11 +77,10 @@ import { FpsMeter } from "./ui/FpsMeter";
     boardPointerId = e.pointerId;
     // needed for mobile/touch
     const rect = app.canvas.getBoundingClientRect();
-    const offset = getBoardOffset();
-    const x =
-      ((e.clientX - rect.left) / rect.width) * app.screen.width - offset.x;
-    const y =
-      ((e.clientY - rect.top) / rect.height) * app.screen.height - offset.y;
+    const { x, y } = toBoardPoint(
+      ((e.clientX - rect.left) / rect.width) * app.screen.width,
+      ((e.clientY - rect.top) / rect.height) * app.screen.height,
+    );
     setGlobalPointer({ x, y });
     setGlobalPointerDown(true);
   });
@@ -96,11 +96,10 @@ import { FpsMeter } from "./ui/FpsMeter";
       return;
     }
     const rect = app.canvas.getBoundingClientRect();
-    const offset = getBoardOffset();
-    const x =
-      ((e.clientX - rect.left) / rect.width) * app.screen.width - offset.x;
-    const y =
-      ((e.clientY - rect.top) / rect.height) * app.screen.height - offset.y;
+    const { x, y } = toBoardPoint(
+      ((e.clientX - rect.left) / rect.width) * app.screen.width,
+      ((e.clientY - rect.top) / rect.height) * app.screen.height,
+    );
     setGlobalPointer({ x, y });
   });
 
@@ -121,7 +120,10 @@ import { FpsMeter } from "./ui/FpsMeter";
 
   if (import.meta.env.DEV) {
     // Dev-only hooks for Pixi devtools and automated checks.
-    Object.assign(globalThis, { __PIXI_APP__: app, __DEMO__: { planets } });
+    Object.assign(globalThis, {
+      __PIXI_APP__: app,
+      __DEMO__: { planets, getWorld },
+    });
   }
 
   await loadFonts();

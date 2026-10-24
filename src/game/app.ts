@@ -35,4 +35,14 @@ export const setBoardInputEnabled = (enabled: boolean) => {
 
 export const isBoardInputEnabled = () => board.enabled;
 
-export const getBoardOffset = () => ({ x: worldRoot.x, y: worldRoot.y });
+// The board keeps its run-start (logical) size and is scaled to fit the
+// space between the HUD and the fast-drop bar when the window resizes.
+// Convert canvas coordinates into board coordinates (the shake pivot is
+// deliberately ignored so input stays steady during a shake).
+export const toBoardPoint = (canvasX: number, canvasY: number) => {
+  const scale = worldRoot.scale.x || 1;
+  return {
+    x: (canvasX - worldRoot.x) / scale,
+    y: (canvasY - worldRoot.y) / scale,
+  };
+};
