@@ -1,0 +1,32 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <title>Ocean burned tile</title>
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#a39d92"/>
+      <stop offset="0.5" stop-color="#7b766d"/>
+      <stop offset="1" stop-color="#4f4b45"/>
+    </linearGradient>
+    <linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="caustic" cx="0.3" cy="0.85" r="0.6">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect x="2" y="2" width="124" height="124" rx="18" fill="#1e1c19"/>
+  <rect x="6" y="6" width="116" height="116" rx="15" fill="url(#body)"/>
+  <rect x="6" y="6" width="116" height="116" rx="15" fill="url(#caustic)"/>
+  <rect x="7.5" y="7.5" width="113" height="113" rx="14" fill="none" stroke="#8e887e" stroke-width="3"/>
+  <path d="M14 22 Q14 12 24 12 H104 Q114 12 114 22 V46 Q64 58 14 46 Z" fill="url(#gloss)"/>
+  <g fill="none" stroke="#2e2b27" stroke-linecap="round" stroke-linejoin="round" opacity="0.8">
+    <path d="M10 30 L22 36 L26 50" stroke-width="2.4"/>
+    <path d="M118 84 L104 90 L100 104 L106 116" stroke-width="2.4"/>
+    <path d="M104 90 L92 96" stroke-width="1.8"/>
+  </g>
+  <g fill="#3a3631" opacity="0.6"><circle cx="24" cy="98" r="2.2"/><circle cx="104" cy="22" r="1.8"/><circle cx="96" cy="70" r="1.6"/><circle cx="30" cy="70" r="1.4"/></g>
+  <g transform="translate(0 4)" opacity="0.35"><path d="M64 106 V74 M64 74 Q50 66 44 50 M44 50 Q40 40 32 34 M44 50 Q48 38 46 26 M64 74 Q78 66 84 52 M84 52 Q88 40 96 34 M84 52 Q80 40 82 28 M64 74 V56 Q64 46 66 38" fill="none" stroke="#3a362f" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="64" cy="106" rx="24" ry="8" fill="#3a362f"/></g>
+  <g><path d="M64 106 V74 M64 74 Q50 66 44 50 M44 50 Q40 40 32 34 M44 50 Q48 38 46 26 M64 74 Q78 66 84 52 M84 52 Q88 40 96 34 M84 52 Q80 40 82 28 M64 74 V56 Q64 46 66 38" fill="none" stroke="#3a362f" stroke-width="27" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="64" cy="106" rx="25" ry="9" fill="#3a362f"/></g>
+  <g><path d="M64 106 V74 M64 74 Q50 66 44 50 M44 50 Q40 40 32 34 M44 50 Q48 38 46 26 M64 74 Q78 66 84 52 M84 52 Q88 40 96 34 M84 52 Q80 40 82 28 M64 74 V56 Q64 46 66 38" fill="none" stroke="#ddd6c6" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="64" cy="106" rx="19" ry="4" fill="#ddd6c6"/><g fill="none" stroke="#4a443b" stroke-linecap="round" stroke-linejoin="round"><path d="M64 104 L62 92 L66 84 L63 76" stroke-width="2.6"/><path d="M44 50 L47 44 L44 38" stroke-width="2.2"/><path d="M84 52 L80 46 L84 40" stroke-width="2.2"/><path d="M57 70 L52 66" stroke-width="2"/></g></g>
+</svg>
