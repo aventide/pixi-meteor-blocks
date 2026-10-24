@@ -143,7 +143,7 @@ export const planets: Record<PlanetId, PlanetConfig> = {
       popVelocity: -6000,
     },
     spawn: { dropIntervalMs: 560 },
-    goal: { launchedBlocksToWin: 65 },
+    goal: { launchedBlocksToWin: 90 },
     theme: casinoTheme,
   },
 };
