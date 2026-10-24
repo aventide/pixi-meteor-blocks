@@ -1,0 +1,30 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <title>Casino red tile</title>
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ff8a7a"/>
+      <stop offset="0.5" stop-color="#e8323c"/>
+      <stop offset="1" stop-color="#9e0f1c"/>
+    </linearGradient>
+    <linearGradient id="face" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ff6f66"/>
+      <stop offset="1" stop-color="#c81a28"/>
+    </linearGradient>
+    <linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="124" height="124" rx="18" fill="#4f050c"/>
+  <rect x="6" y="6" width="116" height="116" rx="15" fill="url(#body)"/>
+  <rect x="7.5" y="7.5" width="113" height="113" rx="14" fill="none" stroke="#ffa89c" stroke-width="3"/>
+  <circle cx="64" cy="66" r="55" fill="#4f050c" opacity="0.35"/>
+  <circle cx="64" cy="64" r="55" fill="#b5141f" stroke="#4f050c" stroke-width="2.5"/>
+  <rect x="58" y="10.5" width="12" height="12" rx="2.5" fill="#fffaf0" stroke="#7a0a16" stroke-width="1.2" transform="rotate(22.5 64 64)"/><rect x="58" y="10.5" width="12" height="12" rx="2.5" fill="#fffaf0" stroke="#7a0a16" stroke-width="1.2" transform="rotate(67.5 64 64)"/><rect x="58" y="10.5" width="12" height="12" rx="2.5" fill="#fffaf0" stroke="#7a0a16" stroke-width="1.2" transform="rotate(112.5 64 64)"/><rect x="58" y="10.5" width="12" height="12" rx="2.5" fill="#fffaf0" stroke="#7a0a16" stroke-width="1.2" transform="rotate(157.5 64 64)"/><rect x="58" y="10.5" width="12" height="12" rx="2.5" fill="#fffaf0" stroke="#7a0a16" stroke-width="1.2" transform="rotate(202.5 64 64)"/><rect x="58" y="10.5" width="12" height="12" rx="2.5" fill="#fffaf0" stroke="#7a0a16" stroke-width="1.2" transform="rotate(247.5 64 64)"/><rect x="58" y="10.5" width="12" height="12" rx="2.5" fill="#fffaf0" stroke="#7a0a16" stroke-width="1.2" transform="rotate(292.5 64 64)"/><rect x="58" y="10.5" width="12" height="12" rx="2.5" fill="#fffaf0" stroke="#7a0a16" stroke-width="1.2" transform="rotate(337.5 64 64)"/>
+  <circle cx="64" cy="64" r="41" fill="#4f050c" opacity="0.45"/>
+  <circle cx="64" cy="64" r="39" fill="url(#face)" stroke="#ffa89c" stroke-width="2"/>
+  <circle cx="64" cy="64" r="34" fill="none" stroke="#ffffff" stroke-width="1.6" stroke-dasharray="4 4" opacity="0.55"/>
+  <path d="M14 24 Q14 12 26 12 H102 Q114 12 114 24 V44 Q64 58 14 44 Z" fill="url(#gloss)"/>
+  <path d="M64 90 C52 81 37 70 37 54 C37 44 44 37 52.5 37 C58 37 62 40 64 45 C66 40 70 37 75.5 37 C84 37 91 44 91 54 C91 70 76 81 64 90 Z" transform="translate(0 4) translate(64 64) scale(1.1) translate(-64 -63)" fill="#4f050c" stroke="#4f050c" stroke-width="8" stroke-linejoin="round" opacity="0.4"/>
+  <path d="M64 90 C52 81 37 70 37 54 C37 44 44 37 52.5 37 C58 37 62 40 64 45 C66 40 70 37 75.5 37 C84 37 91 44 91 54 C91 70 76 81 64 90 Z" transform="translate(64 64) scale(1.1) translate(-64 -63)" fill="#ffffff" stroke="#7a0a16" stroke-width="7" stroke-linejoin="round" paint-order="stroke"/>
+</svg>

@@ -123,15 +123,18 @@ export const planets: Record<PlanetId, PlanetConfig> = {
     id: "casino",
     name: "Casino",
     order: 4,
-    tagline: "One last launch for the jackpot.",
+    tagline: "Last stop. Launch big for the jackpot.",
+    // Finale: fastest spawns and biggest goal, moderate gravity, and a slightly
+    // stronger launch so big combos clear the faster stacks. See
+    // docs/planet-notes/casino.md.
     physics: {
-      gravity: 1100,
-      launchVelocity: -1400,
-      launchDescentRate: 220,
-      popVelocity: -6500,
+      gravity: 1050,
+      launchVelocity: -1300,
+      launchDescentRate: 210,
+      popVelocity: -6000,
     },
-    spawn: { dropIntervalMs: 500 },
-    goal: { launchedBlocksToWin: 100 },
+    spawn: { dropIntervalMs: 560 },
+    goal: { launchedBlocksToWin: 65 },
     theme: casinoTheme,
   },
 };
