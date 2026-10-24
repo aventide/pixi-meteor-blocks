@@ -1,0 +1,37 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <title>Desert burned tile</title>
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6e5a4a"/>
+      <stop offset="0.5" stop-color="#43362d"/>
+      <stop offset="1" stop-color="#231b16"/>
+    </linearGradient>
+    <radialGradient id="soot" cx="0.55" cy="0.6" r="0.6">
+      <stop offset="0" stop-color="#0c0806" stop-opacity="0.65"/>
+      <stop offset="1" stop-color="#0c0806" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect x="2" y="2" width="124" height="124" rx="16" fill="#120d0a"/>
+  <rect x="6" y="6" width="116" height="116" rx="13" fill="url(#body)"/>
+  <g fill="none" stroke="#120d0a" stroke-linecap="round" opacity="0.16" stroke-width="2.2"><path d="M10 84 Q40 80 64 85 T118 82"/><path d="M10 101 Q36 97 70 102 T118 99"/></g>
+  <g><circle cx="10.0" cy="112.8" r="1.3" fill="#120d0a" opacity="0.22"/><circle cx="88.8" cy="87.2" r="1.3" fill="#9c8670" opacity="0.3"/><circle cx="91.5" cy="87.8" r="1.9" fill="#9c8670" opacity="0.3"/><circle cx="98.2" cy="68.0" r="1.4" fill="#9c8670" opacity="0.3"/><circle cx="85.4" cy="55.6" r="1.9" fill="#120d0a" opacity="0.22"/><circle cx="109.6" cy="105.3" r="1.0" fill="#120d0a" opacity="0.22"/><circle cx="109.7" cy="97.4" r="1.8" fill="#120d0a" opacity="0.22"/><circle cx="108.5" cy="112.0" r="1.4" fill="#120d0a" opacity="0.22"/><circle cx="100.4" cy="73.9" r="1.0" fill="#120d0a" opacity="0.22"/><circle cx="56.3" cy="71.5" r="2.3" fill="#120d0a" opacity="0.22"/><circle cx="88.8" cy="109.9" r="0.9" fill="#120d0a" opacity="0.22"/><circle cx="70.5" cy="85.6" r="1.5" fill="#120d0a" opacity="0.22"/><circle cx="108.2" cy="55.6" r="1.4" fill="#120d0a" opacity="0.22"/><circle cx="81.8" cy="113.0" r="1.6" fill="#120d0a" opacity="0.22"/><circle cx="53.8" cy="70.7" r="1.4" fill="#120d0a" opacity="0.22"/><circle cx="45.9" cy="87.1" r="1.8" fill="#120d0a" opacity="0.22"/><circle cx="107.9" cy="82.2" r="2.2" fill="#9c8670" opacity="0.3"/><circle cx="78.5" cy="86.1" r="1.6" fill="#9c8670" opacity="0.3"/><circle cx="111.5" cy="78.2" r="1.9" fill="#120d0a" opacity="0.22"/><circle cx="73.4" cy="75.1" r="1.3" fill="#120d0a" opacity="0.22"/><circle cx="95.8" cy="109.9" r="1.0" fill="#9c8670" opacity="0.3"/><circle cx="18.4" cy="78.8" r="1.0" fill="#120d0a" opacity="0.22"/><circle cx="117.6" cy="66.5" r="1.8" fill="#120d0a" opacity="0.22"/><circle cx="59.4" cy="91.1" r="1.0" fill="#9c8670" opacity="0.3"/><circle cx="105.5" cy="110.8" r="2.2" fill="#9c8670" opacity="0.3"/><circle cx="92.2" cy="70.2" r="0.8" fill="#120d0a" opacity="0.22"/><circle cx="18.2" cy="52.1" r="1.8" fill="#120d0a" opacity="0.22"/><circle cx="90.0" cy="84.3" r="1.9" fill="#120d0a" opacity="0.22"/><circle cx="105.3" cy="67.5" r="1.4" fill="#9c8670" opacity="0.3"/><circle cx="22.8" cy="84.3" r="0.8" fill="#9c8670" opacity="0.3"/><circle cx="78.8" cy="112.9" r="0.8" fill="#9c8670" opacity="0.3"/><circle cx="30.3" cy="115.9" r="1.7" fill="#9c8670" opacity="0.3"/><circle cx="38.8" cy="66.7" r="1.1" fill="#120d0a" opacity="0.22"/><circle cx="15.7" cy="102.8" r="1.9" fill="#9c8670" opacity="0.3"/><circle cx="63.8" cy="54.2" r="1.0" fill="#9c8670" opacity="0.3"/><circle cx="24.1" cy="97.4" r="2.2" fill="#120d0a" opacity="0.22"/><circle cx="105.4" cy="108.9" r="2.4" fill="#9c8670" opacity="0.3"/><circle cx="92.6" cy="79.7" r="1.2" fill="#9c8670" opacity="0.3"/><circle cx="105.3" cy="78.3" r="1.2" fill="#120d0a" opacity="0.22"/><circle cx="105.8" cy="88.9" r="1.4" fill="#9c8670" opacity="0.3"/><circle cx="89.4" cy="74.1" r="2.0" fill="#120d0a" opacity="0.22"/><circle cx="31.5" cy="72.6" r="2.4" fill="#9c8670" opacity="0.3"/><circle cx="78.3" cy="109.6" r="2.3" fill="#120d0a" opacity="0.22"/><circle cx="79.7" cy="60.9" r="1.6" fill="#120d0a" opacity="0.22"/><circle cx="93.3" cy="114.4" r="1.6" fill="#120d0a" opacity="0.22"/><circle cx="58.2" cy="63.0" r="1.9" fill="#120d0a" opacity="0.22"/></g>
+  <rect x="6" y="6" width="116" height="116" rx="13" fill="url(#soot)"/>
+  <rect x="15" y="15" width="98" height="98" rx="7" fill="none" stroke="#0e0a08" stroke-opacity="0.4" stroke-width="2.5"/>
+  <rect x="7.5" y="7.5" width="113" height="113" rx="12" fill="none" stroke="#7d6a5a" stroke-width="2"/>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <g stroke="#a08a74" stroke-opacity="0.35" stroke-width="2" transform="translate(1.2 1.2)">
+      <path d="M22 30 L46 48 L40 70 L62 82 L58 106"/><path d="M46 48 L74 40 L92 22"/><path d="M62 82 L88 74 L106 90"/><path d="M40 70 L20 80"/><path d="M74 40 L80 60 L88 74"/>
+    </g>
+    <g stroke="#0a0705" stroke-width="5">
+      <path d="M22 30 L46 48 L40 70 L62 82 L58 106"/><path d="M46 48 L74 40 L92 22"/><path d="M62 82 L88 74 L106 90"/><path d="M40 70 L20 80"/><path d="M74 40 L80 60 L88 74"/>
+    </g>
+    <g stroke="#ff7a24" stroke-width="1.6" opacity="0.75" filter="url(#glow)">
+      <path d="M46 48 L40 70 L62 82"/><path d="M80 60 L88 74"/>
+    </g>
+  </g>
+  <g fill="#ffa040" opacity="0.7"><circle cx="54" cy="62" r="1.8"/><circle cx="92" cy="84" r="1.4"/></g>
+</svg>
