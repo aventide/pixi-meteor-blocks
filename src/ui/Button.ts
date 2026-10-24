@@ -166,7 +166,11 @@ export class Button extends Container {
           : c0.buttonBottom
         : lerpColor(this.accent, 0x000000, pressed ? 0.6 : 0.45);
       g.poly(pts).fill(
-        verticalGradient(hover ? lerpColor(top, 0xffffff, 0.2) : top, bottom),
+        verticalGradient(
+          g,
+          hover ? lerpColor(top, 0xffffff, 0.2) : top,
+          bottom,
+        ),
       );
       // Gloss band across the upper half.
       g.poly(
@@ -179,6 +183,7 @@ export class Button extends Container {
       const fill = uiTheme.colors.buttonSecondary;
       g.poly(pts).fill({
         fill: verticalGradient(
+          g,
           lerpColor(fill, 0xffffff, hover ? 0.18 : 0.1),
           fill,
         ),

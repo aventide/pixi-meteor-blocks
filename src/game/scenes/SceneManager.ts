@@ -3,6 +3,7 @@ import { getScreenSize, uiRoot } from "../app";
 import { tween, easeInOutSine } from "../../ui/tween";
 import { uiTheme } from "../../ui/theme";
 import { setGlobalPointerDown } from "../../world";
+import { Modal } from "../../ui/Modal";
 
 export interface Scene {
   readonly view: Container;
@@ -23,6 +24,7 @@ class SceneManager {
   private readonly bottom = new Graphics();
   private transitioning = false;
   private height = 0;
+  private loadError: Modal | null = null;
 
   init() {
     this.shutter.eventMode = "static";
@@ -54,8 +56,30 @@ class SceneManager {
     this.current = next;
     this.sceneLayer.addChild(next.view);
     const { width, height } = getScreenSize();
-    next.resize(width, height);
-    await next.enter();
+    this.loadError?.destroy({ children: true });
+    this.loadError = null;
+    try {
+      next.resize(width, height);
+      await next.enter();
+    } catch {
+      // Failed asset loads must release partial scenes and unlock the shutter.
+      this.current = null;
+      next.exit();
+      next.view.destroy({ children: true });
+      const size = getScreenSize();
+      this.loadError = new Modal(
+        {
+          title: "Unable to load",
+          message: "The scene could not load. Reload to try again.",
+          actions: [
+            { label: "Reload", onPress: () => window.location.reload() },
+          ],
+        },
+        size.width,
+        size.height,
+      );
+      this.sceneLayer.addChild(this.loadError);
+    }
 
     await this.animateShutter(1, 0, uiTheme.durations.slow);
     this.shutter.visible = false;
@@ -69,6 +93,7 @@ class SceneManager {
   resize(width: number, height: number) {
     this.drawShutter(width, height);
     this.current?.resize(width, height);
+    this.loadError?.layout(width, height);
   }
 
   // closed = 0 (open) .. 1 (fully closed)

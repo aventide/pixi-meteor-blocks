@@ -59,7 +59,7 @@ export class Label extends Text {
         ...base,
         fontSize,
         letterSpacing: (base.letterSpacing as number) * scale,
-        fill: gradient ? verticalGradient(gradient[0], gradient[1]) : color,
+        fill: color,
         align,
         wordWrap: wordWrapWidth !== undefined,
         wordWrapWidth,
@@ -78,6 +78,9 @@ export class Label extends Text {
             : undefined,
       },
     });
+    if (gradient) {
+      this.style.fill = verticalGradient(this, gradient[0], gradient[1]);
+    }
     this.anchor.set(align === "left" ? 0 : align === "right" ? 1 : 0.5, 0.5);
     this.eventMode = "none";
   }

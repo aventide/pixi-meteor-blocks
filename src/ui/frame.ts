@@ -1,4 +1,4 @@
-import { FillGradient, Graphics } from "pixi.js";
+import { type Container, FillGradient, Graphics } from "pixi.js";
 import { lerpColor } from "../themes/shared/color";
 
 // Chamfered "tech" shapes shared by panels, buttons, and the HUD. All shapes
@@ -24,8 +24,30 @@ export const chamferPoints = (w: number, h: number, c: number) => {
   ];
 };
 
-export const verticalGradient = (top: number, bottom: number) =>
-  new FillGradient({
+const gradientsByView = new WeakMap<Container, Map<string, FillGradient>>();
+
+// A view owns its generated textures. Reuse its small set of state colors on
+// redraw (e.g. button hover), then release all of them when the view exits.
+export const verticalGradient = (
+  owner: Container,
+  top: number,
+  bottom: number,
+) => {
+  let gradients = gradientsByView.get(owner);
+  if (!gradients) {
+    const owned = new Map<string, FillGradient>();
+    gradients = owned;
+    gradientsByView.set(owner, owned);
+    owner.once("destroyed", () => {
+      for (const gradient of owned.values()) gradient.destroy();
+      owned.clear();
+      gradientsByView.delete(owner);
+    });
+  }
+  const key = `${top}:${bottom}`;
+  const cached = gradients.get(key);
+  if (cached) return cached;
+  const gradient = new FillGradient({
     type: "linear",
     start: { x: 0, y: 0 },
     end: { x: 0, y: 1 },
@@ -35,6 +57,9 @@ export const verticalGradient = (top: number, bottom: number) =>
     ],
     textureSpace: "local",
   });
+  gradients.set(key, gradient);
+  return gradient;
+};
 
 type TechFrameOptions = {
   width: number;
@@ -61,7 +86,7 @@ export const drawTechFrame = (g: Graphics, o: TechFrameOptions) => {
 
   // Glass body: a vertical gradient, lighter at the top.
   g.poly(pts).fill({
-    fill: verticalGradient(lerpColor(o.fill, 0xffffff, 0.12), o.fill),
+    fill: verticalGradient(g, lerpColor(o.fill, 0xffffff, 0.12), o.fill),
     alpha: o.fillAlpha ?? 0.92,
   });
   g.poly(pts).stroke({ color: accent, width: 1.5 * s, alpha: 0.95 });

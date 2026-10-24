@@ -29,7 +29,11 @@ export class ProgressBar extends Container {
     const skew = h * 0.45;
     const gap = Math.max(1.5, h * 0.18);
     const cellW = (width - skew - gap * (n - 1)) / n;
-    const fill = verticalGradient(lerpColor(color, 0xffffff, 0.45), color);
+    const fill = verticalGradient(
+      this,
+      lerpColor(color, 0xffffff, 0.45),
+      color,
+    );
     for (let i = 0; i < n; i++) {
       const x = i * (cellW + gap);
       const pts = [

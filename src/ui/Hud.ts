@@ -49,6 +49,7 @@ export class Hud extends Container {
       .rect(0, 0, width, hudHeight)
       .fill(
         verticalGradient(
+          this.bar,
           lerpColor(uiPanel, 0xffffff, 0.1),
           lerpColor(uiPanel, 0x000000, 0.25),
         ),

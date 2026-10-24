@@ -13,7 +13,9 @@ const goalParam = Number.parseInt(params.get("goal") ?? "", 10);
 
 export const devParams = {
   planet:
-    planetParam && planetParam in planets ? (planetParam as PlanetId) : null,
+    planetParam && Object.prototype.hasOwnProperty.call(planets, planetParam)
+      ? (planetParam as PlanetId)
+      : null,
   fps: import.meta.env.DEV && params.get("fps") === "1",
   unlockAll: params.get("unlockAll") === "1",
   goal: Number.isFinite(goalParam) && goalParam > 0 ? goalParam : null,
