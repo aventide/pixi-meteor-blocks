@@ -25,6 +25,15 @@ The `vibe-coded-sprites` branch is reference-only: it shows the _idea_ of the
 launch animation (a flame plume trailing launched groups). No art or code from
 it is copied into `demo`; all demo art is made new.
 
+## Screenshots
+
+Per-ticket test screenshots were saved to `docs/demo-screenshots/` while the demo
+was built, and the ticket log below still refers to them by name. They were
+dropped from the branch history before the first push to keep the repo small
+(40 MB, 154 files), and that folder is now git-ignored. A small showcase set
+lives in `docs/media/`: `title.png`, `star-map.png`, `intro-casino.png`, and
+`play-<planet>.png` (a mid-launch shot of each planet).
+
 ## Engine changes
 
 | File                                          | Change                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Reason                                                                                                                                                                                         |

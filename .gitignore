@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Agent test screenshots (kept local; showcase shots live in docs/media)
+docs/demo-screenshots/
