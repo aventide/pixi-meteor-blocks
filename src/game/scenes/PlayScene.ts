@@ -1,7 +1,9 @@
 import { Container } from "pixi.js";
 import type { Scene } from "./SceneManager";
 import { sceneManager } from "./SceneManager";
-import { TitleScene } from "./TitleScene";
+import { StarMapScene } from "./StarMapScene";
+import { TripCompleteScene } from "./TripCompleteScene";
+import { markCleared } from "../progress";
 import {
   addToBackgroundLayer,
   getActivePlanet,
@@ -179,7 +181,7 @@ export class PlayScene implements Scene {
         { label: "Resume", onPress: () => this.resume() },
         { label: "Retry", variant: "secondary", onPress: () => this.retry() },
         {
-          label: "Quit to Title",
+          label: "Quit to Map",
           variant: "secondary",
           onPress: () => this.quit(),
         },
@@ -193,6 +195,7 @@ export class PlayScene implements Scene {
     this.updateCounter();
     if (this.launched >= getActivePlanet().goal.launchedBlocksToWin) {
       stopGameLoop();
+      markCleared(getActivePlanet().order);
       gameWon();
       this.endRun("won");
     }
@@ -221,17 +224,26 @@ export class PlayScene implements Scene {
         actions: [
           nextId
             ? {
-                label: `Fly to ${planets[nextId].name}`,
+                label: `On to ${planets[nextId].name}`,
                 onPress: () =>
-                  sceneManager.goTo(new PlayScene({ planetId: nextId })),
+                  sceneManager.goTo(
+                    new StarMapScene({ arrivedFrom: planet.order }),
+                  ),
               }
-            : { label: "Trip complete!", onPress: () => this.quit() },
+            : {
+                label: "Finish Trip",
+                onPress: () => sceneManager.goTo(new TripCompleteScene()),
+              },
           {
             label: "Replay",
             variant: "secondary",
             onPress: () => this.retry(),
           },
-          { label: "Title", variant: "secondary", onPress: () => this.quit() },
+          {
+            label: "Star Map",
+            variant: "secondary",
+            onPress: () => this.quit(),
+          },
         ],
       });
     } else {
@@ -241,7 +253,11 @@ export class PlayScene implements Scene {
         message: `The blocks piled too high. Launched ${this.launched} / ${goal}.`,
         actions: [
           { label: "Retry", onPress: () => this.retry() },
-          { label: "Title", variant: "secondary", onPress: () => this.quit() },
+          {
+            label: "Star Map",
+            variant: "secondary",
+            onPress: () => this.quit(),
+          },
         ],
       });
     }
@@ -252,7 +268,7 @@ export class PlayScene implements Scene {
   }
 
   private quit() {
-    void sceneManager.goTo(new TitleScene());
+    void sceneManager.goTo(new StarMapScene());
   }
 
   private openModal(options: ConstructorParameters<typeof Modal>[0]) {

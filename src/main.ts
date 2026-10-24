@@ -21,6 +21,8 @@ import { sceneManager } from "./game/scenes/SceneManager";
 import { TitleScene } from "./game/scenes/TitleScene";
 import { planets } from "./config/planets";
 import { loadFonts } from "./ui/fonts";
+import { applyDevOverrides, devParams } from "./game/devParams";
+import { PlayScene } from "./game/scenes/PlayScene";
 
 (async () => {
   const app = new Application();
@@ -110,5 +112,10 @@ import { loadFonts } from "./ui/fonts";
   app.renderer.on("resize", (width: number, height: number) =>
     sceneManager.resize(width, height),
   );
-  void sceneManager.goTo(new TitleScene());
+  applyDevOverrides();
+  void sceneManager.goTo(
+    devParams.planet
+      ? new PlayScene({ planetId: devParams.planet })
+      : new TitleScene(),
+  );
 })();

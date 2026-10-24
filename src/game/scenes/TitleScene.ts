@@ -1,7 +1,8 @@
 import { Assets, Container, Graphics, Sprite, type Texture } from "pixi.js";
 import type { Scene } from "./SceneManager";
 import { sceneManager } from "./SceneManager";
-import { PlayScene } from "./PlayScene";
+import { StarMapScene } from "./StarMapScene";
+import { getHighestCleared, resetProgress } from "../progress";
 import { Starfield } from "../../ui/Starfield";
 import { Label } from "../../ui/Label";
 import { Button } from "../../ui/Button";
@@ -159,11 +160,26 @@ export class TitleScene implements Scene {
 
     this.buttons.removeChildren().forEach((c) => c.destroy());
     this.startButton = new Button({
-      label: "Start Trip",
       scale: s * 1.1,
-      onPress: () => sceneManager.goTo(new PlayScene({ planetId: "earth" })),
+      label: getHighestCleared() >= 0 ? "Continue Trip" : "Start Trip",
+      onPress: () => sceneManager.goTo(new StarMapScene()),
     });
     this.buttons.addChild(this.startButton);
+    if (getHighestCleared() >= 0) {
+      const reset = new Button({
+        label: "Reset Progress",
+        variant: "secondary",
+        width: 250,
+        height: 40,
+        scale: s * 0.85,
+        onPress: () => {
+          resetProgress();
+          this.resize(width, height);
+        },
+      });
+      reset.y = 70 * s;
+      this.buttons.addChild(reset);
+    }
     this.buttons.position.set(width / 2, height * 0.7);
 
     if (this.tiles.length) this.spawnRockets();
