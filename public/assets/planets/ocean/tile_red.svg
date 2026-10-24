@@ -1,0 +1,26 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <title>Ocean red tile</title>
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ff9c8a"/>
+      <stop offset="0.5" stop-color="#f23a4c"/>
+      <stop offset="1" stop-color="#a4122e"/>
+    </linearGradient>
+    <linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="caustic" cx="0.3" cy="0.85" r="0.6">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect x="2" y="2" width="124" height="124" rx="18" fill="#5a0614"/>
+  <rect x="6" y="6" width="116" height="116" rx="15" fill="url(#body)"/>
+  <rect x="6" y="6" width="116" height="116" rx="15" fill="url(#caustic)"/>
+  <rect x="7.5" y="7.5" width="113" height="113" rx="14" fill="none" stroke="#ffc4b8" stroke-width="3"/>
+  <path d="M14 22 Q14 12 24 12 H104 Q114 12 114 22 V46 Q64 58 14 46 Z" fill="url(#gloss)"/>
+  <g transform="translate(0 4)" opacity="0.35"><path d="M64 23 Q72.5 55.3 105.8 53.4 Q77.7 71.5 89.9 102.6 Q64 81.4 38.1 102.6 Q50.3 71.5 22.2 53.4 Q55.5 55.3 64 23 Z" fill="#6a0a1c" stroke="#6a0a1c" stroke-width="12" stroke-linejoin="round"/></g>
+  <g><path d="M64 23 Q72.5 55.3 105.8 53.4 Q77.7 71.5 89.9 102.6 Q64 81.4 38.1 102.6 Q50.3 71.5 22.2 53.4 Q55.5 55.3 64 23 Z" fill="#6a0a1c" stroke="#6a0a1c" stroke-width="14" stroke-linejoin="round"/></g>
+  <g><path d="M64 23 Q72.5 55.3 105.8 53.4 Q77.7 71.5 89.9 102.6 Q64 81.4 38.1 102.6 Q50.3 71.5 22.2 53.4 Q55.5 55.3 64 23 Z" fill="#ffffff" stroke="#ffffff" stroke-width="3" stroke-linejoin="round"/><g fill="#f7a0a8"><circle cx="64" cy="55" r="3"/><circle cx="64" cy="43" r="2.6"/><circle cx="75.4" cy="63.3" r="3"/><circle cx="86.8" cy="59.6" r="2.6"/><circle cx="71.1" cy="76.7" r="3"/><circle cx="78.1" cy="86.4" r="2.6"/><circle cx="56.9" cy="76.7" r="3"/><circle cx="49.9" cy="86.4" r="2.6"/><circle cx="52.6" cy="63.3" r="3"/><circle cx="41.2" cy="59.6" r="2.6"/><circle cx="64" cy="67" r="3.4"/></g></g>
+</svg>

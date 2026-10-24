@@ -1,0 +1,26 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <title>Ocean blue tile</title>
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#bff2ff"/>
+      <stop offset="0.5" stop-color="#45b8f5"/>
+      <stop offset="1" stop-color="#1d72d0"/>
+    </linearGradient>
+    <linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.7"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="caustic" cx="0.3" cy="0.85" r="0.6">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect x="2" y="2" width="124" height="124" rx="18" fill="#0a2a66"/>
+  <rect x="6" y="6" width="116" height="116" rx="15" fill="url(#body)"/>
+  <rect x="6" y="6" width="116" height="116" rx="15" fill="url(#caustic)"/>
+  <rect x="7.5" y="7.5" width="113" height="113" rx="14" fill="none" stroke="#eafcff" stroke-width="3"/>
+  <path d="M14 22 Q14 12 24 12 H104 Q114 12 114 22 V46 Q64 58 14 46 Z" fill="url(#gloss)"/>
+  <g transform="translate(0 4)" opacity="0.35"><path d="M22 64 Q40 34 72 50 L98 34 Q90 64 98 94 L72 78 Q40 94 22 64 Z" fill="#0b3a7a" stroke="#0b3a7a" stroke-width="12" stroke-linejoin="round"/></g>
+  <g><path d="M22 64 Q40 34 72 50 L98 34 Q90 64 98 94 L72 78 Q40 94 22 64 Z" fill="#0b3a7a" stroke="#0b3a7a" stroke-width="14" stroke-linejoin="round"/></g>
+  <g><path d="M22 64 Q40 34 72 50 L98 34 Q90 64 98 94 L72 78 Q40 94 22 64 Z" fill="#ffffff" stroke="#ffffff" stroke-width="3" stroke-linejoin="round"/><circle cx="38" cy="59" r="5.5" fill="#0b3a7a"/><circle cx="36.6" cy="57.4" r="1.8" fill="#ffffff"/><path d="M50 50 Q57 64 50 78" fill="none" stroke="#5aaee8" stroke-width="3.5" stroke-linecap="round"/><path d="M60 54 L64 58 L60 62 M60 66 L64 70 L60 74" fill="none" stroke="#8fcaf2" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+</svg>

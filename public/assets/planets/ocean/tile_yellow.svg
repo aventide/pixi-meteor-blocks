@@ -1,0 +1,26 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <title>Ocean yellow tile</title>
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff29a"/>
+      <stop offset="0.5" stop-color="#ffc61a"/>
+      <stop offset="1" stop-color="#d98a00"/>
+    </linearGradient>
+    <linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="caustic" cx="0.3" cy="0.85" r="0.6">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect x="2" y="2" width="124" height="124" rx="18" fill="#6e4100"/>
+  <rect x="6" y="6" width="116" height="116" rx="15" fill="url(#body)"/>
+  <rect x="6" y="6" width="116" height="116" rx="15" fill="url(#caustic)"/>
+  <rect x="7.5" y="7.5" width="113" height="113" rx="14" fill="none" stroke="#fff8c4" stroke-width="3"/>
+  <path d="M14 22 Q14 12 24 12 H104 Q114 12 114 22 V46 Q64 58 14 46 Z" fill="url(#gloss)"/>
+  <g transform="translate(0 4)" opacity="0.35"><path d="M44 104 L56 92 L72 92 L84 104 Z" fill="#7a4300" stroke="#7a4300" stroke-width="12" stroke-linejoin="round"/><path d="M56 98 L20.2 73.9 Q14 59.6 29.4 61.9 Q27.9 46.4 41.9 53.1 Q45.1 37.9 56.4 48.6 Q64 35 71.6 48.6 Q82.9 37.9 86.1 53.1 Q100.1 46.4 98.6 61.9 Q114 59.6 107.8 73.9 L72 98 Z" fill="#7a4300" stroke="#7a4300" stroke-width="12" stroke-linejoin="round"/></g>
+  <g><path d="M44 104 L56 92 L72 92 L84 104 Z" fill="#7a4300" stroke="#7a4300" stroke-width="14" stroke-linejoin="round"/><path d="M56 98 L20.2 73.9 Q14 59.6 29.4 61.9 Q27.9 46.4 41.9 53.1 Q45.1 37.9 56.4 48.6 Q64 35 71.6 48.6 Q82.9 37.9 86.1 53.1 Q100.1 46.4 98.6 61.9 Q114 59.6 107.8 73.9 L72 98 Z" fill="#7a4300" stroke="#7a4300" stroke-width="14" stroke-linejoin="round"/></g>
+  <g><path d="M44 104 L56 92 L72 92 L84 104 Z" fill="#ffffff" stroke="#ffffff" stroke-width="3" stroke-linejoin="round"/><path d="M56 98 L20.2 73.9 Q14 59.6 29.4 61.9 Q27.9 46.4 41.9 53.1 Q45.1 37.9 56.4 48.6 Q64 35 71.6 48.6 Q82.9 37.9 86.1 53.1 Q100.1 46.4 98.6 61.9 Q114 59.6 107.8 73.9 L72 98 Z" fill="#ffffff" stroke="#ffffff" stroke-width="3" stroke-linejoin="round"/><path d="M64 94 L30.8 63.3 M64 94 L42.8 54.9 M64 94 L56.7 50.6 M64 94 L71.3 50.6 M64 94 L85.2 54.9 M64 94 L97.2 63.3" fill="none" stroke="#e0a000" stroke-width="3.4" stroke-linecap="round"/><circle cx="64" cy="58" r="0" /></g>
+</svg>

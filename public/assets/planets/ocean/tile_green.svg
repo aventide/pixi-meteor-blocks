@@ -1,0 +1,26 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <title>Ocean green tile</title>
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#a6f7c4"/>
+      <stop offset="0.5" stop-color="#26c46e"/>
+      <stop offset="1" stop-color="#0b7a44"/>
+    </linearGradient>
+    <linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="caustic" cx="0.3" cy="0.85" r="0.6">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect x="2" y="2" width="124" height="124" rx="18" fill="#033a1e"/>
+  <rect x="6" y="6" width="116" height="116" rx="15" fill="url(#body)"/>
+  <rect x="6" y="6" width="116" height="116" rx="15" fill="url(#caustic)"/>
+  <rect x="7.5" y="7.5" width="113" height="113" rx="14" fill="none" stroke="#c8ffdc" stroke-width="3"/>
+  <path d="M14 22 Q14 12 24 12 H104 Q114 12 114 22 V46 Q64 58 14 46 Z" fill="url(#gloss)"/>
+  <g transform="translate(0 4)" opacity="0.35"><path d="M64 106 V74 M64 74 Q50 66 44 50 M44 50 Q40 40 32 34 M44 50 Q48 38 46 26 M64 74 Q78 66 84 52 M84 52 Q88 40 96 34 M84 52 Q80 40 82 28 M64 74 V56 Q64 46 66 38" fill="none" stroke="#064a26" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="64" cy="106" rx="24" ry="8" fill="#064a26"/></g>
+  <g><path d="M64 106 V74 M64 74 Q50 66 44 50 M44 50 Q40 40 32 34 M44 50 Q48 38 46 26 M64 74 Q78 66 84 52 M84 52 Q88 40 96 34 M84 52 Q80 40 82 28 M64 74 V56 Q64 46 66 38" fill="none" stroke="#064a26" stroke-width="27" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="64" cy="106" rx="25" ry="9" fill="#064a26"/></g>
+  <g><path d="M64 106 V74 M64 74 Q50 66 44 50 M44 50 Q40 40 32 34 M44 50 Q48 38 46 26 M64 74 Q78 66 84 52 M84 52 Q88 40 96 34 M84 52 Q80 40 82 28 M64 74 V56 Q64 46 66 38" fill="none" stroke="#ffffff" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="64" cy="106" rx="19" ry="4" fill="#ffffff"/><g fill="#ffffff"><circle cx="32" cy="34" r="7.5"/><circle cx="46" cy="26" r="7.5"/><circle cx="96" cy="34" r="7.5"/><circle cx="82" cy="28" r="7.5"/><circle cx="66" cy="38" r="7.5"/></g></g>
+</svg>
