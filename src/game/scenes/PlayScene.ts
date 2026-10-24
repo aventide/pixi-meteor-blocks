@@ -1,10 +1,11 @@
-import { Container, Graphics } from "pixi.js";
+import { Container } from "pixi.js";
 import type { Scene } from "./SceneManager";
 import { sceneManager } from "./SceneManager";
 import { TitleScene } from "./TitleScene";
 import {
   addToBackgroundLayer,
   getActivePlanet,
+  getWorld,
   resetWorld,
   setActivePlanet,
   setGlobalPointerDown,
@@ -21,12 +22,13 @@ import { createBoardFrame } from "../boardFrame";
 import { TrailSystem } from "../../effects/trails";
 import { gameEvents, gameWon } from "../events";
 import { getApp, getScreenSize, setBoardInputEnabled, worldRoot } from "../app";
-import { Label } from "../../ui/Label";
-import { Button } from "../../ui/Button";
 import { Modal } from "../../ui/Modal";
+import { Hud } from "../../ui/Hud";
+import { IntroCard } from "../../ui/IntroCard";
+import { DEFAULT_FILE_BLOCKS_LIMIT } from "../../constants";
 import { getUiScale, uiTheme } from "../../ui/theme";
 
-type PlayState = "loading" | "playing" | "paused" | "won" | "lost";
+type PlayState = "loading" | "intro" | "playing" | "paused" | "won" | "lost";
 
 const RESULT_DELAY_MS = 650;
 
@@ -46,15 +48,14 @@ export class PlayScene implements Scene {
   private background: BackgroundHandle | null = null;
   private trails: TrailSystem | null = null;
   private launched = 0;
-  private hud = new Container();
-  private hudBg = new Graphics();
+  private hud: Hud | null = null;
+  private intro: IntroCard | null = null;
   private modal: Modal | null = null;
   private resultTimer: ReturnType<typeof setTimeout> | null = null;
   private unsubscribers: (() => void)[] = [];
 
   constructor({ planetId }: { planetId: PlanetId }) {
     this.planetId = planetId;
-    this.view.addChild(this.hud);
   }
 
   async enter() {
@@ -96,7 +97,7 @@ export class PlayScene implements Scene {
     document.addEventListener("visibilitychange", this.onVisibilityChange);
 
     this.layoutHud(width, height);
-    this.resume();
+    this.showIntro(width, height);
   }
 
   exit() {
@@ -119,7 +120,12 @@ export class PlayScene implements Scene {
 
   update(dt: number) {
     this.background?.update(dt);
-    if (this.state === "playing") this.trails?.update(dt);
+    this.intro?.update(dt);
+    if (this.state === "playing") {
+      this.trails?.update(dt);
+      this.hud?.setDanger(this.isInDanger());
+    }
+    this.hud?.update(dt);
   }
 
   resize(width: number, height: number) {
@@ -127,7 +133,31 @@ export class PlayScene implements Scene {
     // blocks in absolute pixels); only the interface reflows.
     this.background?.resize(width, height);
     this.layoutHud(width, height);
+    if (this.intro) this.showIntro(width, height, false);
     this.modal?.layout(width, height);
+  }
+
+  private showIntro(width: number, height: number, animate = true) {
+    this.state = "intro";
+    this.intro?.destroy({ children: true });
+    const intro = new IntroCard(width, height, getActivePlanet(), () => {
+      intro.destroy({ children: true });
+      this.intro = null;
+      this.resume();
+    });
+    this.intro = intro;
+    this.view.addChild(intro);
+    if (animate) intro.show();
+  }
+
+  // Mirrors the engine's danger condition (dangerAnimation) without changing it.
+  private isInDanger() {
+    for (const fragments of getWorld().fileFragmentsByFileNumber.values()) {
+      for (const fragment of fragments) {
+        if (fragment.blocks.length > DEFAULT_FILE_BLOCKS_LIMIT) return true;
+      }
+    }
+    return false;
   }
 
   private resume() {
@@ -250,64 +280,27 @@ export class PlayScene implements Scene {
   };
 
   private onVisibilityChange = () => {
-    if (document.hidden) this.pause();
+    if (document.hidden && this.state === "playing") this.pause();
   };
 
-  // Minimal HUD strip; D04 replaces this with the full HUD.
-  private counter: Label | null = null;
-
   private layoutHud(width: number, height: number) {
-    const s = getUiScale(width, height);
-    const hudHeight = getHudHeight(width, height);
-    const planet = getActivePlanet();
-    this.hud.removeChildren().forEach((c) => {
-      if (c !== this.hudBg) c.destroy({ children: true });
+    this.hud?.destroy({ children: true });
+    this.hud = new Hud({
+      width,
+      height,
+      hudHeight: getHudHeight(width, height),
+      planet: getActivePlanet(),
+      onPause: () => this.pause(),
     });
-    this.hudBg
-      .clear()
-      .rect(0, 0, width, hudHeight)
-      .fill(planet.theme.palette.uiPanel)
-      .rect(0, hudHeight - 2, width, 2)
-      .fill({ color: planet.theme.palette.accent, alpha: 0.8 });
-    this.hudBg.eventMode = "static";
-    this.hudBg.removeAllListeners();
-    this.hudBg.on("pointerdown", (e) => e.stopPropagation());
-    this.hud.addChild(this.hudBg);
-
-    const name = new Label(planet.name, {
-      variant: "heading",
-      scale: s * 0.8,
-      align: "left",
-      color: planet.theme.palette.uiText,
-    });
-    name.position.set(uiTheme.space.md * s, hudHeight / 2);
-    this.counter = new Label("", {
-      variant: "body",
-      scale: s,
-      color: planet.theme.palette.uiText,
-    });
-    this.counter.position.set(width / 2, hudHeight / 2);
+    // The HUD sits under any intro card or modal.
+    this.view.addChildAt(this.hud, 0);
     this.updateCounter();
-
-    const pause = new Button({
-      label: "II",
-      variant: "secondary",
-      width: 48,
-      height: 44,
-      scale: s * 0.85,
-      accent: planet.theme.palette.accent,
-      onPress: () => this.pause(),
-    });
-    pause.position.set(
-      width - uiTheme.space.md * s - pause.buttonWidth / 2,
-      hudHeight / 2,
-    );
-    this.hud.addChild(name, this.counter, pause);
   }
 
   private updateCounter() {
-    if (!this.counter) return;
-    const goal = getActivePlanet().goal.launchedBlocksToWin;
-    this.counter.text = `${Math.min(this.launched, goal)} / ${goal}`;
+    this.hud?.setLaunched(
+      this.launched,
+      getActivePlanet().goal.launchedBlocksToWin,
+    );
   }
 }

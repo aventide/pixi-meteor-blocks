@@ -1,70 +1,83 @@
 import { Container, Graphics } from "pixi.js";
 import { uiTheme } from "./theme";
+import { verticalGradient } from "./frame";
+import { lerpColor } from "../themes/shared/color";
 
 type ProgressBarOptions = {
   width: number; // screen px
   height: number; // screen px
   color: number;
+  segments?: number;
   trackColor?: number;
 };
 
-// A horizontal progress bar. Origin is its left-center.
+// A segmented meter of slanted cells. Origin is its left-center. The leading
+// cell fades in with fractional progress, so the meter fills smoothly.
 export class ProgressBar extends Container {
-  private track = new Graphics();
-  private fill = new Graphics();
-  private progress = 0;
-  private barWidth: number;
-  private barHeight: number;
-  private color: number;
-  private trackColor: number;
+  private g = new Graphics();
+  private progress = -1;
+  private readonly barWidth: number;
+  private readonly barHeight: number;
+  private readonly color: number;
+  private readonly segments: number;
+  private readonly trackColor: number;
 
   constructor({
     width,
     height,
     color,
+    segments = 20,
     trackColor = uiTheme.colors.progressTrack,
   }: ProgressBarOptions) {
     super();
     this.barWidth = width;
     this.barHeight = height;
     this.color = color;
+    this.segments = segments;
     this.trackColor = trackColor;
-    this.addChild(this.track, this.fill);
+    this.addChild(this.g);
     this.eventMode = "none";
-    this.drawTrack();
-    this.drawFill();
+    this.setProgress(0);
   }
 
   setProgress(progress: number) {
     const clamped = Math.max(0, Math.min(1, progress));
     if (clamped === this.progress) return;
     this.progress = clamped;
-    this.drawFill();
+    this.draw();
   }
 
-  private drawTrack() {
+  private draw() {
+    const n = this.segments;
     const h = this.barHeight;
-    this.track
-      .clear()
-      .roundRect(0, -h / 2, this.barWidth, h, h / 2)
-      .fill(this.trackColor)
-      .roundRect(0, -h / 2, this.barWidth, h, h / 2)
-      .stroke({ color: 0xffffff, alpha: 0.15, width: 1 });
-  }
-
-  private drawFill() {
-    const h = this.barHeight;
-    const w = Math.max(
-      this.progress > 0 ? h : 0,
-      this.barWidth * this.progress,
+    const skew = h * 0.45;
+    const gap = Math.max(1.5, h * 0.18);
+    const cellW = (this.barWidth - skew - gap * (n - 1)) / n;
+    const lit = this.progress * n;
+    const fill = verticalGradient(
+      lerpColor(this.color, 0xffffff, 0.45),
+      this.color,
     );
-    this.fill.clear();
-    if (w > 0) {
-      this.fill
-        .roundRect(0, -h / 2, w, h, h / 2)
-        .fill(this.color)
-        .roundRect(2, -h / 2 + 2, Math.max(0, w - 4), h * 0.35, h / 4)
-        .fill({ color: 0xffffff, alpha: 0.25 });
+    const g = this.g.clear();
+
+    for (let i = 0; i < n; i++) {
+      const x = i * (cellW + gap);
+      const pts = [
+        x + skew,
+        -h / 2,
+        x + skew + cellW,
+        -h / 2,
+        x + cellW,
+        h / 2,
+        x,
+        h / 2,
+      ];
+      g.poly(pts).fill({ color: this.trackColor, alpha: 0.85 });
+      const amount = Math.max(0, Math.min(1, lit - i));
+      if (amount > 0) {
+        g.poly(pts).fill({ fill, alpha: amount });
+      }
+      g.poly(pts).stroke({ color: this.color, width: 1, alpha: 0.35 });
     }
   }
 }
