@@ -93,15 +93,16 @@ export const planets: Record<PlanetId, PlanetConfig> = {
     id: "desert",
     name: "Desert",
     order: 2,
-    tagline: "Keep moving beneath the sunset.",
+    tagline: "Scorching sands and heavy air. Launch hard.",
     physics: {
-      gravity: 1250,
-      launchVelocity: -1450,
+      gravity: 1350,
+      launchVelocity: -1400,
       launchDescentRate: 240,
       popVelocity: -6500,
     },
     spawn: { dropIntervalMs: 600 },
-    goal: { launchedBlocksToWin: 80 },
+    // Middle of the curve: above Ocean, below Moon (see docs/planet-notes/desert.md).
+    goal: { launchedBlocksToWin: 55 },
     theme: desertTheme,
   },
   moon: {
