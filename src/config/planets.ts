@@ -108,14 +108,17 @@ export const planets: Record<PlanetId, PlanetConfig> = {
     id: "moon",
     name: "Moon",
     order: 3,
-    tagline: "Less gravity. More room to fly.",
+    tagline: "Launches soar in low gravity, but the sky never stops falling.",
+    // Low gravity: launches reach the top from almost any height and falls
+    // float, so faster spawns and a bigger goal keep it hard (see
+    // docs/planet-notes/moon.md).
     physics: {
-      gravity: 300,
-      launchVelocity: -1000,
-      launchDescentRate: 90,
-      popVelocity: -3500,
+      gravity: 380,
+      launchVelocity: -950,
+      launchDescentRate: 110,
+      popVelocity: -6000,
     },
-    spawn: { dropIntervalMs: 700 },
+    spawn: { dropIntervalMs: 500 },
     goal: { launchedBlocksToWin: 90 },
     theme: moonTheme,
   },
