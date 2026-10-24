@@ -62,8 +62,18 @@ import { FpsMeter } from "./ui/FpsMeter";
   // pointer events
   app.stage.eventMode = "static";
   app.stage.hitArea = app.screen;
+  // Only the pointer that started on the board drives it, so a second finger
+  // (e.g. holding the fast-drop button) can't hijack a drag. Mouse hover still
+  // updates the pointer when no board press is active.
+  let boardPointerId: number | null = null;
+  const releaseBoardPointer = (e?: PointerEvent) => {
+    if (e && boardPointerId !== null && e.pointerId !== boardPointerId) return;
+    boardPointerId = null;
+    clearGlobalPointerDown();
+  };
   app.stage.addEventListener("pointerdown", (e) => {
     if (!isBoardInputEnabled()) return;
+    boardPointerId = e.pointerId;
     // needed for mobile/touch
     const rect = app.canvas.getBoundingClientRect();
     const offset = getBoardOffset();
@@ -74,10 +84,17 @@ import { FpsMeter } from "./ui/FpsMeter";
     setGlobalPointer({ x, y });
     setGlobalPointerDown(true);
   });
-  window.addEventListener("pointerup", clearGlobalPointerDown);
-  window.addEventListener("pointercancel", clearGlobalPointerDown);
-  window.addEventListener("blur", clearGlobalPointerDown);
+  window.addEventListener("pointerup", releaseBoardPointer);
+  window.addEventListener("pointercancel", releaseBoardPointer);
+  window.addEventListener("blur", () => releaseBoardPointer());
   window.addEventListener("pointermove", (e) => {
+    if (
+      boardPointerId === null
+        ? e.pointerType !== "mouse"
+        : e.pointerId !== boardPointerId
+    ) {
+      return;
+    }
     const rect = app.canvas.getBoundingClientRect();
     const offset = getBoardOffset();
     const x =

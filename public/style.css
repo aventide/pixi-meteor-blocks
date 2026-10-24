@@ -32,6 +32,8 @@ body {
   #pixi-container {
     width: auto;
     height: calc(100% - 10%);
-    aspect-ratio: 10 / 16;
+    /* Slightly taller than 10:16 so desktop keeps ~13 stackable rows under
+       the HUD and fast-drop bar. */
+    aspect-ratio: 9 / 16;
   }
 }

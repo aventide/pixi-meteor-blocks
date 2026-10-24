@@ -1,5 +1,4 @@
-import { DEFAULT_FILE_BLOCKS_LIMIT } from "../constants";
-import { getWorld } from "../world";
+import { getFileBlocksLimit, getWorld } from "../world";
 
 const DANGER_ANIMATION_DURATION = 1;
 const DANGER_ANIMATION_MAX_OPACITY = 0.45;
@@ -20,7 +19,7 @@ export const dangerAnimation = (dt: number) => {
         dangerOscillation * DANGER_ANIMATION_MAX_OPACITY;
 
       // check for danger condition on group file fragment
-      if (fileFragment.blocks.length > DEFAULT_FILE_BLOCKS_LIMIT) {
+      if (fileFragment.blocks.length > getFileBlocksLimit()) {
         fileFragment.overlay.danger.visible = true;
       } else {
         fileFragment.overlay.danger.visible = false;

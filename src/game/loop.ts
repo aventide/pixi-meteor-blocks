@@ -1,5 +1,5 @@
 import type { Application, Ticker } from "pixi.js";
-import { getActivePlanet, getWorld } from "../world";
+import { getActivePlanet, getFileBlocksLimit, getWorld } from "../world";
 import { createSingleBlock, getIsSpawnPositionOpen } from "../entities";
 import {
   descentMutator,
@@ -8,11 +8,7 @@ import {
   selectionMutator,
 } from "../mutators";
 import { getRandomFileNumber } from "../util";
-import {
-  DEFAULT_FILE_COUNT,
-  DEFAULT_FILE_BLOCKS_LIMIT,
-  DEFAULT_MAIN_TICKER_SPEED,
-} from "../constants";
+import { DEFAULT_FILE_COUNT, DEFAULT_MAIN_TICKER_SPEED } from "../constants";
 import { dangerAnimation } from "../animations";
 import { getAllSelectionFileFragments } from "../mutators/selectionMutator/util";
 import { gameLost } from "./events";
@@ -77,7 +73,7 @@ export const startGameLoop = (app: Application) => {
     // before the file is considered for placement (and game loss)
     blockGroupsById.forEach((blockGroup) =>
       blockGroup.fileFragments.forEach((fileFragment) => {
-        if (fileFragment.blocks.length >= DEFAULT_FILE_BLOCKS_LIMIT + 2) {
+        if (fileFragment.blocks.length >= getFileBlocksLimit() + 2) {
           if (!hasLost) {
             hasLost = true;
             stopGameLoop();

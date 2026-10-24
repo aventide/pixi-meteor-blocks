@@ -7,6 +7,7 @@ import { markCleared } from "../progress";
 import {
   addToBackgroundLayer,
   getActivePlanet,
+  getFileBlocksLimit,
   getWorld,
   resetWorld,
   setActivePlanet,
@@ -27,13 +28,23 @@ import { getApp, getScreenSize, setBoardInputEnabled, worldRoot } from "../app";
 import { Modal } from "../../ui/Modal";
 import { Hud } from "../../ui/Hud";
 import { IntroCard } from "../../ui/IntroCard";
-import { DEFAULT_FILE_BLOCKS_LIMIT } from "../../constants";
+import {
+  ACCELERATED_MAIN_TICKER_SPEED,
+  DEFAULT_MAIN_TICKER_SPEED,
+} from "../../constants";
+import { FastDropBar } from "../../ui/FastDropBar";
 import { getUiScale, uiTheme } from "../../ui/theme";
 
 type PlayState = "loading" | "intro" | "playing" | "paused" | "won" | "lost";
 
 const RESULT_DELAY_MS = 650;
 const SHAKE_DURATION = 0.28; // seconds
+
+export const getFastDropBarHeight = (width: number, height: number) =>
+  Math.max(
+    uiTheme.minTouchTarget + 16,
+    Math.round(64 * getUiScale(width, height)),
+  );
 
 export const getHudHeight = (width: number, height: number) =>
   Math.max(uiTheme.minTouchTarget, Math.round(56 * getUiScale(width, height)));
@@ -54,6 +65,7 @@ export class PlayScene implements Scene {
   private shakeAmplitude = 0;
   private launched = 0;
   private hud: Hud | null = null;
+  private fastDrop: FastDropBar | null = null;
   private intro: IntroCard | null = null;
   private modal: Modal | null = null;
   private resultTimer: ReturnType<typeof setTimeout> | null = null;
@@ -72,12 +84,13 @@ export class PlayScene implements Scene {
 
     const { width, height } = getScreenSize();
     const hudHeight = getHudHeight(width, height);
-    // Keep the board's proportions identical to a full-screen board. The
-    // engine's danger and loss thresholds are block counts, so the number of
-    // rows must not shrink when the HUD takes the top strip.
-    const boardHeight = height - hudHeight;
-    const boardWidth = width * (boardHeight / height);
-    const boardX = Math.round((width - boardWidth) / 2);
+    // The board fills the space between the HUD and the fast-drop bar. The
+    // stack limit follows the board's visible rows (setWorldDimensions), so
+    // taller screens hold taller stacks and the board can use the full width.
+    const boardHeight =
+      height - hudHeight - getFastDropBarHeight(width, height);
+    const boardWidth = width;
+    const boardX = 0;
     worldRoot.position.set(boardX, hudHeight);
     setWorldDimensions(boardHeight, boardWidth);
     worldRoot.visible = true;
@@ -109,6 +122,7 @@ export class PlayScene implements Scene {
 
   exit() {
     if (this.resultTimer) clearTimeout(this.resultTimer);
+    this.clearFastDrop();
     this.unsubscribers.forEach((off) => off());
     this.unsubscribers = [];
     window.removeEventListener("keydown", this.onKeyDown);
@@ -183,10 +197,23 @@ export class PlayScene implements Scene {
   private isInDanger() {
     for (const fragments of getWorld().fileFragmentsByFileNumber.values()) {
       for (const fragment of fragments) {
-        if (fragment.blocks.length > DEFAULT_FILE_BLOCKS_LIMIT) return true;
+        if (fragment.blocks.length > getFileBlocksLimit()) return true;
       }
     }
     return false;
+  }
+
+  // Hold-to-drop-faster: same as holding Space on desktop.
+  private onFastDropHold = (holding: boolean) => {
+    if (this.state !== "playing") return;
+    getApp().ticker.speed = holding
+      ? ACCELERATED_MAIN_TICKER_SPEED
+      : DEFAULT_MAIN_TICKER_SPEED;
+  };
+
+  private clearFastDrop() {
+    this.fastDrop?.release(() => {});
+    getApp().ticker.speed = DEFAULT_MAIN_TICKER_SPEED;
   }
 
   private resume() {
@@ -200,6 +227,7 @@ export class PlayScene implements Scene {
     if (this.state !== "playing") return;
     this.state = "paused";
     stopGameLoop();
+    this.clearFastDrop();
     setBoardInputEnabled(false);
     setGlobalPointerDown(false);
     this.openModal({
@@ -231,6 +259,7 @@ export class PlayScene implements Scene {
   private endRun(result: "won" | "lost") {
     if (this.state === "won" || this.state === "lost") return;
     this.state = result;
+    this.clearFastDrop();
     setBoardInputEnabled(false);
     setGlobalPointerDown(false);
     this.resultTimer = setTimeout(
@@ -335,8 +364,19 @@ export class PlayScene implements Scene {
       planet: getActivePlanet(),
       onPause: () => this.pause(),
     });
-    // The HUD sits under any intro card or modal.
+    // The HUD and fast-drop bar sit under any intro card or modal.
     this.view.addChildAt(this.hud, 0);
+    this.fastDrop?.destroy({ children: true });
+    const barHeight = getFastDropBarHeight(width, height);
+    this.fastDrop = new FastDropBar({
+      width,
+      height,
+      barHeight,
+      planet: getActivePlanet(),
+      onHoldChange: this.onFastDropHold,
+    });
+    this.fastDrop.y = height - barHeight;
+    this.view.addChildAt(this.fastDrop, 1);
     this.updateCounter();
   }
 

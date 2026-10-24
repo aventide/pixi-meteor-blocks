@@ -9,6 +9,7 @@ import type {
 
 import {
   DEFAULT_FILE_COUNT,
+  DEFAULT_FILE_BLOCKS_LIMIT,
   DEFAULT_GRAVITY,
   DEFAULT_POINTER_POSITION,
 } from "./constants";
@@ -99,7 +100,20 @@ export const setWorldDimensions = (height: number, width: number) => {
   // const blockSize = width / DEFAULT_FILE_COUNT;
   // world.height = blockSize * DEFAULT_FILE_BLOCKS_LIMIT;
   // world.width = width;
+
+  // Demo: the stack limit follows the board's visible rows, so taller boards
+  // hold taller stacks (blocks are width / file count tall).
+  const blockSize = width / DEFAULT_FILE_COUNT;
+  fileBlocksLimit =
+    blockSize > 0
+      ? Math.max(4, Math.floor(height / blockSize + 1e-6))
+      : DEFAULT_FILE_BLOCKS_LIMIT;
 };
+
+let fileBlocksLimit = DEFAULT_FILE_BLOCKS_LIMIT;
+
+// Danger shows above this many blocks in a column; the run is lost at +2.
+export const getFileBlocksLimit = () => fileBlocksLimit;
 
 export const setWorldGravity = (gravity: number) => {
   world.gravity = gravity;
