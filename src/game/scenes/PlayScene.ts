@@ -35,7 +35,7 @@ type PlayState = "loading" | "intro" | "playing" | "paused" | "won" | "lost";
 const RESULT_DELAY_MS = 650;
 
 export const getHudHeight = (width: number, height: number) =>
-  Math.round(56 * getUiScale(width, height));
+  Math.max(uiTheme.minTouchTarget, Math.round(56 * getUiScale(width, height)));
 
 const getNextPlanetId = (id: PlanetId): PlanetId | null => {
   const order = planets[id].order + 1;

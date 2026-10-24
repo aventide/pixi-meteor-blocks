@@ -18,7 +18,7 @@ const SKY = [
   { at: 1, color: 0xd4f4ff },
 ];
 
-type Cloud = { view: Graphics; speed: number };
+type Cloud = { view: Graphics; speed: number; width: number };
 
 const drawCloud = (g: Graphics, scale: number) => {
   // A cloud is a cluster of soft overlapping puffs with a shaded underside.
@@ -108,7 +108,11 @@ const createBackground = (width: number, height: number): BackgroundHandle => {
       cloud.position.set(Math.random() * w, h * (0.08 + Math.random() * 0.42));
       cloud.alpha = 0.75 + Math.random() * 0.25;
       cloudLayer.addChild(cloud);
-      clouds.push({ view: cloud, speed: 6 + Math.random() * 10 });
+      clouds.push({
+        view: cloud,
+        speed: 6 + Math.random() * 10,
+        width: cloud.width,
+      });
     }
 
     hills.clear();
@@ -125,8 +129,8 @@ const createBackground = (width: number, height: number): BackgroundHandle => {
       time += dt;
       for (const cloud of clouds) {
         cloud.view.x += cloud.speed * dt;
-        if (cloud.view.x - cloud.view.width / 2 > w) {
-          cloud.view.x = -cloud.view.width;
+        if (cloud.view.x - cloud.width / 2 > w) {
+          cloud.view.x = -cloud.width;
         }
       }
       sun.alpha = 0.92 + Math.sin(time * 0.8) * 0.08;

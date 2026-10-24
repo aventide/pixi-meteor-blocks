@@ -1,4 +1,5 @@
 import { Application, Container } from "pixi.js";
+import { setGlobalPointerDown } from "../world";
 
 // Shared handles for the demo interface. The engine keeps using world.ts;
 // these exist so scenes and UI can reach the app without threading it around.
@@ -29,6 +30,7 @@ const board = { enabled: false };
 
 export const setBoardInputEnabled = (enabled: boolean) => {
   board.enabled = enabled;
+  if (!enabled) setGlobalPointerDown(false);
 };
 
 export const isBoardInputEnabled = () => board.enabled;

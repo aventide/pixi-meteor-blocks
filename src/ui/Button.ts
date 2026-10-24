@@ -47,8 +47,8 @@ export class Button extends Container {
     this.variant = variant;
     this.accent = accent;
     this.s = scale;
-    this.buttonWidth = width * scale;
-    this.buttonHeight = Math.max(uiTheme.minTouchTarget, height) * scale;
+    this.buttonWidth = Math.max(uiTheme.minTouchTarget, width * scale);
+    this.buttonHeight = Math.max(uiTheme.minTouchTarget, height * scale);
     this.text = new Label(label, {
       variant: "button",
       color: uiTheme.colors.buttonText,
@@ -112,6 +112,7 @@ export class Button extends Container {
     const from = this.face.y;
     const to = down ? 2 * this.s : 0;
     this.cancelPressTween = tween({
+      target: this,
       duration: uiTheme.durations.fast,
       ease: easeOutCubic,
       onUpdate: (t) => {

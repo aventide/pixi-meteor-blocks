@@ -15,6 +15,7 @@ type Rocket = {
   flame: Graphics;
   speed: number;
   phase: number;
+  height: number;
 };
 
 const drawFlame = (g: Graphics, size: number) => {
@@ -99,20 +100,21 @@ export class TitleScene implements Scene {
     this.time += dt;
     this.starfield.update(dt);
     this.titleGroup.y = this.titleBaseY + Math.sin(this.time * 1.2) * 4;
-    this.decor.children.forEach((child, i) => {
-      child.rotation += dt * (i === 0 ? 0.02 : -0.03);
-    });
+    for (let i = 0; i < this.decor.children.length; i++) {
+      this.decor.children[i].rotation += dt * (i === 0 ? 0.02 : -0.03);
+    }
     if (this.startButton) {
-      this.startButton.scale.set(1 + Math.sin(this.time * 3) * 0.015);
+      this.startButton.scale.set(
+        1 + (0.5 + 0.5 * Math.sin(this.time * 3)) * 0.015,
+      );
     }
     const { width, height } = this.screen;
     for (const rocket of this.rockets) {
       rocket.view.y -= rocket.speed * dt;
       const flicker = 0.85 + Math.sin(this.time * 30 + rocket.phase) * 0.15;
       rocket.flame.scale.set(1, flicker);
-      if (rocket.view.y < -rocket.view.height) {
-        rocket.view.y =
-          height + rocket.view.height + Math.random() * height * 0.5;
+      if (rocket.view.y < -rocket.height) {
+        rocket.view.y = height + rocket.height + Math.random() * height * 0.5;
         rocket.view.x = width * (0.06 + Math.random() * 0.88);
       }
     }
@@ -212,6 +214,7 @@ export class TitleScene implements Scene {
         flame,
         speed: height * (0.12 + Math.random() * 0.14),
         phase: Math.random() * 10,
+        height: view.height * 1.15, // include the flame flicker envelope
       });
     }
   }

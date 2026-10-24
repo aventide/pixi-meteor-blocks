@@ -49,7 +49,7 @@ export class Modal extends Container {
 
     this.panel?.destroy({ children: true });
     const buttonGap = uiTheme.space.md * s;
-    const buttonHeight = 52 * s;
+    const buttonHeight = Math.max(uiTheme.minTouchTarget, 52 * s);
     const headerHeight = (message ? 120 : 84) * s;
     const panelHeight =
       headerHeight +
@@ -112,6 +112,7 @@ export class Modal extends Container {
     if (!panel) return;
     panel.scale.set(0.9);
     tween({
+      target: panel,
       duration: uiTheme.durations.slow,
       ease: easeOutBack,
       onUpdate: (t) => {

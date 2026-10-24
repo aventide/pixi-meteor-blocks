@@ -33,7 +33,9 @@ const DESIGN_WIDTH = 400;
 const DESIGN_ASPECT = 10 / 16;
 
 export const getUiScale = (width: number, height: number) =>
+  // Floor of 0.5 covers phone landscape, where the 10:16 canvas is only
+  // ~220px wide; buttons still enforce the 44px touch minimum themselves.
   Math.max(
-    0.75,
+    0.5,
     Math.min(1.6, Math.min(width, height * DESIGN_ASPECT) / DESIGN_WIDTH),
   );

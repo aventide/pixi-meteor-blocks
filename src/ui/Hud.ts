@@ -30,6 +30,8 @@ export class Hud extends Container {
   private readonly warning: Label;
   private readonly meterLabel: Label;
   private shown = 0;
+  private renderedCount = -1;
+  private renderedGoal = -1;
   private target = 0;
   private goal = 1;
   private pop = 0;
@@ -172,7 +174,12 @@ export class Hud extends Container {
   }
 
   private render() {
-    this.count.text = `${Math.floor(this.shown)} / ${this.goal}`;
+    const count = Math.floor(this.shown);
+    if (count !== this.renderedCount || this.goal !== this.renderedGoal) {
+      this.count.text = `${count} / ${this.goal}`;
+      this.renderedCount = count;
+      this.renderedGoal = this.goal;
+    }
     this.meter.setProgress(this.shown / this.goal);
   }
 }

@@ -123,6 +123,7 @@ export class IntroCard extends Container {
     void fade(this, 1, uiTheme.durations.normal);
     this.panel.scale.set(0.88);
     tween({
+      target: this.panel,
       duration: uiTheme.durations.slow,
       ease: easeOutBack,
       onUpdate: (t) => {
@@ -140,6 +141,8 @@ export class IntroCard extends Container {
   private launch() {
     if (this.closing) return;
     this.closing = true;
-    void fade(this, 0, uiTheme.durations.normal).then(() => this.onLaunch());
+    void fade(this, 0, uiTheme.durations.normal).then(() => {
+      if (!this.destroyed) this.onLaunch();
+    });
   }
 }

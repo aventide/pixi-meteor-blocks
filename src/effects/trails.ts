@@ -124,6 +124,8 @@ export class TrailSystem {
   private readonly trailStops: GradientStop[];
   private readonly flashStops: GradientStop[];
   private live: LiveParticle[] = [];
+  private pool: LiveParticle[] = [];
+  private launching = new Set<number>();
   private spawnDebt = new Map<number, number>();
   private ignited = new Set<number>();
 
@@ -154,10 +156,11 @@ export class TrailSystem {
 
   update(dt: number) {
     const blockSize = getBlockSize();
-    const launching = new Set<number>();
+    const launching = this.launching;
+    launching.clear();
 
-    getWorld().blockGroupsById.forEach((group) => {
-      if (group.type !== "launch") return;
+    for (const group of getWorld().blockGroupsById.values()) {
+      if (group.type !== "launch") continue;
       launching.add(group.id);
       if (!this.ignited.has(group.id)) {
         this.ignited.add(group.id);
@@ -165,7 +168,7 @@ export class TrailSystem {
       }
       // Trails burn only while the group is still rising.
       if (group.velocity < 0) this.emitTrail(group, blockSize, dt);
-    });
+    }
 
     for (const id of this.ignited)
       if (!launching.has(id)) this.ignited.delete(id);
@@ -180,6 +183,10 @@ export class TrailSystem {
       if (!container.destroyed) container.destroy();
     }
     this.live = [];
+    this.pool = [];
+    this.launching.clear();
+    this.ignited.clear();
+    this.spawnDebt.clear();
   }
 
   private emitTrail(group: BlockGroup, blockSize: number, dt: number) {
@@ -285,33 +292,45 @@ export class TrailSystem {
     if (this.live.length >= MAX_PARTICLES) return;
     const container = o.additive ? this.additive : this.normal;
     const s = o.size0 / TEXTURE_SIZE;
-    const particle = new Particle({
-      texture: getSoftTexture(),
-      x: o.x,
-      y: o.y,
-      scaleX: s,
-      scaleY: s,
-      anchorX: 0.5,
-      anchorY: 0.5,
-      tint: o.colors[0].color,
-      alpha: o.alpha,
-    });
-    container.addParticle(particle);
-    this.live.push({
-      particle,
+    const lp = this.pool.pop() ?? {
+      particle: new Particle({
+        texture: getSoftTexture(),
+        anchorX: 0.5,
+        anchorY: 0.5,
+      }),
       container,
       age: 0,
-      life: o.life,
-      vx: o.vx,
-      vy: o.vy,
-      gravity: o.gravity,
-      wobble: o.wobble,
-      phase: Math.random() * Math.PI * 2,
-      size0: o.size0,
-      size1: o.size1,
-      alpha: o.alpha,
-      colors: o.colors,
-    });
+      life: 0,
+      vx: 0,
+      vy: 0,
+      gravity: 0,
+      wobble: 0,
+      phase: 0,
+      size0: 0,
+      size1: 0,
+      alpha: 0,
+      colors: this.trailStops,
+    };
+    const particle = lp.particle;
+    particle.x = o.x;
+    particle.y = o.y;
+    particle.scaleX = particle.scaleY = s;
+    particle.tint = o.colors[0].color;
+    particle.alpha = o.alpha;
+    lp.container = container;
+    lp.age = 0;
+    lp.life = o.life;
+    lp.vx = o.vx;
+    lp.vy = o.vy;
+    lp.gravity = o.gravity;
+    lp.wobble = o.wobble;
+    lp.phase = Math.random() * Math.PI * 2;
+    lp.size0 = o.size0;
+    lp.size1 = o.size1;
+    lp.alpha = o.alpha;
+    lp.colors = o.colors;
+    container.addParticle(particle);
+    this.live.push(lp);
   }
 
   private step(dt: number) {
@@ -321,6 +340,7 @@ export class TrailSystem {
       const t = lp.age / lp.life;
       if (t >= 1) {
         lp.container.removeParticle(lp.particle);
+        this.pool.push(lp);
         this.live[i] = this.live[this.live.length - 1];
         this.live.pop();
         continue;

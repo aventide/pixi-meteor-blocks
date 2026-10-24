@@ -23,6 +23,16 @@ type Node = {
 };
 
 const route = Object.values(planets).sort((a, b) => a.order - b.order);
+const INFO_PANEL_HEIGHT = 168; // design px
+const LAND_BUTTON_HEIGHT = 46; // design px
+
+// The Land button never shrinks below the touch minimum, so on small screens
+// the panel grows to fit it instead of the button poking out.
+const getInfoPanelHeight = (s: number) =>
+  Math.max(
+    INFO_PANEL_HEIGHT * s,
+    110 * s + Math.max(uiTheme.minTouchTarget, LAND_BUTTON_HEIGHT * s) + 14 * s,
+  );
 
 const drawShip = (g: Graphics, size: number) => {
   // A small arrowhead ship pointing up, with a flame below.
@@ -75,6 +85,7 @@ export class StarMapScene implements Scene {
   private selected: PlanetConfig;
   private time = 0;
   private shipMoving = false;
+  private cancelFlight: (() => void) | null = null;
 
   constructor(private readonly options: { arrivedFrom?: number } = {}) {
     const { width, height } = getScreenSize();
@@ -102,7 +113,9 @@ export class StarMapScene implements Scene {
     }
   }
 
-  exit() {}
+  exit() {
+    this.cancelFlight?.();
+  }
 
   update(dt: number) {
     this.time += dt;
@@ -118,6 +131,9 @@ export class StarMapScene implements Scene {
   }
 
   resize(width: number, height: number) {
+    this.cancelFlight?.();
+    this.shipMoving = false;
+    this.ship.rotation = 0;
     const s = getUiScale(width, height);
     this.starfield.resize(width, height);
 
@@ -140,9 +156,16 @@ export class StarMapScene implements Scene {
 
     // Route positions: a zigzag from Earth (bottom) to Casino (top), leaving
     // room for the header and the info panel.
-    const top = height * 0.17;
-    const bottom = height * 0.66;
-    const radius = Math.min(width * 0.1, height * 0.055);
+    // The info panel takes a slice at the bottom (see layoutInfo), so fit the
+    // route into whatever space is left above it. Planets two steps apart sit
+    // on the same side of the zigzag, so two steps must clear a planet plus
+    // its label (~3.3 radii); with the margins below that caps the radius at
+    // about 1/10.8 of the available height.
+    const panelTop = height - getInfoPanelHeight(s) - uiTheme.space.lg * s;
+    const available = panelTop - height * 0.12;
+    const radius = Math.min(width * 0.1, height * 0.055, available / 10.8);
+    const top = height * 0.12 + radius * 1.6;
+    const bottom = Math.max(top + radius, panelTop - radius * 2.6);
     this.nodeLayer
       .removeChildren()
       .forEach((c) => c.destroy({ children: true }));
@@ -192,7 +215,8 @@ export class StarMapScene implements Scene {
         view.cursor = "pointer";
         view.hitArea = {
           contains: (px: number, py: number) =>
-            px * px + py * py < (radius * 1.6) ** 2,
+            px * px + py * py <
+            Math.max(uiTheme.minTouchTarget / 2, radius * 1.6) ** 2,
         };
         view.on("pointertap", () => this.select(planet));
       }
@@ -279,7 +303,9 @@ export class StarMapScene implements Scene {
     this.shipMoving = true;
     this.ship.position.set(startX, startY);
     this.ship.rotation = Math.atan2(endY - startY, endX - startX) + Math.PI / 2;
-    tween({
+    this.cancelFlight?.();
+    this.cancelFlight = tween({
+      target: this.ship,
       duration: 1200,
       ease: easeInOutSine,
       onUpdate: (t) => {
@@ -309,7 +335,7 @@ export class StarMapScene implements Scene {
     const { accent, uiPanel } = planet.theme.palette;
     this.info.removeChildren().forEach((c) => c.destroy({ children: true }));
     const panelWidth = Math.min(width - uiTheme.space.lg * 2, 340 * s);
-    const panelHeight = 168 * s;
+    const panelHeight = getInfoPanelHeight(s);
     const panel = new Panel({
       width: panelWidth,
       height: panelHeight,
@@ -351,12 +377,12 @@ export class StarMapScene implements Scene {
     const land = new Button({
       label: isCleared(planet.order) ? "Land Again" : "Land",
       width: 200,
-      height: 46,
+      height: LAND_BUTTON_HEIGHT,
       scale: s,
       accent,
       onPress: () => sceneManager.goTo(new PlayScene({ planetId: planet.id })),
     });
-    land.y = panelHeight / 2 - 34 * s;
+    land.y = panelHeight / 2 - land.buttonHeight / 2 - 12 * s;
     panel.content.addChild(name, meta, tagline, land);
     this.info.addChild(panel);
   }

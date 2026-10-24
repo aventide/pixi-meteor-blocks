@@ -1,7 +1,8 @@
-import { Container, Graphics } from "pixi.js";
+import { Container, Graphics, Rectangle } from "pixi.js";
 import { getScreenSize, uiRoot } from "../app";
 import { tween, easeInOutSine } from "../../ui/tween";
 import { uiTheme } from "../../ui/theme";
+import { setGlobalPointerDown } from "../../world";
 
 export interface Scene {
   readonly view: Container;
@@ -25,6 +26,7 @@ class SceneManager {
 
   init() {
     this.shutter.eventMode = "static";
+    this.shutter.on("pointerdown", (e) => e.stopPropagation());
     this.shutter.visible = false;
     this.shutter.addChild(this.top, this.bottom);
     uiRoot.addChild(this.sceneLayer, this.shutter);
@@ -33,8 +35,12 @@ class SceneManager {
   }
 
   async goTo(next: Scene) {
-    if (this.transitioning) return;
+    if (this.transitioning) {
+      next.view.destroy({ children: true });
+      return;
+    }
     this.transitioning = true;
+    setGlobalPointerDown(false);
     this.shutter.visible = true;
 
     if (this.current) {
@@ -75,6 +81,7 @@ class SceneManager {
   private animateShutter(from: number, to: number, duration: number) {
     return new Promise<void>((resolve) => {
       tween({
+        target: this.shutter,
         duration,
         ease: easeInOutSine,
         onUpdate: (t) => this.setShutter(from + (to - from) * t),
@@ -85,6 +92,7 @@ class SceneManager {
 
   private drawShutter(width: number, height: number) {
     this.height = height;
+    this.shutter.hitArea = new Rectangle(0, 0, width, height);
     const half = height / 2;
     const accent = uiTheme.colors.accent;
     const notch = Math.min(width * 0.18, 70);

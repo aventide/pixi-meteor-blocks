@@ -13,6 +13,7 @@ export const easeOutBack: Ease = (t) => {
 };
 
 type TweenOptions = {
+  target?: Container; // cancel immediately when this view is destroyed
   duration: number; // ms
   ease?: Ease;
   onUpdate: (t: number) => void;
@@ -22,6 +23,7 @@ type TweenOptions = {
 // Runs on the app ticker, so tweens pause with the app (e.g. hidden tab).
 // Returns a cancel function that stops the tween without completing it.
 export const tween = ({
+  target,
   duration,
   ease = easeOutCubic,
   onUpdate,
@@ -32,10 +34,11 @@ export const tween = ({
   let done = false;
 
   const tick = (time: Ticker) => {
+    if (done) return;
     elapsed += time.deltaMS;
     const t = Math.min(1, elapsed / Math.max(1, duration));
     onUpdate(ease(t));
-    if (t >= 1) {
+    if (!done && t >= 1) {
       cancel();
       onComplete?.();
     }
@@ -45,8 +48,11 @@ export const tween = ({
     if (done) return;
     done = true;
     ticker.remove(tick);
+    target?.off("destroyed", cancel);
   };
 
+  if (target?.destroyed) return cancel;
+  target?.once("destroyed", cancel);
   ticker.add(tick);
   return cancel;
 };
@@ -59,6 +65,7 @@ export const fade = (
   const from = target.alpha;
   return new Promise((resolve) => {
     tween({
+      target,
       duration,
       ease: easeInOutSine,
       onUpdate: (t) => {

@@ -47,9 +47,9 @@ export class TripCompleteScene implements Scene {
   update(dt: number) {
     this.time += dt;
     this.starfield.update(dt);
-    this.planetsRow.children.forEach((icon, i) => {
-      icon.y = Math.sin(this.time * 1.6 + i * 0.9) * 6;
-    });
+    for (let i = 0; i < this.planetsRow.children.length; i++) {
+      this.planetsRow.children[i].y = Math.sin(this.time * 1.6 + i * 0.9) * 6;
+    }
     for (const c of this.confetti) {
       c.view.x += c.vx * dt;
       c.view.y += c.vy * dt;

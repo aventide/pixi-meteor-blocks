@@ -23,13 +23,14 @@ import { planets } from "./config/planets";
 import { loadFonts } from "./ui/fonts";
 import { applyDevOverrides, devParams } from "./game/devParams";
 import { PlayScene } from "./game/scenes/PlayScene";
+import { FpsMeter } from "./ui/FpsMeter";
 
 (async () => {
   const app = new Application();
   await app.init({
     background: "#05070f",
     autoDensity: true,
-    resolution: Math.max(1, window.devicePixelRatio),
+    resolution: Math.min(2, Math.max(1, window.devicePixelRatio)),
     resizeTo: document.getElementById("pixi-container") || window,
   });
 
@@ -108,6 +109,7 @@ import { PlayScene } from "./game/scenes/PlayScene";
 
   await loadFonts();
   sceneManager.init();
+  if (devParams.fps) app.stage.addChild(new FpsMeter());
   app.ticker.add((time) => sceneManager.update(time.deltaMS / 1000));
   app.renderer.on("resize", (width: number, height: number) =>
     sceneManager.resize(width, height),

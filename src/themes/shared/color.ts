@@ -2,7 +2,7 @@ import type { Graphics } from "pixi.js";
 
 export const lerpColor = (a: number, b: number, t: number) => {
   let out = 0;
-  for (const shift of [16, 8, 0]) {
+  for (let shift = 16; shift >= 0; shift -= 8) {
     const ca = (a >> shift) & 255;
     const cb = (b >> shift) & 255;
     out |= Math.round(ca + (cb - ca) * t) << shift;
