@@ -1,6 +1,9 @@
 import type { Container } from "pixi.js";
-import { createPlaceholderTheme } from "../themes/shared/placeholder";
 import { earthTheme } from "../themes/earth";
+import { oceanTheme } from "../themes/ocean";
+import { desertTheme } from "../themes/desert";
+import { moonTheme } from "../themes/moon";
+import { casinoTheme } from "../themes/casino";
 import {
   DEFAULT_GRAVITY,
   DEFAULT_LAUNCH_VELOCITY,
@@ -84,13 +87,7 @@ export const planets: Record<PlanetId, PlanetConfig> = {
     },
     spawn: { dropIntervalMs: 750 },
     goal: { launchedBlocksToWin: 70 },
-    theme: createPlaceholderTheme({
-      bgTop: 0x14669a,
-      bgBottom: 0x061b38,
-      accent: 0x55ddee,
-      uiPanel: 0x102b48,
-      uiText: 0xe3faff,
-    }),
+    theme: oceanTheme,
   },
   desert: {
     id: "desert",
@@ -105,13 +102,7 @@ export const planets: Record<PlanetId, PlanetConfig> = {
     },
     spawn: { dropIntervalMs: 600 },
     goal: { launchedBlocksToWin: 80 },
-    theme: createPlaceholderTheme({
-      bgTop: 0xa84c58,
-      bgBottom: 0xdba754,
-      accent: 0xffcc66,
-      uiPanel: 0x49332e,
-      uiText: 0xfff4dd,
-    }),
+    theme: desertTheme,
   },
   moon: {
     id: "moon",
@@ -126,13 +117,7 @@ export const planets: Record<PlanetId, PlanetConfig> = {
     },
     spawn: { dropIntervalMs: 700 },
     goal: { launchedBlocksToWin: 90 },
-    theme: createPlaceholderTheme({
-      bgTop: 0x080b19,
-      bgBottom: 0x505565,
-      accent: 0xc6d1e8,
-      uiPanel: 0x242937,
-      uiText: 0xf0f3ff,
-    }),
+    theme: moonTheme,
   },
   casino: {
     id: "casino",
@@ -147,12 +132,6 @@ export const planets: Record<PlanetId, PlanetConfig> = {
     },
     spawn: { dropIntervalMs: 500 },
     goal: { launchedBlocksToWin: 100 },
-    theme: createPlaceholderTheme({
-      bgTop: 0x19102a,
-      bgBottom: 0x123b32,
-      accent: 0xffd65c,
-      uiPanel: 0x271e35,
-      uiText: 0xfff6dd,
-    }),
+    theme: casinoTheme,
   },
 };
