@@ -37,7 +37,12 @@ export type PlanetTheme = {
     burned: string;
   };
   createBackground: (width: number, height: number) => BackgroundHandle;
-  trail: { style: "fire" | "bubbles" | "dust" | "sparks"; colors: number[] };
+  trail: {
+    style: "fire" | "bubbles" | "dust" | "sparks";
+    colors: number[];
+    additive?: boolean; // override the style's blend mode
+    lifeScale?: number; // stretch particle lifetimes (e.g. low gravity)
+  };
   mapIcon: (radius: number) => Container;
 };
 
@@ -100,16 +105,16 @@ export const planets: Record<PlanetId, PlanetConfig> = {
       launchDescentRate: 240,
       popVelocity: -6500,
     },
-    spawn: { dropIntervalMs: 600 },
+    spawn: { dropIntervalMs: 680 },
     // Middle of the curve: above Ocean, below Moon (see docs/planet-notes/desert.md).
-    goal: { launchedBlocksToWin: 55 },
+    goal: { launchedBlocksToWin: 50 },
     theme: desertTheme,
   },
   moon: {
     id: "moon",
     name: "Moon",
     order: 3,
-    tagline: "Launches soar in low gravity, but the sky never stops falling.",
+    tagline: "Low gravity. High launches. Endless rain.",
     // Low gravity: launches reach the top from almost any height and falls
     // float, so faster spawns and a bigger goal keep it hard (see
     // docs/planet-notes/moon.md).
@@ -119,8 +124,8 @@ export const planets: Record<PlanetId, PlanetConfig> = {
       launchDescentRate: 110,
       popVelocity: -6000,
     },
-    spawn: { dropIntervalMs: 500 },
-    goal: { launchedBlocksToWin: 90 },
+    spawn: { dropIntervalMs: 520 },
+    goal: { launchedBlocksToWin: 100 },
     theme: moonTheme,
   },
   casino: {

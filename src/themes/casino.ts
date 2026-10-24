@@ -146,6 +146,10 @@ const createBackground = (width: number, height: number): BackgroundHandle => {
   const felt = new Graphics();
   const floaterLayer = new Container();
   const vignette = new Graphics();
+  // The felt and vignette are static and fill-heavy (a full-canvas weave and
+  // stacked translucent edge strips), so render them once to textures.
+  felt.cacheAsTexture(true);
+  vignette.cacheAsTexture(true);
   const neonLayer = new Container();
   const bulbLayer = new Container();
   const sparkleLayer = new Container();
@@ -235,6 +239,9 @@ const createBackground = (width: number, height: number): BackgroundHandle => {
         .rect(0, h - (h * 0.2 * (i + 1)) / 10, w, (h * 0.2) / 10 + 1)
         .fill({ color: 0x0a0300, alpha: 0.03 * (1 - i / 10) });
     }
+
+    felt.updateCacheTexture();
+    vignette.updateCacheTexture();
 
     // Floating chip and suit silhouettes.
     floaterLayer.removeChildren().forEach((c) => c.destroy());
@@ -513,6 +520,8 @@ export const casinoTheme: PlanetTheme = {
   trail: {
     style: "sparks",
     colors: [0xffffff, 0xffe066, 0xffa41c, 0xff2fa0],
+    // Additive gold over green felt drifts toward green as it fades.
+    additive: false,
   },
   mapIcon,
 };

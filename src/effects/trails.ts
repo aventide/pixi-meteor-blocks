@@ -1,7 +1,12 @@
 import { Particle, ParticleContainer, Texture } from "pixi.js";
 import type { BlockGroup } from "../entities/types";
 import type { PlanetTheme } from "../config/planets";
-import { addToParticlesLayer, getBlockSize, getWorld } from "../world";
+import {
+  addToParticlesLayer,
+  getActivePlanet,
+  getBlockSize,
+  getWorld,
+} from "../world";
 import { DEFAULT_REFERENCE_HEIGHT } from "../constants";
 import { sampleGradient, type GradientStop } from "../themes/shared/color";
 
@@ -129,7 +134,11 @@ export class TrailSystem {
   private spawnDebt = new Map<number, number>();
   private ignited = new Set<number>();
 
-  constructor(trail: PlanetTheme["trail"]) {
+  constructor(
+    trail: PlanetTheme["trail"],
+    // Called with the block count whenever a new launch ignites.
+    private readonly onIgnite?: (blocks: number) => void,
+  ) {
     const texture = getSoftTexture();
     const options = {
       texture,
@@ -143,7 +152,13 @@ export class TrailSystem {
     this.normal = new ParticleContainer(options);
     this.additive = new ParticleContainer(options);
     this.additive.blendMode = "add";
-    this.params = STYLES[trail.style];
+    const style = STYLES[trail.style];
+    const lifeScale = trail.lifeScale ?? 1;
+    this.params = {
+      ...style,
+      additive: trail.additive ?? style.additive,
+      life: [style.life[0] * lifeScale, style.life[1] * lifeScale],
+    };
     this.trailStops = toStops(trail.colors);
     this.flashStops = toStops([
       0xffffff,
@@ -158,13 +173,22 @@ export class TrailSystem {
     const blockSize = getBlockSize();
     const launching = this.launching;
     launching.clear();
+    const launchVelocity = getActivePlanet().physics.launchVelocity;
 
     for (const group of getWorld().blockGroupsById.values()) {
       if (group.type !== "launch") continue;
       launching.add(group.id);
-      if (!this.ignited.has(group.id)) {
-        this.ignited.add(group.id);
-        this.ignite(group, blockSize);
+      // A real launch (or mid-air re-launch) is the one frame where the
+      // sequence mutator has just set velocity to exactly launchVelocity;
+      // gravity changes it before this runs again. Merges on contact keep the
+      // "launch" type but never reset velocity, so they don't count.
+      if (group.velocity === launchVelocity) {
+        if (!this.ignited.has(group.id)) {
+          this.ignited.add(group.id);
+          this.ignite(group, blockSize);
+        }
+      } else {
+        this.ignited.delete(group.id);
       }
       // Trails burn only while the group is still rising.
       if (group.velocity < 0) this.emitTrail(group, blockSize, dt);
@@ -235,6 +259,9 @@ export class TrailSystem {
   // A bright pop over every block in a newly launched group, plus sparks.
   private ignite(group: BlockGroup, blockSize: number) {
     const scale = blockSize / 64;
+    this.onIgnite?.(
+      group.fileFragments.reduce((n, f) => n + f.blocks.length, 0),
+    );
     for (const fragment of group.fileFragments) {
       for (const block of fragment.blocks) {
         const cx = block.sprite.x + blockSize / 2;

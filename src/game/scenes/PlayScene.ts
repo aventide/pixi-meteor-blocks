@@ -33,6 +33,7 @@ import { getUiScale, uiTheme } from "../../ui/theme";
 type PlayState = "loading" | "intro" | "playing" | "paused" | "won" | "lost";
 
 const RESULT_DELAY_MS = 650;
+const SHAKE_DURATION = 0.28; // seconds
 
 export const getHudHeight = (width: number, height: number) =>
   Math.max(uiTheme.minTouchTarget, Math.round(56 * getUiScale(width, height)));
@@ -49,6 +50,8 @@ export class PlayScene implements Scene {
   private state: PlayState = "loading";
   private background: BackgroundHandle | null = null;
   private trails: TrailSystem | null = null;
+  private shakeTime = 0;
+  private shakeAmplitude = 0;
   private launched = 0;
   private hud: Hud | null = null;
   private intro: IntroCard | null = null;
@@ -89,7 +92,9 @@ export class PlayScene implements Scene {
         getActivePlanet().theme.palette,
       ),
     );
-    this.trails = new TrailSystem(getActivePlanet().theme.trail);
+    this.trails = new TrailSystem(getActivePlanet().theme.trail, (blocks) =>
+      this.shake(blocks),
+    );
 
     this.unsubscribers.push(
       gameEvents.on("blocksLaunchedOut", (count) => this.onLaunched(count)),
@@ -118,6 +123,7 @@ export class PlayScene implements Scene {
     resetWorld();
     worldRoot.visible = false;
     worldRoot.position.set(0, 0);
+    worldRoot.pivot.set(0, 0);
   }
 
   update(dt: number) {
@@ -128,6 +134,27 @@ export class PlayScene implements Scene {
       this.hud?.setDanger(this.isInDanger());
     }
     this.hud?.update(dt);
+    this.updateShake(dt);
+  }
+
+  // A short jolt when a big launch ignites. Applied through the board's pivot
+  // so the board offset used for pointer mapping is never touched.
+  private shake(blocks: number) {
+    if (blocks < 5) return;
+    const { width, height } = getScreenSize();
+    this.shakeAmplitude =
+      Math.min(10, 2 + blocks * 0.7) * getUiScale(width, height);
+    this.shakeTime = SHAKE_DURATION;
+  }
+
+  private updateShake(dt: number) {
+    if (this.shakeTime <= 0) return;
+    this.shakeTime = Math.max(0, this.shakeTime - dt);
+    const amount = this.shakeAmplitude * (this.shakeTime / SHAKE_DURATION);
+    worldRoot.pivot.set(
+      (Math.random() * 2 - 1) * amount,
+      (Math.random() * 2 - 1) * amount,
+    );
   }
 
   resize(width: number, height: number) {

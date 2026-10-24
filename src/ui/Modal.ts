@@ -4,6 +4,7 @@ import { Label } from "./Label";
 import { Button, type ButtonVariant } from "./Button";
 import { getUiScale, uiTheme } from "./theme";
 import { easeOutBack, fade, tween } from "./tween";
+import { lerpColor } from "../themes/shared/color";
 
 export type ModalAction = {
   label: string;
@@ -77,7 +78,11 @@ export class Modal extends Container {
     if (message) {
       const body = new Label(message, {
         variant: "body",
-        color: uiTheme.colors.textMuted,
+        color: lerpColor(
+          uiTheme.colors.textMuted,
+          accent ?? uiTheme.colors.accent,
+          0.35,
+        ),
         scale: s,
         wordWrapWidth: panelWidth - uiTheme.space.lg * 2 * s,
       });

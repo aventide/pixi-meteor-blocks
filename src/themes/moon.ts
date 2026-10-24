@@ -328,6 +328,7 @@ export const moonTheme: PlanetTheme = {
   trail: {
     style: "fire",
     colors: [0xffffff, 0xd6ecff, 0x8cc2ff, 0xffbe6a, 0xff7a2a],
+    lifeScale: 1.5, // plumes linger in low gravity
   },
   mapIcon,
 };

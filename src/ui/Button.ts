@@ -148,10 +148,23 @@ export class Button extends Container {
 
     if (this.variant === "primary") {
       const c0 = uiTheme.colors;
-      const top = pressed
-        ? c0.buttonPressedTop
-        : lerpColor(c0.buttonTop, this.accent, 0.35);
-      const bottom = pressed ? c0.buttonPressedBottom : c0.buttonBottom;
+      // The default accent keeps the classic blue; planet accents tint the
+      // whole button so each world's interface matches its palette.
+      const classic = this.accent === c0.accent;
+      const top = classic
+        ? pressed
+          ? c0.buttonPressedTop
+          : lerpColor(c0.buttonTop, this.accent, 0.35)
+        : lerpColor(
+            this.accent,
+            pressed ? 0x000000 : 0xffffff,
+            pressed ? 0.1 : 0.35,
+          );
+      const bottom = classic
+        ? pressed
+          ? c0.buttonPressedBottom
+          : c0.buttonBottom
+        : lerpColor(this.accent, 0x000000, pressed ? 0.6 : 0.45);
       g.poly(pts).fill(
         verticalGradient(hover ? lerpColor(top, 0xffffff, 0.2) : top, bottom),
       );

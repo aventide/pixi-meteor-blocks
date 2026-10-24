@@ -67,7 +67,7 @@ export class IntroCard extends Container {
     const tagline = new Label(planet.tagline, {
       variant: "body",
       scale: s * 0.95,
-      color: uiTheme.colors.textMuted,
+      color: lerpColor(uiTheme.colors.textMuted, accent, 0.35),
       wordWrapWidth: panelWidth - uiTheme.space.xl * s,
     });
     tagline.y = top + 236 * s;

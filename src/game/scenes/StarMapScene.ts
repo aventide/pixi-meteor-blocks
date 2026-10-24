@@ -370,7 +370,7 @@ export class StarMapScene implements Scene {
     const tagline = new Label(planet.tagline, {
       variant: "body",
       scale: s * 0.9,
-      color: uiTheme.colors.textMuted,
+      color: lerpColor(uiTheme.colors.textMuted, accent, 0.35),
       wordWrapWidth: panelWidth - uiTheme.space.xl * s,
     });
     tagline.y = top + 86 * s;
