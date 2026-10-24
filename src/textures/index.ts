@@ -1,62 +1,56 @@
 import { Assets, Texture } from "pixi.js";
+import type { PlanetId, PlanetTheme } from "../config/planets";
+import { getActivePlanet } from "../world";
 import { getRandomIntUpTo } from "../util";
 
-let redTexture: Texture | null = null;
-let blueTexture: Texture | null = null;
-let greenTexture: Texture | null = null;
-let yellowTexture: Texture | null = null;
-let burnedTexture: Texture | null = null;
+type TileName = keyof PlanetTheme["tiles"];
+type TextureSet = Record<TileName, Texture>;
+const texturesByPlanet = new Map<PlanetId, TextureSet>();
+const loadingByPlanet = new Map<PlanetId, Promise<void>>();
 
 export const loadTextures = async (): Promise<void> => {
-  if (
-    redTexture &&
-    blueTexture &&
-    greenTexture &&
-    yellowTexture &&
-    burnedTexture
-  ) {
-    return;
-  }
+  // Capture the planet before awaiting; switching during a load cannot mix sets.
+  const { id, theme } = getActivePlanet();
+  if (texturesByPlanet.has(id)) return;
+  const pending = loadingByPlanet.get(id);
+  if (pending) return pending;
 
-  const [loadedRed, loadedBlue, loadedGreen, loadedYellow, loadedBurned] =
-    await Promise.all([
-      Assets.load("/assets/tile_red.svg"),
-      Assets.load("/assets/tile_blue.svg"),
-      Assets.load("/assets/tile_green.svg"),
-      Assets.load("/assets/tile_yellow.svg"),
-      Assets.load("/assets/tile_burned.svg"),
+  const loading = (async () => {
+    const [red, blue, green, yellow, burned] = await Promise.all([
+      Assets.load<Texture>(theme.tiles.red),
+      Assets.load<Texture>(theme.tiles.blue),
+      Assets.load<Texture>(theme.tiles.green),
+      Assets.load<Texture>(theme.tiles.yellow),
+      Assets.load<Texture>(theme.tiles.burned),
     ]);
-
-  redTexture = loadedRed;
-  blueTexture = loadedBlue;
-  greenTexture = loadedGreen;
-  yellowTexture = loadedYellow;
-  burnedTexture = loadedBurned;
+    texturesByPlanet.set(id, { red, blue, green, yellow, burned });
+  })();
+  loadingByPlanet.set(id, loading);
+  try {
+    await loading;
+  } finally {
+    loadingByPlanet.delete(id);
+  }
 };
 
-const requireTexture = (
-  texture: Texture | null,
-  textureName: string,
-): Texture => {
+const requireTexture = (name: TileName): Texture => {
+  const texture = texturesByPlanet.get(getActivePlanet().id)?.[name];
   if (!texture) {
     throw new Error(
-      `Texture "${textureName}" has not been initialized. Call loadTextures() before using textures.`,
+      `Texture "${name}" has not been initialized for the active planet. Call loadTextures() before using textures.`,
     );
   }
-
   return texture;
 };
 
-export const getBurnedTexture = (): Texture =>
-  requireTexture(burnedTexture, "burned");
+export const getBurnedTexture = (): Texture => requireTexture("burned");
 
 export const getRandomBlockTexture = (): Texture => {
-  const textureOptions: Texture[] = [
-    requireTexture(redTexture, "red"),
-    requireTexture(blueTexture, "blue"),
-    requireTexture(greenTexture, "green"),
-    requireTexture(yellowTexture, "yellow"),
+  const textureOptions = [
+    requireTexture("red"),
+    requireTexture("blue"),
+    requireTexture("green"),
+    requireTexture("yellow"),
   ];
-
   return textureOptions[getRandomIntUpTo(textureOptions.length)];
 };

@@ -5,7 +5,7 @@ import type {
   GroupFileFragment,
 } from "./types";
 
-import { getBlockSize, getVeil, getWorld } from "../world";
+import { destroyWorldView, getBlockSize, getVeil, getWorld } from "../world";
 import { getBlockGroupById } from "./blockGroup/util";
 import { normalizeFileFragment } from "./fileFragment/operations";
 import { createGroupFileFragment } from "./fileFragment/index";
@@ -13,6 +13,7 @@ import {
   getFileFragmentById,
   getFileFragmentsInGroupByFileNumber,
 } from "./fileFragment/util";
+import { blocksLaunchedOut } from "../game/events";
 import { isClose } from "../util";
 import {
   ejectSubgroupFromBlockGroup,
@@ -265,6 +266,8 @@ export const assignBlockToGroup = (
 };
 
 export const vanishVeilExceedingBlocksInGroup = (group: BlockGroup) => {
+  // A stale group reference must not count blocks already removed or regrouped.
+  if (getWorld().blockGroupsById.get(group.id) !== group) return;
   const veil = getVeil();
   const blocksToEject: Block[] = [];
 
@@ -281,7 +284,12 @@ export const vanishVeilExceedingBlocksInGroup = (group: BlockGroup) => {
   if (blocksToEject.length > 0) {
     const { targetGroup } = ejectSubgroupFromBlockGroup(group, blocksToEject);
     if (targetGroup) {
+      const vanishedBlocks = new Set(
+        targetGroup.fileFragments.flatMap((fragment) => fragment.blocks),
+      );
       removeBlockGroup(targetGroup);
+      vanishedBlocks.forEach((block) => destroyWorldView(block.sprite));
+      blocksLaunchedOut(vanishedBlocks.size);
     }
   }
 };

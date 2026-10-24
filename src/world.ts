@@ -13,6 +13,16 @@ import {
   DEFAULT_POINTER_POSITION,
 } from "./constants";
 import { Container, Sprite } from "pixi.js";
+import { planets, type PlanetId } from "./config/planets";
+
+let activePlanetId: PlanetId = "earth";
+
+export const getActivePlanet = () => planets[activePlanetId];
+
+export const setActivePlanet = (id: PlanetId) => {
+  activePlanetId = id;
+  setWorldGravity(getActivePlanet().physics.gravity);
+};
 
 export type WorldStage = Container & {
   backgroundLayer: Container;
@@ -115,7 +125,7 @@ export const setSelectedFragmentOverlay = (
   newSelectedFragmentOverlay: Container | null,
 ) => {
   if (world.selectedFragmentOverlay) {
-    world.stageLayers.overlayLayer.removeChild(world.selectedFragmentOverlay);
+    destroyWorldView(world.selectedFragmentOverlay);
   }
 
   world.selectedFragmentOverlay = newSelectedFragmentOverlay;
@@ -180,4 +190,47 @@ export const initializeStage = (stage: Container) => {
     world.stageLayers.blocksLayer,
     world.stageLayers.overlayLayer,
   );
+};
+
+// World-owned views never own the shared, cached block textures.
+export const destroyWorldView = (view: Container) => {
+  if (view.destroyed) return;
+  for (const child of [...view.children]) destroyWorldView(child);
+  for (const filter of view.filters ?? []) filter.destroy();
+  view.destroy({ children: true });
+};
+
+export const resetWorld = () => {
+  // Include detached sprites/overlays still referenced by entities.
+  world.fileFragmentsById.forEach((fragment) => {
+    fragment.blocks.forEach((block) => {
+      destroyWorldView(block.sprite);
+      block.groupId = null;
+      block.fragmentId = null;
+    });
+    destroyWorldView(fragment.overlay.danger);
+  });
+  Object.values(world.stageLayers).forEach((layer) => {
+    for (const child of [...layer.children]) destroyWorldView(child);
+  });
+  // addToStage can also attach run-owned objects outside the four layers.
+  const layers = Object.values(world.stageLayers);
+  for (const child of [...(world.stage?.children ?? [])]) {
+    if (!layers.includes(child)) destroyWorldView(child);
+  }
+
+  world.blockGroupsById.clear();
+  world.fileFragmentsById.clear();
+  world.blockGroupsByFileNumber.clear();
+  world.fileFragmentsByFileNumber.clear();
+  for (let file = 1; file <= DEFAULT_FILE_COUNT; file++) {
+    world.blockGroupsByFileNumber.set(file, []);
+    world.fileFragmentsByFileNumber.set(file, []);
+  }
+  world.nextBlockGroupId = 1;
+  world.nextFileFragmentId = 1;
+  world.globalPointer = { ...DEFAULT_POINTER_POSITION };
+  world.globalPointerDown = false;
+  world.selectedFragmentOverlay = null;
+  world.gravity = getActivePlanet().physics.gravity;
 };

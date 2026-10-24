@@ -1,4 +1,4 @@
-import { DEFAULT_LAUNCH_VELOCITY } from "../../constants";
+import { getActivePlanet } from "../../world";
 import { ejectSubgroupFromBlockGroup, getBlockGroupById } from "../../entities";
 import { BlockGroup, BlockSequence, FileFragment } from "../../entities/types";
 import {
@@ -58,7 +58,7 @@ const launchVerticalSequence = (
   const launchedGroup = mergeAllBlockGroups(ejectedGroups);
   if (launchedGroup) {
     launchedGroup.type = "launch";
-    launchedGroup.velocity = DEFAULT_LAUNCH_VELOCITY;
+    launchedGroup.velocity = getActivePlanet().physics.launchVelocity;
   }
 };
 
@@ -94,7 +94,7 @@ const launchHorizontalSequence = (
   const launchedGroup = mergeAllBlockGroups(ejectedGroups);
   if (launchedGroup) {
     launchedGroup.type = "launch";
-    launchedGroup.velocity = DEFAULT_LAUNCH_VELOCITY;
+    launchedGroup.velocity = getActivePlanet().physics.launchVelocity;
   }
 };
 

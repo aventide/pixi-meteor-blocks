@@ -1,30 +1,17 @@
 import { Application } from "pixi.js";
 
 import {
-  getWorld,
+  setActivePlanet,
   setGlobalPointer,
   setGlobalPointerDown,
   setWorldDimensions,
   initializeStage,
 } from "./world";
-import { createSingleBlock } from "./entities";
-import {
-  descentMutator,
-  sequenceMutator,
-  positionMutator,
-  selectionMutator,
-} from "./mutators";
-import { getRandomFileNumber } from "./util";
-import { getIsSpawnPositionOpen } from "./entities";
 import {
   ACCELERATED_MAIN_TICKER_SPEED,
-  DEFAULT_DROP_INTERVAL,
-  DEFAULT_FILE_COUNT,
-  DEFAULT_FILE_BLOCKS_LIMIT,
   DEFAULT_MAIN_TICKER_SPEED,
 } from "./constants";
-import { dangerAnimation } from "./animations";
-import { getAllSelectionFileFragments } from "./mutators/selectionMutator/util";
+import { startGameLoop } from "./game/loop";
 import { loadTextures } from "./textures";
 
 (async () => {
@@ -36,6 +23,7 @@ import { loadTextures } from "./textures";
     resizeTo: document.getElementById("pixi-container") || window,
   });
 
+  setActivePlanet("earth");
   await loadTextures();
 
   initializeStage(app.stage);
@@ -94,64 +82,5 @@ import { loadTextures } from "./textures";
 
   setWorldDimensions(app.screen.height, app.screen.width);
 
-  let timeAccumulated = 0;
-  app.ticker.add((time) => {
-    const dropInterval = DEFAULT_DROP_INTERVAL;
-    timeAccumulated += time.deltaMS;
-    if (timeAccumulated >= dropInterval) {
-      timeAccumulated -= dropInterval;
-      let createdBlock = null;
-      let attempts = 0;
-
-      // @todo we should attempt every other fileNumber before bailing out
-      while (!createdBlock && attempts < DEFAULT_FILE_COUNT) {
-        const file = getRandomFileNumber();
-        attempts++;
-        if (getIsSpawnPositionOpen(file)) {
-          createdBlock = createSingleBlock(file);
-        }
-      }
-    }
-  });
-
-  app.ticker.add((time) => {
-    const { blockGroupsById } = getWorld();
-    const dt = time.deltaTime / 60;
-
-    let iterations = 0;
-
-    // apply once per group per tick mutations
-    blockGroupsById.forEach((blockGroup) => {
-      if (iterations <= 300) {
-        iterations++;
-        descentMutator(blockGroup, dt);
-        positionMutator(blockGroup, dt);
-        // an optional (via arg) mutator which applies a debug overlay to each group
-        // debugMutator(blockGroup, true)
-      } else {
-        throw new Error("Iteration pressure level exceeded threshold");
-      }
-    });
-
-    // apply once per tick mutations
-
-    // get all selectionFragments for file
-    const allSelectionFileFragments = getAllSelectionFileFragments();
-
-    selectionMutator(allSelectionFileFragments);
-    sequenceMutator(allSelectionFileFragments);
-    dangerAnimation(dt);
-
-    // check for losing state
-    // @todo consider adding a 1-2 sec "tolerance" once file limit is reached
-    // before the file is considered for placement (and game loss)
-    blockGroupsById.forEach((blockGroup) =>
-      blockGroup.fileFragments.forEach((fileFragment) => {
-        if (fileFragment.blocks.length >= DEFAULT_FILE_BLOCKS_LIMIT + 2) {
-          alert("You have lost the game.");
-          app.stop();
-        }
-      }),
-    );
-  });
+  startGameLoop(app);
 })();

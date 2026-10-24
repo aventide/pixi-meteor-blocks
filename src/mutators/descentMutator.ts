@@ -1,7 +1,6 @@
-import { DEFAULT_LAUNCH_DESCENT_RATE } from "../constants";
 import type { BlockGroup } from "../entities/types";
 
-import { getWorld } from "../world";
+import { getActivePlanet, getWorld } from "../world";
 
 export const descentMutator = (blockGroup: BlockGroup, dt: number) => {
   const { gravity } = getWorld();
@@ -12,7 +11,7 @@ export const descentMutator = (blockGroup: BlockGroup, dt: number) => {
   if (blockGroup.type === "launch" && blockGroup.velocity > 0) {
     blockGroup.velocity = Math.min(
       blockGroup.velocity,
-      DEFAULT_LAUNCH_DESCENT_RATE,
+      getActivePlanet().physics.launchDescentRate,
     );
   }
 };

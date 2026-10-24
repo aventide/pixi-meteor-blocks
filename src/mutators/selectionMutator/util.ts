@@ -15,7 +15,8 @@ import {
   getIsFileFragmentRooted,
   removeBlockGroup,
 } from "../../entities";
-import { DEFAULT_FILE_COUNT, DEFAULT_POP_VELOCITY } from "../../constants";
+import { DEFAULT_FILE_COUNT } from "../../constants";
+import { getActivePlanet } from "../../world";
 import { ejectSubgroupFromBlockGroup } from "../../entities";
 
 const ejectTopMostBlockOfFragment = (selectionFileFragment: FileFragment) => {
@@ -42,7 +43,7 @@ const ejectTopMostBlockOfFragment = (selectionFileFragment: FileFragment) => {
 
   if (targetGroup) {
     targetGroup.type = "pop";
-    targetGroup.velocity = DEFAULT_POP_VELOCITY;
+    targetGroup.velocity = getActivePlanet().physics.popVelocity;
   }
 };
 
