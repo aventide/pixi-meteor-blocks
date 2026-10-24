@@ -1,0 +1,20 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <title>Earth blue tile</title>
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7cc4ff"/>
+      <stop offset="0.5" stop-color="#2a7bff"/>
+      <stop offset="1" stop-color="#1446b8"/>
+    </linearGradient>
+    <linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="124" height="124" rx="18" fill="#0a225e"/>
+  <rect x="6" y="6" width="116" height="116" rx="15" fill="url(#body)"/>
+  <rect x="7.5" y="7.5" width="113" height="113" rx="14" fill="none" stroke="#a8d8ff" stroke-width="3"/>
+  <path d="M14 22 Q14 12 24 12 H104 Q114 12 114 22 V46 Q64 58 14 46 Z" fill="url(#gloss)"/>
+  <g transform="translate(0 4)" opacity="0.35"><g stroke="#0a225e" stroke-width="10" stroke-linecap="round"><path d="M26 48 q9.5 -11 19 0 t19 0 t19 0 t19 0" fill="none"/><path d="M26 66 q9.5 -11 19 0 t19 0 t19 0 t19 0" fill="none"/><path d="M26 84 q9.5 -11 19 0 t19 0 t19 0 t19 0" fill="none"/></g></g>
+  <g><g stroke="#1446b8" stroke-width="17" stroke-linecap="round"><path d="M26 48 q9.5 -11 19 0 t19 0 t19 0 t19 0" fill="none"/><path d="M26 66 q9.5 -11 19 0 t19 0 t19 0 t19 0" fill="none"/><path d="M26 84 q9.5 -11 19 0 t19 0 t19 0 t19 0" fill="none"/></g><g stroke="#ffffff" stroke-width="10" stroke-linecap="round"><path d="M26 48 q9.5 -11 19 0 t19 0 t19 0 t19 0" fill="none"/><path d="M26 66 q9.5 -11 19 0 t19 0 t19 0 t19 0" fill="none"/><path d="M26 84 q9.5 -11 19 0 t19 0 t19 0 t19 0" fill="none"/></g></g>
+</svg>

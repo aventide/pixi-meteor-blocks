@@ -17,6 +17,8 @@ import {
   type PlanetId,
 } from "../../config/planets";
 import { startGameLoop, stopGameLoop } from "../loop";
+import { createBoardFrame } from "../boardFrame";
+import { TrailSystem } from "../../effects/trails";
 import { gameEvents, gameWon } from "../events";
 import { getApp, getScreenSize, setBoardInputEnabled, worldRoot } from "../app";
 import { Label } from "../../ui/Label";
@@ -42,6 +44,7 @@ export class PlayScene implements Scene {
   private readonly planetId: PlanetId;
   private state: PlayState = "loading";
   private background: BackgroundHandle | null = null;
+  private trails: TrailSystem | null = null;
   private launched = 0;
   private hud = new Container();
   private hudBg = new Graphics();
@@ -76,6 +79,14 @@ export class PlayScene implements Scene {
     this.background = getActivePlanet().theme.createBackground(width, height);
     this.background.view.position.set(-boardX, -hudHeight);
     addToBackgroundLayer(this.background.view);
+    addToBackgroundLayer(
+      createBoardFrame(
+        boardWidth,
+        boardHeight,
+        getActivePlanet().theme.palette,
+      ),
+    );
+    this.trails = new TrailSystem(getActivePlanet().theme.trail);
 
     this.unsubscribers.push(
       gameEvents.on("blocksLaunchedOut", (count) => this.onLaunched(count)),
@@ -97,6 +108,8 @@ export class PlayScene implements Scene {
     stopGameLoop();
     setBoardInputEnabled(false);
     setGlobalPointerDown(false);
+    this.trails?.destroy();
+    this.trails = null;
     this.background?.destroy();
     this.background = null;
     resetWorld();
@@ -106,6 +119,7 @@ export class PlayScene implements Scene {
 
   update(dt: number) {
     this.background?.update(dt);
+    if (this.state === "playing") this.trails?.update(dt);
   }
 
   resize(width: number, height: number) {
@@ -247,7 +261,7 @@ export class PlayScene implements Scene {
     this.hudBg
       .clear()
       .rect(0, 0, width, hudHeight)
-      .fill({ color: planet.theme.palette.uiPanel, alpha: 0.94 })
+      .fill(planet.theme.palette.uiPanel)
       .rect(0, hudHeight - 2, width, 2)
       .fill({ color: planet.theme.palette.accent, alpha: 0.8 });
     this.hudBg.eventMode = "static";

@@ -1,0 +1,20 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <title>Earth green tile</title>
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8df08a"/>
+      <stop offset="0.5" stop-color="#27b84f"/>
+      <stop offset="1" stop-color="#127a2e"/>
+    </linearGradient>
+    <linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="124" height="124" rx="18" fill="#063d16"/>
+  <rect x="6" y="6" width="116" height="116" rx="15" fill="url(#body)"/>
+  <rect x="7.5" y="7.5" width="113" height="113" rx="14" fill="none" stroke="#b3ffb0" stroke-width="3"/>
+  <path d="M14 22 Q14 12 24 12 H104 Q114 12 114 22 V46 Q64 58 14 46 Z" fill="url(#gloss)"/>
+  <g transform="translate(0 4)" opacity="0.35"><path d="M64 24 L90 58 L77 58 L96 84 L70 84 L70 100 L58 100 L58 84 L32 84 L51 58 L38 58 Z" fill="#063d16" stroke="#063d16" stroke-width="0" stroke-linejoin="round" paint-order="stroke"/></g>
+  <g><path d="M64 24 L90 58 L77 58 L96 84 L70 84 L70 100 L58 100 L58 84 L32 84 L51 58 L38 58 Z" fill="#ffffff" stroke="#127a2e" stroke-width="7" stroke-linejoin="round" paint-order="stroke"/></g>
+</svg>

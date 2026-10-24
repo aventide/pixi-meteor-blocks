@@ -1,4 +1,5 @@
 import { Container, Graphics } from "pixi.js";
+import { lerpColor } from "../themes/shared/color";
 
 type Star = { view: Graphics; baseAlpha: number; phase: number; speed: number };
 
@@ -72,13 +73,3 @@ export class Starfield extends Container {
     }
   }
 }
-
-export const lerpColor = (a: number, b: number, t: number) => {
-  let out = 0;
-  for (const shift of [16, 8, 0]) {
-    const ca = (a >> shift) & 255;
-    const cb = (b >> shift) & 255;
-    out |= Math.round(ca + (cb - ca) * t) << shift;
-  }
-  return out;
-};

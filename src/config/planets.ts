@@ -1,5 +1,6 @@
-import { Graphics } from "pixi.js";
 import type { Container } from "pixi.js";
+import { createPlaceholderTheme } from "../themes/shared/placeholder";
+import { earthTheme } from "../themes/earth";
 import {
   DEFAULT_GRAVITY,
   DEFAULT_LAUNCH_VELOCITY,
@@ -53,49 +54,6 @@ export type PlanetConfig = {
   theme: PlanetTheme;
 };
 
-const createPlaceholderTheme = (
-  palette: PlanetTheme["palette"],
-): PlanetTheme => ({
-  palette,
-  tiles: {
-    red: "/assets/tile_red.svg",
-    blue: "/assets/tile_blue.svg",
-    green: "/assets/tile_green.svg",
-    yellow: "/assets/tile_yellow.svg",
-    burned: "/assets/tile_burned.svg",
-  },
-  createBackground: (width, height) => {
-    const view = new Graphics();
-    view.eventMode = "none";
-    const resize = (w: number, h: number) => {
-      view.clear();
-      // A vertical gradient made of flat strips needs no auxiliary textures.
-      const steps = 128;
-      for (let i = 0; i < steps; i++) {
-        let color = 0;
-        for (const shift of [16, 8, 0]) {
-          const top = (palette.bgTop >> shift) & 255;
-          const bottom = (palette.bgBottom >> shift) & 255;
-          color |=
-            Math.round(top + ((bottom - top) * i) / (steps - 1)) << shift;
-        }
-        view.rect(0, (h * i) / steps, w, h / steps).fill(color);
-      }
-    };
-    resize(width, height);
-    return {
-      view,
-      update: () => {},
-      resize,
-      destroy: () => {
-        if (!view.destroyed) view.destroy();
-      },
-    };
-  },
-  trail: { style: "fire", colors: [palette.accent, 0xffeeaa] },
-  mapIcon: (radius) => new Graphics().circle(0, 0, radius).fill(palette.accent),
-});
-
 export const planets: Record<PlanetId, PlanetConfig> = {
   earth: {
     id: "earth",
@@ -109,14 +67,9 @@ export const planets: Record<PlanetId, PlanetConfig> = {
       popVelocity: DEFAULT_POP_VELOCITY,
     },
     spawn: { dropIntervalMs: DEFAULT_DROP_INTERVAL },
-    goal: { launchedBlocksToWin: 60 },
-    theme: createPlaceholderTheme({
-      bgTop: 0x1099bb,
-      bgBottom: 0x215c45,
-      accent: 0x66cc88,
-      uiPanel: 0x153744,
-      uiText: 0xffffff,
-    }),
+    // ~2-3 minutes for a first-time player; rebalanced in D13.
+    goal: { launchedBlocksToWin: 40 },
+    theme: earthTheme,
   },
   ocean: {
     id: "ocean",
