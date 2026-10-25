@@ -1,30 +1,31 @@
 <svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
   <title>Casino yellow tile</title>
   <defs>
-    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#fff29a"/>
-      <stop offset="0.5" stop-color="#ffc414"/>
-      <stop offset="1" stop-color="#d48400"/>
+    <linearGradient id="frame" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffd040"/>
+      <stop offset="0.45" stop-color="#d89a10"/>
+      <stop offset="1" stop-color="#5a3a00"/>
     </linearGradient>
-    <linearGradient id="face" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#ffe46a"/>
-      <stop offset="1" stop-color="#f0a800"/>
-    </linearGradient>
-    <linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#ffffff" stop-opacity="0.55"/>
+    <radialGradient id="body" cx="0.5" cy="0.42" r="0.68">
+      <stop offset="0" stop-color="#d89a10"/>
+      <stop offset="0.6" stop-color="#5a3a00"/>
+      <stop offset="1" stop-color="#5a3a00"/>
+    </radialGradient>
+    <linearGradient id="topLight" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0.3" stop-color="#ffffff"/>
       <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
     </linearGradient>
+    <mask id="top"><rect width="128" height="24" fill="url(#topLight)"/></mask>
+    <clipPath id="face"><path d="M23 8 L120 8 L120 105 L105 120 L8 120 L8 23 L23 8 Z"/></clipPath>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="4"/>
+    </filter>
   </defs>
-  <rect x="2" y="2" width="124" height="124" rx="18" fill="#6a3c00"/>
-  <rect x="6" y="6" width="116" height="116" rx="15" fill="url(#body)"/>
-  <rect x="7.5" y="7.5" width="113" height="113" rx="14" fill="none" stroke="#fff6bf" stroke-width="3"/>
-  <circle cx="64" cy="66" r="55" fill="#6a3c00" opacity="0.35"/>
-  <circle cx="64" cy="64" r="55" fill="#e09a00" stroke="#6a3c00" stroke-width="2.5"/>
-  <rect x="58" y="10.5" width="12" height="12" rx="2.5" fill="#fffaf0" stroke="#7a4300" stroke-width="1.2" transform="rotate(22.5 64 64)"/><rect x="58" y="10.5" width="12" height="12" rx="2.5" fill="#fffaf0" stroke="#7a4300" stroke-width="1.2" transform="rotate(67.5 64 64)"/><rect x="58" y="10.5" width="12" height="12" rx="2.5" fill="#fffaf0" stroke="#7a4300" stroke-width="1.2" transform="rotate(112.5 64 64)"/><rect x="58" y="10.5" width="12" height="12" rx="2.5" fill="#fffaf0" stroke="#7a4300" stroke-width="1.2" transform="rotate(157.5 64 64)"/><rect x="58" y="10.5" width="12" height="12" rx="2.5" fill="#fffaf0" stroke="#7a4300" stroke-width="1.2" transform="rotate(202.5 64 64)"/><rect x="58" y="10.5" width="12" height="12" rx="2.5" fill="#fffaf0" stroke="#7a4300" stroke-width="1.2" transform="rotate(247.5 64 64)"/><rect x="58" y="10.5" width="12" height="12" rx="2.5" fill="#fffaf0" stroke="#7a4300" stroke-width="1.2" transform="rotate(292.5 64 64)"/><rect x="58" y="10.5" width="12" height="12" rx="2.5" fill="#fffaf0" stroke="#7a4300" stroke-width="1.2" transform="rotate(337.5 64 64)"/>
-  <circle cx="64" cy="64" r="41" fill="#6a3c00" opacity="0.45"/>
-  <circle cx="64" cy="64" r="39" fill="url(#face)" stroke="#fff6bf" stroke-width="2"/>
-  <circle cx="64" cy="64" r="34" fill="none" stroke="#ffffff" stroke-width="1.6" stroke-dasharray="4 4" opacity="0.55"/>
-  <path d="M14 24 Q14 12 26 12 H102 Q114 12 114 24 V44 Q64 58 14 44 Z" fill="url(#gloss)"/>
-  <path d="M64 33 Q74 50 89 63 Q74 76 64 93 Q54 76 39 63 Q54 50 64 33 Z" transform="translate(0 4) translate(64 64) scale(1.1) translate(-64 -63)" fill="#6a3c00" stroke="#6a3c00" stroke-width="8" stroke-linejoin="round" opacity="0.4"/>
-  <path d="M64 33 Q74 50 89 63 Q74 76 64 93 Q54 76 39 63 Q54 50 64 33 Z" transform="translate(64 64) scale(1.1) translate(-64 -63)" fill="#ffffff" stroke="#7a4300" stroke-width="7" stroke-linejoin="round" paint-order="stroke"/>
+  <path d="M20 2 L123 2 A3 3 0 0 1 126 5 L126 108 L108 126 L5 126 A3 3 0 0 1 2 123 L2 20 L20 2 Z" fill="url(#frame)"/>
+  <path d="M23 8 L120 8 L120 105 L105 120 L8 120 L8 23 L23 8 Z" fill="url(#body)"/>
+  <g clip-path="url(#face)"><circle cx="64" cy="64" r="46" fill="none" stroke="#fff6d8" stroke-width="2" stroke-dasharray="10 8" opacity="0.18"/></g>
+  <path d="M26 14 L114 14 L114 102 L102 114 L14 114 L14 26 L26 14 Z" fill="none" stroke="#ffd040" stroke-width="1.5" opacity="0.28"/>
+  <path d="M23 8 L120 8 L120 105 L105 120 L8 120 L8 23 L23 8 Z" fill="none" stroke="#ffffff" stroke-width="3" opacity="0.4" mask="url(#top)" clip-path="url(#face)"/>
+  <g filter="url(#glow)" opacity="0.95"><path d="M64 33 Q74 50 89 63 Q74 76 64 93 Q54 76 39 63 Q54 50 64 33 Z" fill="none" stroke="#ffd040" stroke-width="11.399999999999999" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g><path d="M64 33 Q74 50 89 63 Q74 76 64 93 Q54 76 39 63 Q54 50 64 33 Z" fill="none" stroke="#fff6d8" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></g>
 </svg>

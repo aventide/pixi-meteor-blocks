@@ -1,25 +1,28 @@
 import { Container, Graphics } from "pixi.js";
 import type { BackgroundHandle, PlanetTheme } from "../config/planets";
 import { planetTiles } from "./shared/assets";
+import { createSphere, drawBlob, seeded } from "./shared/sphere";
 import { drawVerticalGradient } from "./shared/color";
 
 const palette: PlanetTheme["palette"] = {
-  bgTop: 0x1b8fae,
-  bgBottom: 0x060a26,
+  bgTop: 0x0a3a5c,
+  bgBottom: 0x01030c,
   accent: 0x5ee8f2,
   uiPanel: 0x08223f,
   uiText: 0xe6fbff,
 };
 
+// Deep water: a dim teal glow from the surface sinking into black.
 const WATER = [
-  { at: 0, color: 0x2aa6bf },
-  { at: 0.18, color: 0x14709f },
-  { at: 0.5, color: 0x0b3b78 },
-  { at: 0.8, color: 0x0a1c4c },
-  { at: 1, color: 0x050822 },
+  { at: 0, color: 0x0e4f6e },
+  { at: 0.15, color: 0x08324f },
+  { at: 0.45, color: 0x041a33 },
+  { at: 0.75, color: 0x020c1e },
+  { at: 1, color: 0x01040c },
 ];
 
 type Ray = { view: Graphics; phase: number; speed: number; base: number };
+type Speck = { view: Graphics; phase: number; speed: number; drift: number };
 type Bubble = {
   view: Graphics;
   speed: number;
@@ -28,14 +31,14 @@ type Bubble = {
   baseX: number;
 };
 
-// A single bubble: a faint filled disc, a bright ring and a small highlight.
+// A single bubble: a faint disc with a thin rim, lit slightly from above.
 const drawBubble = (g: Graphics, r: number) =>
   g
     .circle(0, 0, r)
-    .fill({ color: 0xbff4ff, alpha: 0.12 })
-    .stroke({ color: 0xd8fbff, width: Math.max(1, r * 0.18), alpha: 0.7 })
-    .circle(-r * 0.35, -r * 0.35, r * 0.28)
-    .fill({ color: 0xffffff, alpha: 0.8 });
+    .fill({ color: 0x9fe8ff, alpha: 0.05 })
+    .stroke({ color: 0xbff4ff, width: Math.max(0.8, r * 0.1), alpha: 0.4 })
+    .circle(-r * 0.3, -r * 0.4, r * 0.18)
+    .fill({ color: 0xffffff, alpha: 0.35 });
 
 // A soft light shaft fanning down from the surface, drawn as stacked wedges
 // so its edges fade out, and split into bands that dim with depth so it has
@@ -59,7 +62,7 @@ const drawRay = (g: Graphics, length: number, topWidth: number) => {
         y1,
         -halfAt(d1),
         y1,
-      ]).fill({ color: 0xc8f6ff, alpha: 0.055 * (1 - d0) });
+      ]).fill({ color: 0x9fe8ff, alpha: 0.03 * (1 - d0) ** 1.5 });
     }
   }
   return g;
@@ -125,11 +128,14 @@ const createBackground = (width: number, height: number): BackgroundHandle => {
   const surface = new Graphics();
   const rayLayer = new Container();
   const bubbleLayer = new Container();
+  const speckLayer = new Container();
+  speckLayer.blendMode = "add";
   const seabed = new Graphics();
-  view.addChild(water, surface, rayLayer, seabed, bubbleLayer);
+  view.addChild(water, surface, rayLayer, seabed, speckLayer, bubbleLayer);
 
   let rays: Ray[] = [];
   let bubbles: Bubble[] = [];
+  let specks: Speck[] = [];
   let w = width;
   let h = height;
   let time = 0;
@@ -151,7 +157,7 @@ const createBackground = (width: number, height: number): BackgroundHandle => {
     for (let i = 0; i < 5; i++) {
       surface
         .rect(0, 0, w, h * (0.02 + i * 0.025))
-        .fill({ color: 0x9ff0ff, alpha: 0.05 });
+        .fill({ color: 0x6fd8f0, alpha: 0.025 });
     }
 
     rayLayer.removeChildren().forEach((c) => c.destroy());
@@ -178,7 +184,7 @@ const createBackground = (width: number, height: number): BackgroundHandle => {
     bubbleLayer.removeChildren().forEach((c) => c.destroy());
     bubbles = [];
     const scale = Math.max(0.7, Math.min(w, h) / 700);
-    const bubbleCount = Math.round(Math.min(40, 14 + w / 60));
+    const bubbleCount = Math.round(Math.min(24, 8 + w / 80));
     for (let i = 0; i < bubbleCount; i++) {
       const r = (2 + Math.random() ** 2 * 9) * scale;
       const g = drawBubble(new Graphics(), r);
@@ -195,6 +201,27 @@ const createBackground = (width: number, height: number): BackgroundHandle => {
       bubbles.push(b);
     }
 
+    // Bioluminescent specks drifting in the dark water.
+    speckLayer.removeChildren().forEach((c) => c.destroy());
+    specks = [];
+    const speckCount = Math.round(30 + (w * h) / 14000);
+    for (let i = 0; i < speckCount; i++) {
+      const r = 0.8 + Math.random() ** 3 * 2.2;
+      const g = new Graphics()
+        .circle(0, 0, r * 3)
+        .fill({ color: 0x3fd8ff, alpha: 0.08 })
+        .circle(0, 0, r)
+        .fill({ color: Math.random() < 0.8 ? 0x7ff0ff : 0x9fffd8, alpha: 0.9 });
+      g.position.set(Math.random() * w, h * (0.25 + Math.random() * 0.75));
+      speckLayer.addChild(g);
+      specks.push({
+        view: g,
+        phase: Math.random() * Math.PI * 2,
+        speed: 0.4 + Math.random() * 1.2,
+        drift: 2 + Math.random() * 6,
+      });
+    }
+
     // Faint kelp and coral silhouettes along the bottom edge.
     seabed.clear();
     const kelpH = Math.min(h * 0.22, 220);
@@ -206,7 +233,7 @@ const createBackground = (width: number, height: number): BackgroundHandle => {
         kelpH * (0.55 + Math.random() * 0.5),
         Math.max(10, kelpH * 0.09),
         Math.random() * 6,
-        0x0d3a5a,
+        0x062238,
       );
     }
     for (let x = 40; x < w; x += 140 + Math.random() * 160) {
@@ -215,7 +242,7 @@ const createBackground = (width: number, height: number): BackgroundHandle => {
         x,
         h + 2,
         kelpH * (0.5 + Math.random() * 0.35),
-        0x0a2a48,
+        0x041a2e,
       );
     }
     // Seabed ridge in front.
@@ -233,7 +260,7 @@ const createBackground = (width: number, height: number): BackgroundHandle => {
     seabed
       .lineTo(w + step, h)
       .closePath()
-      .fill(0x061630);
+      .fill(0x020a18);
     seabed.alpha = 0.9;
   };
 
@@ -254,6 +281,11 @@ const createBackground = (width: number, height: number): BackgroundHandle => {
         if (b.view.y < -20) placeBubble(b, false);
       }
       surface.alpha = 0.8 + Math.sin(time * 0.9) * 0.2;
+      for (const s of specks) {
+        s.view.alpha = 0.35 + Math.sin(time * s.speed + s.phase) * 0.35;
+        s.view.y -= s.drift * dt * 0.3;
+        if (s.view.y < h * 0.2) s.view.y = h;
+      }
     },
     resize,
     destroy: () => {
@@ -262,58 +294,34 @@ const createBackground = (width: number, height: number): BackgroundHandle => {
   };
 };
 
-const mapIcon = (radius: number) => {
-  const icon = new Container();
-  const glow = new Graphics();
-  for (let i = 3; i >= 1; i--) {
-    glow
-      .circle(0, 0, radius * (1 + i * 0.12))
-      .fill({ color: 0x5ee8f2, alpha: 0.13 });
-  }
-  const globe = new Graphics()
-    .circle(0, 0, radius)
-    .fill(0x0e58b8)
-    .circle(-radius * 0.15, -radius * 0.15, radius * 0.8)
-    .fill({ color: 0x1a86d8, alpha: 0.8 })
-    .circle(-radius * 0.25, -radius * 0.25, radius * 0.5)
-    .fill({ color: 0x35b4ea, alpha: 0.6 });
-
-  // Wave bands: wavy horizontal stripes across the globe.
-  const waves = new Graphics();
-  const bands = [-0.62, -0.3, 0.02, 0.34, 0.64];
-  bands.forEach((by, i) => {
-    const y0 = by * radius;
-    const amp = radius * 0.06;
-    waves.moveTo(-radius, y0);
-    for (let x = -radius; x <= radius; x += radius / 12) {
-      waves.lineTo(x, y0 + Math.sin((x / radius) * 7 + i * 1.3) * amp);
-    }
-    waves.stroke({
-      color: i % 2 === 0 ? 0xbff6ff : 0x6fd8f5,
-      width: radius * (i % 2 === 0 ? 0.08 : 0.055),
-      alpha: 0.75,
-      cap: "round",
-    });
+const mapIcon = (radius: number) =>
+  createSphere(radius, {
+    body: 0x05375f,
+    atmosphere: 0x5ee8f2,
+    rim: 0xa8f4ff,
+    detail: (g, r) => {
+      const rand = seeded(8);
+      // Shallows over the deep water, then a few storm bands.
+      for (let i = 0; i < 6; i++) {
+        drawBlob(
+          g,
+          (rand() - 0.5) * r * 1.5,
+          (rand() - 0.5) * r * 1.5,
+          r * (0.18 + rand() * 0.22),
+          rand,
+          0.5,
+        ).fill({ color: 0x167fae, alpha: 0.55 });
+      }
+      for (let i = 0; i < 7; i++) {
+        g.ellipse(
+          (rand() - 0.5) * r * 1.4,
+          (rand() * 1.6 - 0.8) * r,
+          r * (0.18 + rand() * 0.3),
+          r * 0.03,
+        ).fill({ color: 0xe8fbff, alpha: 0.25 + rand() * 0.25 });
+      }
+    },
   });
-  const waveMask = new Graphics().circle(0, 0, radius * 0.96).fill(0xffffff);
-  waves.mask = waveMask;
-
-  const shade = new Graphics()
-    .circle(radius * 0.28, radius * 0.28, radius)
-    .fill({ color: 0x020a30, alpha: 0.38 });
-  const shadeMask = new Graphics().circle(0, 0, radius).fill(0xffffff);
-  shade.mask = shadeMask;
-  const rim = new Graphics()
-    .circle(0, 0, radius)
-    .stroke({ color: 0x9ff0ff, width: radius * 0.05, alpha: 0.6 });
-  const highlight = new Graphics()
-    .ellipse(-radius * 0.35, -radius * 0.45, radius * 0.34, radius * 0.18)
-    .fill({ color: 0xffffff, alpha: 0.4 })
-    .circle(-radius * 0.58, -radius * 0.2, radius * 0.06)
-    .fill({ color: 0xffffff, alpha: 0.5 });
-  icon.addChild(glow, globe, waves, waveMask, shade, shadeMask, rim, highlight);
-  return icon;
-};
 
 export const oceanTheme: PlanetTheme = {
   palette,
@@ -321,7 +329,8 @@ export const oceanTheme: PlanetTheme = {
   createBackground,
   trail: {
     style: "bubbles",
-    colors: [0xffffff, 0xe0fbff, 0xa8ecf7, 0x6fd3ea],
+    colors: [0xffffff, 0xa8f4ff, 0x4fd2f0, 0x1a7ab0],
+    additive: true,
   },
   mapIcon,
 };

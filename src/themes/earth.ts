@@ -1,6 +1,7 @@
 import { Container, Graphics } from "pixi.js";
 import type { BackgroundHandle, PlanetTheme } from "../config/planets";
 import { planetTiles } from "./shared/assets";
+import { createSphere, drawBlob, seeded } from "./shared/sphere";
 import { drawVerticalGradient, lerpColor } from "./shared/color";
 
 const palette: PlanetTheme["palette"] = {
@@ -28,21 +29,21 @@ const CLOUD_DRIFT = 5; // px/s across the planet's face
 type Twinkler = { view: Graphics; speed: number; phase: number; base: number };
 type CloudBand = { view: Graphics; speed: number; span: number };
 
-// Seeded random so a resize redraws the same sky instead of reshuffling it.
-const seeded = (seed: number) => () => {
-  seed = (seed * 1664525 + 1013904223) % 4294967296;
-  return seed / 4294967296;
-};
-
 // Earth seen from orbit: a dark ocean disc whose top edge (the limb) crosses
 // the lower part of the screen, with a thin atmosphere and a sunrise glint.
-const planetGeometry = (w: number, h: number) => {
+const planetGeometry = (w: number, h: number, limb: number) => {
   const r = Math.max(w, h) * 1.4;
-  const limbY = h * 0.72;
+  const limbY = h * limb;
   return { cx: w * 0.42, cy: limbY + r, r, limbY };
 };
 
-const createBackground = (width: number, height: number): BackgroundHandle => {
+// `limb` is where the planet's edge crosses the screen, as a fraction of
+// height. The title screen uses this view too, with the planet lower.
+export const createEarthOrbit = (
+  width: number,
+  height: number,
+  limb = 0.72,
+): BackgroundHandle => {
   const view = new Container();
   view.eventMode = "none";
   const sky = new Graphics();
@@ -76,7 +77,7 @@ const createBackground = (width: number, height: number): BackgroundHandle => {
   const resize = (w: number, h: number) => {
     screenWidth = w;
     const rand = seeded(7);
-    const { cx, cy, r, limbY } = planetGeometry(w, h);
+    const { cx, cy, r, limbY } = planetGeometry(w, h, limb);
 
     sky.clear();
     drawVerticalGradient(sky, 0, 0, w, h, SKY);
@@ -210,54 +211,44 @@ const createBackground = (width: number, height: number): BackgroundHandle => {
   };
 };
 
-const mapIcon = (radius: number) => {
-  const icon = new Container();
-  const glow = new Graphics();
-  for (let i = 3; i >= 1; i--) {
-    glow
-      .circle(0, 0, radius * (1 + i * 0.12))
-      .fill({ color: 0x7fd4ff, alpha: 0.12 });
-  }
-  const globe = new Graphics().circle(0, 0, radius).fill(0x2a7bff);
-  const land = new Graphics()
-    .ellipse(-radius * 0.35, -radius * 0.2, radius * 0.38, radius * 0.28)
-    .fill(0x3ccf5e)
-    .ellipse(radius * 0.3, radius * 0.35, radius * 0.42, radius * 0.25)
-    .fill(0x2fb34f)
-    .ellipse(radius * 0.45, -radius * 0.45, radius * 0.18, radius * 0.12)
-    .fill(0x3ccf5e);
-  const mask = new Graphics().circle(0, 0, radius).fill(0xffffff);
-  land.mask = mask;
-  const swirl = new Graphics()
-    .arc(0, 0, radius * 0.7, Math.PI * 1.1, Math.PI * 1.7)
-    .stroke({
-      color: 0xffffff,
-      width: radius * 0.12,
-      alpha: 0.85,
-      cap: "round",
-    })
-    .arc(0, 0, radius * 0.45, Math.PI * 0.1, Math.PI * 0.6)
-    .stroke({
-      color: 0xffffff,
-      width: radius * 0.1,
-      alpha: 0.75,
-      cap: "round",
-    });
-  const shade = new Graphics()
-    .circle(radius * 0.25, radius * 0.25, radius)
-    .fill({ color: 0x001040, alpha: 0.28 });
-  shade.mask = new Graphics().circle(0, 0, radius).fill(0xffffff);
-  const highlight = new Graphics()
-    .ellipse(-radius * 0.35, -radius * 0.45, radius * 0.35, radius * 0.2)
-    .fill({ color: 0xffffff, alpha: 0.35 });
-  icon.addChild(glow, globe, land, mask, swirl, shade, shade.mask, highlight);
-  return icon;
-};
+const mapIcon = (radius: number) =>
+  createSphere(radius, {
+    body: 0x0b3570,
+    atmosphere: 0x4fb4ff,
+    rim: 0x9fe4ff,
+    detail: (g, r) => {
+      const rand = seeded(3);
+      const continents: [number, number, number][] = [
+        [-0.35, -0.25, 0.42],
+        [0.3, 0.3, 0.36],
+        [0.45, -0.45, 0.2],
+        [-0.1, 0.68, 0.22],
+      ];
+      for (const [x, y, s] of continents) {
+        drawBlob(g, x * r, y * r, s * r, rand, 0.55, 14).fill(0x2a5a3a);
+        drawBlob(
+          g,
+          (x + s * 0.15) * r,
+          (y - s * 0.1) * r,
+          s * r * 0.5,
+          rand,
+        ).fill({ color: 0x6b6a3e, alpha: 0.55 });
+      }
+      for (let i = 0; i < 8; i++) {
+        g.ellipse(
+          (rand() - 0.5) * r * 1.4,
+          (rand() * 1.6 - 0.8) * r,
+          r * (0.2 + rand() * 0.35),
+          r * 0.035,
+        ).fill({ color: 0xffffff, alpha: 0.2 + rand() * 0.25 });
+      }
+    },
+  });
 
 export const earthTheme: PlanetTheme = {
   palette,
   tiles: planetTiles("planets/earth"),
-  createBackground,
+  createBackground: createEarthOrbit,
   trail: { style: "thrust", colors: [0xffffff, 0xffe08a, 0xff8a2a, 0x7a1e08] },
   mapIcon,
 };

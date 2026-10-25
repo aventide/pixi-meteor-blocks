@@ -4,8 +4,8 @@
 // the tile outline drawn `inset` px in from the 128px tile edge. The template
 // calls it at inset 2 (frame), 8 (body) and 14 (panel line). A shape must
 // stay inside its inset and keep the centre of the tile (about 28-100px)
-// clear for the glyph. Add new families (liquid, eroded, ...) as their own
-// modules and register them here.
+// clear for the glyph. Add new families as their own modules and register
+// them here.
 
 import {
   chamfer2,
@@ -15,6 +15,7 @@ import {
   squareHard,
   squareSoft,
 } from "./corners.mjs";
+import { eroded, liquid } from "./perimeter.mjs";
 
 export const SHAPES = {
   chamfer4,
@@ -23,6 +24,8 @@ export const SHAPES = {
   square: squareHard,
   squareSoft,
   rounded,
+  liquid,
+  eroded,
 };
 
 // Accepts a registered name or a shape function.

@@ -1,14 +1,19 @@
 import { Assets, Container, Graphics, Sprite, type Texture } from "pixi.js";
+import type { BackgroundHandle } from "../../config/planets";
 import type { Scene } from "./SceneManager";
 import { sceneManager } from "./SceneManager";
 import { StarMapScene } from "./StarMapScene";
 import { getHighestCleared, resetProgress } from "../progress";
-import { Starfield } from "../../ui/Starfield";
 import { Label } from "../../ui/Label";
 import { Button } from "../../ui/Button";
 import { getUiScale, uiTheme } from "../../ui/theme";
 import { getScreenSize } from "../app";
 import { planets } from "../../config/planets";
+import { createEarthOrbit } from "../../themes/earth";
+import { lerpColor } from "../../themes/shared/color";
+
+// Where Earth's edge crosses the title screen, below the start button.
+const TITLE_LIMB = 0.84;
 
 type Rocket = {
   view: Container;
@@ -18,49 +23,23 @@ type Rocket = {
   height: number;
 };
 
-const drawFlame = (g: Graphics, size: number) => {
-  // Layered teardrops: wide orange outer flame, yellow core, white-hot tip.
-  const layers: [number, number, number][] = [
-    [0.55, 1.5, 0xff5a1a],
-    [0.4, 1.1, 0xffb02e],
-    [0.22, 0.65, 0xfff4c0],
-  ];
-  for (const [wf, hf, color] of layers) {
-    const w = size * wf;
-    const h = size * hf;
-    g.moveTo(-w / 2, 0)
-      .bezierCurveTo(-w / 2, h * 0.5, -w * 0.1, h * 0.8, 0, h)
-      .bezierCurveTo(w * 0.1, h * 0.8, w / 2, h * 0.5, w / 2, 0)
-      .closePath()
-      .fill({ color, alpha: 0.95 });
-  }
-  return g;
-};
-
-const createMoon = (r: number) => {
-  const g = new Graphics();
-  g.circle(0, 0, r * 1.15).fill({ color: 0xbfd0ff, alpha: 0.08 });
-  g.circle(0, 0, r).fill(0xb9bfcc);
-  const craters: [number, number, number][] = [
-    [-0.35, -0.2, 0.22],
-    [0.3, 0.25, 0.28],
-    [0.15, -0.45, 0.12],
-    [-0.2, 0.45, 0.14],
-  ];
-  for (const [x, y, cr] of craters) {
-    g.circle(x * r, y * r, cr * r).fill({ color: 0x8a90a0, alpha: 0.9 });
-    g.circle(x * r - cr * r * 0.2, y * r - cr * r * 0.2, cr * r * 0.75).fill({
-      color: 0x9da3b3,
-      alpha: 0.9,
+// A thrust streak: a narrow white-hot core that cools to amber and fades,
+// drawn as stacked soft ellipses for additive blending.
+const drawThrust = (g: Graphics, size: number) => {
+  const steps = 32;
+  for (let i = steps; i >= 0; i--) {
+    const t = i / steps;
+    g.ellipse(0, size * 1.4 * t, size * 0.2 * (1 - t * 0.8), size * 0.16).fill({
+      color: lerpColor(0xffffff, 0xff7a2a, Math.min(1, t * 1.4)),
+      alpha: 0.26 * (1 - t),
     });
   }
-  g.circle(r * 0.3, r * 0.3, r).fill({ color: 0x0a0f25, alpha: 0.35 });
   return g;
 };
 
 export class TitleScene implements Scene {
   readonly view = new Container();
-  private starfield: Starfield;
+  private orbit: BackgroundHandle;
   private decor = new Container();
   private rocketLayer = new Container();
   private titleGroup = new Container();
@@ -74,12 +53,9 @@ export class TitleScene implements Scene {
 
   constructor() {
     const { width, height } = getScreenSize();
-    this.starfield = new Starfield(width, height, 120, {
-      top: 0x02040f,
-      bottom: 0x141a4a,
-    });
+    this.orbit = createEarthOrbit(width, height, TITLE_LIMB);
     this.view.addChild(
-      this.starfield,
+      this.orbit.view,
       this.decor,
       this.rocketLayer,
       this.titleGroup,
@@ -98,11 +74,8 @@ export class TitleScene implements Scene {
 
   update(dt: number) {
     this.time += dt;
-    this.starfield.update(dt);
+    this.orbit.update(dt);
     this.titleGroup.y = this.titleBaseY + Math.sin(this.time * 1.2) * 4;
-    for (let i = 0; i < this.decor.children.length; i++) {
-      this.decor.children[i].rotation += dt * (i === 0 ? 0.02 : -0.03);
-    }
     if (this.startButton) {
       this.startButton.scale.set(
         1 + (0.5 + 0.5 * Math.sin(this.time * 3)) * 0.015,
@@ -123,16 +96,12 @@ export class TitleScene implements Scene {
   resize(width: number, height: number) {
     this.screen = { width, height };
     const s = getUiScale(width, height);
-    this.starfield.resize(width, height);
+    this.orbit.resize(width, height);
 
     this.decor.removeChildren().forEach((c) => c.destroy({ children: true }));
-    // Earth sits low as a curved horizon below the start button.
-    const earthRadius = Math.max(width, height) * 0.5;
-    const earth = planets.earth.theme.mapIcon(earthRadius);
-    earth.position.set(width * 0.3, height + earthRadius * 0.72);
-    const moon = createMoon(Math.min(width, height) * 0.12);
-    moon.position.set(width * 0.84, height * 0.14);
-    this.decor.addChild(earth, moon);
+    const moon = planets.moon.theme.mapIcon(Math.min(width, height) * 0.09);
+    moon.position.set(width * 0.82, height * 0.13);
+    this.decor.addChild(moon);
 
     this.titleGroup.removeChildren().forEach((c) => c.destroy());
     const title = new Label("METEOR\nBLOCKS", {
@@ -141,7 +110,7 @@ export class TitleScene implements Scene {
       glow: 0x2f8cff,
       scale: s * 1.3,
     });
-    title.style.stroke = { color: 0x08183f, width: 7 * s, join: "round" };
+    title.style.stroke = { color: 0x08183f, width: 3 * s, join: "round" };
     const subtitle = new Label("A five-world launch voyage", {
       variant: "body",
       color: uiTheme.colors.textMuted,
@@ -196,8 +165,9 @@ export class TitleScene implements Scene {
     const size = Math.max(28, width / 11);
     for (let i = 0; i < 6; i++) {
       const view = new Container();
-      const flame = drawFlame(new Graphics(), size * 0.9);
-      flame.y = size * 0.95;
+      const flame = drawThrust(new Graphics(), size);
+      flame.blendMode = "add";
+      flame.y = size * 0.98;
       const sprite = new Sprite(this.tiles[i % this.tiles.length]);
       sprite.setSize(size);
       sprite.anchor.set(0.5, 0);

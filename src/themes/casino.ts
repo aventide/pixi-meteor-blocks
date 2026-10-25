@@ -1,11 +1,12 @@
 import { Container, Graphics } from "pixi.js";
 import type { BackgroundHandle, PlanetTheme } from "../config/planets";
 import { planetTiles } from "./shared/assets";
+import { createSphere, seeded } from "./shared/sphere";
 import { drawVerticalGradient } from "./shared/color";
 
 const palette: PlanetTheme["palette"] = {
-  bgTop: 0x1a0c24,
-  bgBottom: 0x0b3a26,
+  bgTop: 0x0c0612,
+  bgBottom: 0x041a10,
   accent: 0xffc93c,
   uiPanel: 0x1d0e29,
   uiText: 0xfff3d6,
@@ -14,11 +15,12 @@ const palette: PlanetTheme["palette"] = {
 const GOLD = 0xffc93c;
 const MAGENTA = 0xff3fb4;
 
+// Dark baize: deep green under a dim lamp, falling off to near black.
 const FELT = [
-  { at: 0, color: 0x0a1f16 },
-  { at: 0.35, color: 0x0e3a25 },
-  { at: 0.7, color: 0x0d3322 },
-  { at: 1, color: 0x071a11 },
+  { at: 0, color: 0x050c09 },
+  { at: 0.35, color: 0x082419 },
+  { at: 0.7, color: 0x071f15 },
+  { at: 1, color: 0x030a07 },
 ];
 
 // Card-suit outlines on a 128-unit grid centered near (64, 63), the same
@@ -206,7 +208,7 @@ const createBackground = (width: number, height: number): BackgroundHandle => {
     for (let i = 8; i >= 1; i--) {
       felt
         .ellipse(w / 2, h * 0.58, w * 0.12 * i, h * 0.07 * i)
-        .fill({ color: 0x1f6a40, alpha: 0.035 });
+        .fill({ color: 0x1a5a36, alpha: 0.03 });
     }
     // Felt weave: a faint diagonal lattice plus scattered nap specks.
     const step = Math.max(18, unit * 0.035);
@@ -416,100 +418,68 @@ const createBackground = (width: number, height: number): BackgroundHandle => {
   };
 };
 
+// A point on a tilted ellipse, for drawing the ring in two halves.
+const ringPoint = (rx: number, ry: number, tilt: number, a: number) => {
+  const x = Math.cos(a) * rx;
+  const y = Math.sin(a) * ry;
+  return [
+    x * Math.cos(tilt) - y * Math.sin(tilt),
+    x * Math.sin(tilt) + y * Math.cos(tilt),
+  ];
+};
+
+const drawRingArc = (g: Graphics, r: number, from: number, to: number) => {
+  const tilt = -0.32;
+  for (const [scale, width, alpha] of [
+    [1.75, 0.07, 0.25],
+    [1.6, 0.03, 0.85],
+    [1.45, 0.015, 0.5],
+  ]) {
+    const steps = 40;
+    for (let i = 0; i <= steps; i++) {
+      const [x, y] = ringPoint(
+        r * scale,
+        r * scale * 0.24,
+        tilt,
+        from + ((to - from) * i) / steps,
+      );
+      if (i === 0) g.moveTo(x, y);
+      else g.lineTo(x, y);
+    }
+    g.stroke({ color: GOLD, width: r * width, alpha, cap: "round" });
+  }
+  return g;
+};
+
+// A dark banded planet circled by a thin gold ring; the far half of the ring
+// is drawn behind the planet.
 const mapIcon = (radius: number) => {
   const icon = new Container();
-  const r = radius;
-  const glow = new Graphics();
-  for (let i = 3; i >= 1; i--) {
-    glow.circle(0, 0, r * (1 + i * 0.1)).fill({ color: GOLD, alpha: 0.1 });
-  }
-
-  // A tilted ring of chips: the far half is drawn behind the planet.
-  const ringRx = r * 1.28;
-  const ringRy = r * 0.38;
-  const tilt = -0.28;
-  const ringPoint = (a: number) => {
-    const x = Math.cos(a) * ringRx;
-    const y = Math.sin(a) * ringRy;
-    return {
-      x: x * Math.cos(tilt) - y * Math.sin(tilt),
-      y: x * Math.sin(tilt) + y * Math.cos(tilt),
-    };
-  };
-  const traceArc = (g: Graphics, from: number, to: number) => {
-    const steps = 24;
-    for (let i = 0; i <= steps; i++) {
-      const p = ringPoint(from + ((to - from) * i) / steps);
-      if (i === 0) g.moveTo(p.x, p.y);
-      else g.lineTo(p.x, p.y);
-    }
-    return g;
-  };
-  const back = traceArc(new Graphics(), Math.PI, Math.PI * 2).stroke({
-    color: GOLD,
-    width: r * 0.1,
-    alpha: 0.55,
+  const back = drawRingArc(new Graphics(), radius, Math.PI, Math.PI * 2);
+  const planet = createSphere(radius, {
+    body: 0x22102f,
+    atmosphere: MAGENTA,
+    rim: 0xffd27a,
+    detail: (g, r) => {
+      const bands = [0x2e1440, 0x3b1530, 0x1a0b26, 0x4a1a3a, 0x2a1238];
+      bands.forEach((color, i) => {
+        g.rect(-r, (-0.8 + i * 0.34) * r, r * 2, r * 0.16).fill({
+          color,
+          alpha: 0.9,
+        });
+      });
+      const rand = seeded(21);
+      for (let i = 0; i < 18; i++) {
+        g.circle(
+          (rand() - 0.6) * r * 1.4,
+          (rand() - 0.5) * r * 1.4,
+          r * 0.018,
+        ).fill({ color: rand() < 0.5 ? GOLD : MAGENTA, alpha: 0.8 });
+      }
+    },
   });
-  const front = traceArc(new Graphics(), 0, Math.PI).stroke({
-    color: GOLD,
-    width: r * 0.1,
-  });
-  const chipColors = [0xe8323c, 0x2273ea, 0x19a852, 0xffc414];
-  const chips = 9;
-  for (let i = 0; i < chips; i++) {
-    const a = (i / chips) * Math.PI * 2 + 0.2;
-    const p = ringPoint(a);
-    const target = Math.sin(a) >= 0 ? front : back;
-    const cr = r * 0.17;
-    target
-      .ellipse(p.x, p.y + cr * 0.25, cr, cr * 0.55)
-      .fill(0x2a1206)
-      .ellipse(p.x, p.y, cr, cr * 0.55)
-      .fill(chipColors[i % 4])
-      .ellipse(p.x, p.y, cr * 0.55, cr * 0.3)
-      .stroke({ color: 0xffffff, width: cr * 0.18, alpha: 0.85 });
-  }
-
-  // The planet is a roulette wheel seen from above.
-  const wheel = new Graphics().circle(0, 0, r).fill(0x6b0d16);
-  const sectors = 18;
-  for (let i = 0; i < sectors; i++) {
-    const a0 = (i / sectors) * Math.PI * 2;
-    const a1 = ((i + 1) / sectors) * Math.PI * 2;
-    const color = i === 0 ? 0x13a050 : i % 2 ? 0x15101a : 0xd0202e;
-    wheel.moveTo(0, 0).arc(0, 0, r, a0, a1).closePath().fill(color);
-  }
-  wheel
-    .circle(0, 0, r * 0.97)
-    .stroke({ color: 0xe8b23a, width: r * 0.05 })
-    .circle(0, 0, r * 0.62)
-    .fill(0x7a3a14)
-    .circle(0, 0, r * 0.62)
-    .stroke({ color: GOLD, width: r * 0.04 })
-    .circle(0, 0, r * 0.3)
-    .fill(0xffcf4a)
-    .circle(0, 0, r * 0.3)
-    .stroke({ color: 0x8a5a10, width: r * 0.04 });
-  for (let i = 0; i < 4; i++) {
-    const a = (i / 4) * Math.PI * 2 + Math.PI / 4;
-    wheel
-      .moveTo(Math.cos(a) * r * 0.3, Math.sin(a) * r * 0.3)
-      .lineTo(Math.cos(a) * r * 0.55, Math.sin(a) * r * 0.55)
-      .stroke({ color: GOLD, width: r * 0.05, cap: "round" });
-  }
-  // The ball, resting in a pocket.
-  wheel.circle(r * 0.5, -r * 0.62, r * 0.08).fill(0xffffff);
-
-  const shadeMask = new Graphics().circle(0, 0, r).fill(0xffffff);
-  const shade = new Graphics()
-    .circle(r * 0.3, r * 0.3, r)
-    .fill({ color: 0x14001a, alpha: 0.4 });
-  shade.mask = shadeMask;
-  const highlight = new Graphics()
-    .ellipse(-r * 0.35, -r * 0.45, r * 0.35, r * 0.2)
-    .fill({ color: 0xffffff, alpha: 0.35 });
-
-  icon.addChild(glow, back, wheel, shade, shadeMask, highlight, front);
+  const front = drawRingArc(new Graphics(), radius, 0, Math.PI);
+  icon.addChild(back, planet, front);
   return icon;
 };
 
@@ -520,8 +490,6 @@ export const casinoTheme: PlanetTheme = {
   trail: {
     style: "sparks",
     colors: [0xffffff, 0xffe066, 0xffa41c, 0xff2fa0],
-    // Additive gold over green felt drifts toward green as it fades.
-    additive: false,
   },
   mapIcon,
 };

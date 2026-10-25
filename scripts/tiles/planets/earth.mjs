@@ -1,10 +1,7 @@
 // Earth: the home world. Clean survey-instrument glyphs over faint
 // topographic contours.
 
-const stroke = (d, color, width, extra = "") =>
-  `<path d="${d}" fill="none" stroke="${color}" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round"${extra}/>`;
-
-const W = 7; // core glyph stroke width at 128px
+import { W, hue, stroke } from "./shared.mjs";
 
 const mountain = (color, k) =>
   stroke("M28 90 L54 44 L66 64 L76 50 L100 90 Z", color, W * k);
@@ -42,18 +39,6 @@ const contours = (c) =>
         `<ellipse cx="96" cy="104" rx="${r * 1.25}" ry="${r}" fill="none" stroke="${c.contour}" stroke-width="1.5" opacity="0.16"/>`,
     )
     .join("");
-
-const hue = ({ deep, mid, bright, core }) => ({
-  frameHi: bright,
-  frameMid: mid,
-  frameLo: deep,
-  bodyHi: mid,
-  bodyMid: deep,
-  bodyLo: deep,
-  glow: bright,
-  core,
-  contour: core,
-});
 
 export const earth = {
   name: "Earth",

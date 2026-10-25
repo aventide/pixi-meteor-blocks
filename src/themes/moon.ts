@@ -2,11 +2,12 @@ import { Container, Graphics } from "pixi.js";
 import type { BackgroundHandle, PlanetTheme } from "../config/planets";
 import { earthTheme } from "./earth";
 import { planetTiles } from "./shared/assets";
+import { arcPath, createSphere, drawBlob, seeded } from "./shared/sphere";
 import { drawVerticalGradient, lerpColor } from "./shared/color";
 
 const palette: PlanetTheme["palette"] = {
   bgTop: 0x010208,
-  bgBottom: 0x6b6d76,
+  bgBottom: 0x3c3e46,
   accent: 0xa6d8ff,
   uiPanel: 0x151925,
   uiText: 0xeef3ff,
@@ -25,12 +26,6 @@ const FAR_DRIFT = 2.5; // px/s, the far ridge
 const NEAR_DRIFT = 6; // px/s, the near ground
 
 type Twinkler = { view: Graphics; speed: number; phase: number; base: number };
-
-// Seeded random so a resize redraws the same sky instead of reshuffling it.
-const seeded = (seed: number) => () => {
-  seed = (seed * 1664525 + 1013904223) % 4294967296;
-  return seed / 4294967296;
-};
 
 // A ridge line that repeats exactly every `period` px so a layer can scroll
 // and wrap without a seam.
@@ -211,7 +206,7 @@ const createBackground = (width: number, height: number): BackgroundHandle => {
 
     // Earth hangs in the sky, upper right, drawn with Earth's own map icon.
     earthHolder.removeChildren().forEach((c) => c.destroy({ children: true }));
-    const earthRadius = Math.max(16, Math.min(w, h) * 0.045);
+    const earthRadius = Math.max(18, Math.min(w, h) * 0.06);
     earthHolder.addChild(earthTheme.mapIcon(earthRadius));
     earthHolder.position.set(w * 0.82, h * 0.17);
 
@@ -220,8 +215,8 @@ const createBackground = (width: number, height: number): BackgroundHandle => {
       baseY: h * 0.85,
       amp: h * 0.022,
       phase: 0.6,
-      top: 0x5d5f68,
-      bottom: 0x34363d,
+      top: 0x3a3c44,
+      bottom: 0x1c1d23,
       craters: Math.max(4, Math.round(w / 260)),
       craterSize: Math.min(w, h) * 0.04,
       seed: 7,
@@ -232,8 +227,8 @@ const createBackground = (width: number, height: number): BackgroundHandle => {
       baseY: h * 0.92,
       amp: h * 0.018,
       phase: 2.4,
-      top: 0x9a9ba3,
-      bottom: 0x5b5d65,
+      top: 0x5c5e66,
+      bottom: 0x26272d,
       craters: Math.max(3, Math.round(w / 330)),
       craterSize: Math.min(w, h) * 0.065,
       seed: 31,
@@ -263,62 +258,40 @@ const createBackground = (width: number, height: number): BackgroundHandle => {
   };
 };
 
-const mapIcon = (radius: number) => {
-  const icon = new Container();
-  const glow = new Graphics();
-  for (let i = 3; i >= 1; i--) {
-    glow
-      .circle(0, 0, radius * (1 + i * 0.12))
-      .fill({ color: 0xdfe8ff, alpha: 0.1 });
-  }
-  const globe = new Graphics().circle(0, 0, radius).fill(0xc3c5cc);
-
-  // Dark maria and craters, clipped to the disc with the shading.
-  const surface = new Graphics()
-    .ellipse(-radius * 0.3, -radius * 0.22, radius * 0.4, radius * 0.27)
-    .fill(0x8e9098)
-    .ellipse(radius * 0.2, radius * 0.06, radius * 0.3, radius * 0.22)
-    .fill(0x95979f)
-    .ellipse(-radius * 0.05, radius * 0.5, radius * 0.24, radius * 0.14)
-    .fill(0x8e9098);
-  const craters: Array<[number, number, number]> = [
-    [0.45, -0.42, 0.16],
-    [-0.52, 0.36, 0.13],
-    [0.52, 0.45, 0.1],
-    [-0.08, -0.64, 0.09],
-    [0.16, 0.72, 0.07],
-  ];
-  for (const [cx, cy, cr] of craters) {
-    const x = cx * radius;
-    const y = cy * radius;
-    const r = cr * radius;
-    surface
-      .circle(x, y, r * 1.18)
-      .fill(0xe6e7ec)
-      .circle(x + r * 0.12, y + r * 0.12, r)
-      .fill(0x7b7d86)
-      .circle(x + r * 0.32, y + r * 0.32, r * 0.58)
-      .fill(0x9a9ca4);
-  }
-  const shade = new Graphics()
-    .circle(radius * 0.34, radius * 0.3, radius)
-    .fill({ color: 0x0a0c18, alpha: 0.4 });
-  const mask = new Graphics().circle(0, 0, radius).fill(0xffffff);
-  const content = new Container();
-  content.addChild(surface, shade);
-  content.mask = mask;
-
-  const highlight = new Graphics()
-    .ellipse(-radius * 0.38, -radius * 0.45, radius * 0.32, radius * 0.18)
-    .fill({ color: 0xffffff, alpha: 0.32 });
-  const rim = new Graphics().circle(0, 0, radius).stroke({
-    color: 0xffffff,
-    width: Math.max(1, radius * 0.04),
-    alpha: 0.25,
+const mapIcon = (radius: number) =>
+  createSphere(radius, {
+    body: 0x8a8e98,
+    rim: 0xe6ecf6,
+    detail: (g, r) => {
+      const rand = seeded(1969);
+      const maria: [number, number, number][] = [
+        [-0.3, -0.25, 0.32],
+        [0.15, -0.05, 0.22],
+        [0.05, 0.4, 0.26],
+      ];
+      for (const [x, y, s] of maria) {
+        drawBlob(g, x * r, y * r, s * r, rand, 0.45).fill({
+          color: 0x5c606a,
+          alpha: 0.8,
+        });
+      }
+      // Craters lit from the upper left: shadowed near wall, bright far wall.
+      for (let i = 0; i < 9; i++) {
+        const x = (rand() - 0.5) * r * 1.5;
+        const y = (rand() - 0.5) * r * 1.5;
+        const cr = r * (0.04 + rand() * 0.08);
+        g.circle(x, y, cr).fill({ color: 0x6c707a, alpha: 0.9 });
+        arcPath(g, x, y, cr, Math.PI * 0.9, Math.PI * 1.6).stroke({
+          color: 0x464a54,
+          width: cr * 0.3,
+        });
+        arcPath(g, x, y, cr, -0.1, Math.PI * 0.6).stroke({
+          color: 0xc4c8d2,
+          width: cr * 0.25,
+        });
+      }
+    },
   });
-  icon.addChild(glow, globe, content, mask, highlight, rim);
-  return icon;
-};
 
 export const moonTheme: PlanetTheme = {
   palette,
@@ -326,8 +299,8 @@ export const moonTheme: PlanetTheme = {
   createBackground,
   // Cooler, whiter fire than Earth: white core, pale blue body, orange tips.
   trail: {
-    style: "fire",
-    colors: [0xffffff, 0xd6ecff, 0x8cc2ff, 0xffbe6a, 0xff7a2a],
+    style: "thrust",
+    colors: [0xd6ecff, 0x8cc2ff, 0x4a7ad8, 0x1a2c6a],
     lifeScale: 1.5, // plumes linger in low gravity
   },
   mapIcon,
