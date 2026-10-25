@@ -25,3 +25,6 @@ dist-ssr
 
 # Agent test screenshots (kept local; showcase shots live in docs/media)
 docs/demo-screenshots/
+
+# Local tile preview sheets (node scripts/tiles/preview.mjs)
+.tile-preview/

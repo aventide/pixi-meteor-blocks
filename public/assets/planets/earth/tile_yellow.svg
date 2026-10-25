@@ -1,20 +1,31 @@
 <svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
   <title>Earth yellow tile</title>
   <defs>
-    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#fff08a"/>
-      <stop offset="0.5" stop-color="#ffc414"/>
-      <stop offset="1" stop-color="#d98a00"/>
+    <linearGradient id="frame" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffcc40"/>
+      <stop offset="0.45" stop-color="#d79410"/>
+      <stop offset="1" stop-color="#5c3a05"/>
     </linearGradient>
-    <linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#ffffff" stop-opacity="0.6"/>
+    <radialGradient id="body" cx="0.5" cy="0.42" r="0.68">
+      <stop offset="0" stop-color="#d79410"/>
+      <stop offset="0.6" stop-color="#5c3a05"/>
+      <stop offset="1" stop-color="#5c3a05"/>
+    </radialGradient>
+    <linearGradient id="topLight" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0.3" stop-color="#ffffff"/>
       <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
     </linearGradient>
+    <mask id="top"><rect width="128" height="24" fill="url(#topLight)"/></mask>
+    <clipPath id="face"><path d="M12 8 L116 8 L120 12 L120 116 L116 120 L12 120 L8 116 L8 12 L12 8 Z"/></clipPath>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="4"/>
+    </filter>
   </defs>
-  <rect x="2" y="2" width="124" height="124" rx="18" fill="#6e4100"/>
-  <rect x="6" y="6" width="116" height="116" rx="15" fill="url(#body)"/>
-  <rect x="7.5" y="7.5" width="113" height="113" rx="14" fill="none" stroke="#fff6b8" stroke-width="3"/>
-  <path d="M14 22 Q14 12 24 12 H104 Q114 12 114 22 V46 Q64 58 14 46 Z" fill="url(#gloss)"/>
-  <g transform="translate(0 4)" opacity="0.35"><circle cx="64" cy="64" r="17" fill="#6e4100"/><g stroke="#6e4100" stroke-width="9" stroke-linecap="round"><line x1="89.0" y1="64.0" x2="101.0" y2="64.0"/><line x1="81.7" y1="81.7" x2="90.2" y2="90.2"/><line x1="64.0" y1="89.0" x2="64.0" y2="101.0"/><line x1="46.3" y1="81.7" x2="37.8" y2="90.2"/><line x1="39.0" y1="64.0" x2="27.0" y2="64.0"/><line x1="46.3" y1="46.3" x2="37.8" y2="37.8"/><line x1="64.0" y1="39.0" x2="64.0" y2="27.0"/><line x1="81.7" y1="46.3" x2="90.2" y2="37.8"/></g></g>
-  <g><g stroke="#7a4300" stroke-width="16" stroke-linecap="round"><line x1="89.0" y1="64.0" x2="101.0" y2="64.0"/><line x1="81.7" y1="81.7" x2="90.2" y2="90.2"/><line x1="64.0" y1="89.0" x2="64.0" y2="101.0"/><line x1="46.3" y1="81.7" x2="37.8" y2="90.2"/><line x1="39.0" y1="64.0" x2="27.0" y2="64.0"/><line x1="46.3" y1="46.3" x2="37.8" y2="37.8"/><line x1="64.0" y1="39.0" x2="64.0" y2="27.0"/><line x1="81.7" y1="46.3" x2="90.2" y2="37.8"/></g><circle cx="64" cy="64" r="17" fill="#ffffff" stroke="#7a4300" stroke-width="7" paint-order="stroke"/><g stroke="#ffffff" stroke-width="9" stroke-linecap="round"><line x1="89.0" y1="64.0" x2="101.0" y2="64.0"/><line x1="81.7" y1="81.7" x2="90.2" y2="90.2"/><line x1="64.0" y1="89.0" x2="64.0" y2="101.0"/><line x1="46.3" y1="81.7" x2="37.8" y2="90.2"/><line x1="39.0" y1="64.0" x2="27.0" y2="64.0"/><line x1="46.3" y1="46.3" x2="37.8" y2="37.8"/><line x1="64.0" y1="39.0" x2="64.0" y2="27.0"/><line x1="81.7" y1="46.3" x2="90.2" y2="37.8"/></g></g>
+  <path d="M9 2 L119 2 L126 9 L126 119 L119 126 L9 126 L2 119 L2 9 L9 2 Z" fill="url(#frame)"/>
+  <path d="M12 8 L116 8 L120 12 L120 116 L116 120 L12 120 L8 116 L8 12 L12 8 Z" fill="url(#body)"/>
+  <g clip-path="url(#face)"><ellipse cx="96" cy="104" rx="37.5" ry="30" fill="none" stroke="#fff7dc" stroke-width="1.5" opacity="0.16"/><ellipse cx="96" cy="104" rx="57.5" ry="46" fill="none" stroke="#fff7dc" stroke-width="1.5" opacity="0.16"/><ellipse cx="96" cy="104" rx="77.5" ry="62" fill="none" stroke="#fff7dc" stroke-width="1.5" opacity="0.16"/><ellipse cx="96" cy="104" rx="97.5" ry="78" fill="none" stroke="#fff7dc" stroke-width="1.5" opacity="0.16"/></g>
+  <path d="M15 14 L113 14 L114 15 L114 113 L113 114 L15 114 L14 113 L14 15 L15 14 Z" fill="none" stroke="#ffcc40" stroke-width="1.5" opacity="0.28"/>
+  <path d="M12 8 L116 8 L120 12 L120 116 L116 120 L12 120 L8 116 L8 12 L12 8 Z" fill="none" stroke="#ffffff" stroke-width="3" opacity="0.4" mask="url(#top)" clip-path="url(#face)"/>
+  <g filter="url(#glow)" opacity="0.95"><circle cx="64" cy="64" r="14" fill="none" stroke="#ffcc40" stroke-width="13.299999999999999"/><path d="M90.0 64.0 L98.0 64.0" fill="none" stroke="#ffcc40" stroke-width="13.299999999999999" stroke-linecap="round" stroke-linejoin="round"/><path d="M82.4 82.4 L88.0 88.0" fill="none" stroke="#ffcc40" stroke-width="13.299999999999999" stroke-linecap="round" stroke-linejoin="round"/><path d="M64.0 90.0 L64.0 98.0" fill="none" stroke="#ffcc40" stroke-width="13.299999999999999" stroke-linecap="round" stroke-linejoin="round"/><path d="M45.6 82.4 L40.0 88.0" fill="none" stroke="#ffcc40" stroke-width="13.299999999999999" stroke-linecap="round" stroke-linejoin="round"/><path d="M38.0 64.0 L30.0 64.0" fill="none" stroke="#ffcc40" stroke-width="13.299999999999999" stroke-linecap="round" stroke-linejoin="round"/><path d="M45.6 45.6 L40.0 40.0" fill="none" stroke="#ffcc40" stroke-width="13.299999999999999" stroke-linecap="round" stroke-linejoin="round"/><path d="M64.0 38.0 L64.0 30.0" fill="none" stroke="#ffcc40" stroke-width="13.299999999999999" stroke-linecap="round" stroke-linejoin="round"/><path d="M82.4 45.6 L88.0 40.0" fill="none" stroke="#ffcc40" stroke-width="13.299999999999999" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g><circle cx="64" cy="64" r="14" fill="none" stroke="#fff7dc" stroke-width="7"/><path d="M90.0 64.0 L98.0 64.0" fill="none" stroke="#fff7dc" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><path d="M82.4 82.4 L88.0 88.0" fill="none" stroke="#fff7dc" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><path d="M64.0 90.0 L64.0 98.0" fill="none" stroke="#fff7dc" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><path d="M45.6 82.4 L40.0 88.0" fill="none" stroke="#fff7dc" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><path d="M38.0 64.0 L30.0 64.0" fill="none" stroke="#fff7dc" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><path d="M45.6 45.6 L40.0 40.0" fill="none" stroke="#fff7dc" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><path d="M64.0 38.0 L64.0 30.0" fill="none" stroke="#fff7dc" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><path d="M82.4 45.6 L88.0 40.0" fill="none" stroke="#fff7dc" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></g>
 </svg>

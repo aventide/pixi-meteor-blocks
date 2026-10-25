@@ -38,7 +38,7 @@ export type PlanetTheme = {
   };
   createBackground: (width: number, height: number) => BackgroundHandle;
   trail: {
-    style: "fire" | "bubbles" | "dust" | "sparks";
+    style: "fire" | "thrust" | "bubbles" | "dust" | "sparks";
     colors: number[];
     additive?: boolean; // override the style's blend mode
     lifeScale?: number; // stretch particle lifetimes (e.g. low gravity)

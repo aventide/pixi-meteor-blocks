@@ -1,20 +1,31 @@
 <svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
   <title>Earth red tile</title>
   <defs>
-    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#ff7a6b"/>
-      <stop offset="0.5" stop-color="#e8323c"/>
-      <stop offset="1" stop-color="#a3121f"/>
+    <linearGradient id="frame" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ff5560"/>
+      <stop offset="0.45" stop-color="#c8243a"/>
+      <stop offset="1" stop-color="#5a0c16"/>
     </linearGradient>
-    <linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#ffffff" stop-opacity="0.6"/>
+    <radialGradient id="body" cx="0.5" cy="0.42" r="0.68">
+      <stop offset="0" stop-color="#c8243a"/>
+      <stop offset="0.6" stop-color="#5a0c16"/>
+      <stop offset="1" stop-color="#5a0c16"/>
+    </radialGradient>
+    <linearGradient id="topLight" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0.3" stop-color="#ffffff"/>
       <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
     </linearGradient>
+    <mask id="top"><rect width="128" height="24" fill="url(#topLight)"/></mask>
+    <clipPath id="face"><path d="M12 8 L116 8 L120 12 L120 116 L116 120 L12 120 L8 116 L8 12 L12 8 Z"/></clipPath>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="4"/>
+    </filter>
   </defs>
-  <rect x="2" y="2" width="124" height="124" rx="18" fill="#5c0610"/>
-  <rect x="6" y="6" width="116" height="116" rx="15" fill="url(#body)"/>
-  <rect x="7.5" y="7.5" width="113" height="113" rx="14" fill="none" stroke="#ff9d90" stroke-width="3"/>
-  <path d="M14 22 Q14 12 24 12 H104 Q114 12 114 22 V46 Q64 58 14 46 Z" fill="url(#gloss)"/>
-  <g transform="translate(0 4)" opacity="0.35"><path d="M24 92 L54 40 L66 60 L76 46 L104 92 Z" fill="#5c0610" stroke="#5c0610" stroke-width="0" stroke-linejoin="round" paint-order="stroke"/></g>
-  <g><path d="M24 92 L54 40 L66 60 L76 46 L104 92 Z" fill="#ffffff" stroke="#a3121f" stroke-width="7" stroke-linejoin="round" paint-order="stroke"/><path d="M54 40 L62 54 L56 51 L49 56 Z" fill="#a3121f" opacity="0.35"/></g>
+  <path d="M9 2 L119 2 L126 9 L126 119 L119 126 L9 126 L2 119 L2 9 L9 2 Z" fill="url(#frame)"/>
+  <path d="M12 8 L116 8 L120 12 L120 116 L116 120 L12 120 L8 116 L8 12 L12 8 Z" fill="url(#body)"/>
+  <g clip-path="url(#face)"><ellipse cx="96" cy="104" rx="37.5" ry="30" fill="none" stroke="#ffe6e4" stroke-width="1.5" opacity="0.16"/><ellipse cx="96" cy="104" rx="57.5" ry="46" fill="none" stroke="#ffe6e4" stroke-width="1.5" opacity="0.16"/><ellipse cx="96" cy="104" rx="77.5" ry="62" fill="none" stroke="#ffe6e4" stroke-width="1.5" opacity="0.16"/><ellipse cx="96" cy="104" rx="97.5" ry="78" fill="none" stroke="#ffe6e4" stroke-width="1.5" opacity="0.16"/></g>
+  <path d="M15 14 L113 14 L114 15 L114 113 L113 114 L15 114 L14 113 L14 15 L15 14 Z" fill="none" stroke="#ff5560" stroke-width="1.5" opacity="0.28"/>
+  <path d="M12 8 L116 8 L120 12 L120 116 L116 120 L12 120 L8 116 L8 12 L12 8 Z" fill="none" stroke="#ffffff" stroke-width="3" opacity="0.4" mask="url(#top)" clip-path="url(#face)"/>
+  <g filter="url(#glow)" opacity="0.95"><path d="M28 90 L54 44 L66 64 L76 50 L100 90 Z" fill="none" stroke="#ff5560" stroke-width="13.299999999999999" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g><path d="M28 90 L54 44 L66 64 L76 50 L100 90 Z" fill="none" stroke="#ffe6e4" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></g>
 </svg>

@@ -40,6 +40,18 @@ const STYLES: Record<TrailStyle, StyleParams> = {
     size: [0.75, 0.22],
     alpha: 1,
   },
+  // A narrow, hot exhaust jet that glows where it overlaps.
+  thrust: {
+    additive: true,
+    rate: 260,
+    life: [0.24, 0.36],
+    vx: 6,
+    vy: [40, 110],
+    gravity: 0,
+    wobble: 0,
+    size: [0.5, 0.08],
+    alpha: 0.8,
+  },
   bubbles: {
     additive: false,
     rate: 22,
